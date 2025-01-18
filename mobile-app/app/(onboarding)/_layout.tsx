@@ -1,6 +1,5 @@
 import React from "react";
 import { Stack } from "expo-router";
-import { Button } from "react-native";
 
 const Layout = () => {
   return (

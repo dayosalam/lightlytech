@@ -19,11 +19,12 @@ import Animated, {
   Easing,
   interpolate,
 } from "react-native-reanimated";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
 export default function OnboardingScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [currentPage, setCurrentPage] = useState(0);
 
   const totalPages = onboardingSteps.length;
@@ -52,12 +53,12 @@ export default function OnboardingScreen() {
     if (currentPage < totalPages - 1) {
       setCurrentPage(currentPage + 1);
     } else {
-      navigation.navigate("NextScreen");
+      router.push("/auth");
     }
   };
 
   const handleSkip = () => {
-    navigation.navigate("NextScreen");
+    router.push("/auth");
   };
 
   const titleStyle = useAnimatedStyle(() => {
