@@ -1,18 +1,12 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import {
-  Monitor,
-  GitPullRequest,
-  LayoutDashboard,
-  Settings2,
-} from "lucide-react";
-import { Separator } from "@/components/ui/separator";
 import { WaitlistBanner } from "@/components/WaitlistBanner";
 import { addToWaitlist } from "@/lib/utils";
+import { BackgroundBeams } from "@/components/ui/background-beams";
 
 export default function Page() {
   const [showBanner, setShowBanner] = useState(false);
@@ -43,21 +37,21 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="relative min-h-screen bg-white text-gray-900 overflow-hidden">
       {/* Navigation */}
-      <nav className="flex flex-col sm:flex-row justify-between items-center gap-4 px-4 py-2">
+      <nav className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 py-2">
         <Image src="/images/logo.png" alt="Logo" width={150} height={150} />
-        <a
+        {/* <a
           href="https://instagram.com/useatelier08"
           className="text-gray-900 border border-gray-900 px-4 py-2 rounded-full text-sm hover:bg-gray-900 hover:text-white transition-colors whitespace-nowrap"
         >
           Follow us on Instagram
-        </a>
+        </a> */}
       </nav>
 
       {/* Hero Section */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        <div className="max-w-xl mx-auto flex flex-col items-center mb-20">
+      <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+        <div className="max-w-xl mx-auto flex flex-col items-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-center text-gray-900">
             Effortless client management
           </h1>
@@ -80,7 +74,7 @@ export default function Page() {
               />
               <Button
                 type="submit"
-                className="bg-gray-900 text-white font-medium py-5 hover:bg-gray-800 whitespace-nowrap "
+                className="bg-gray-900 text-white font-medium py-5 hover:bg-gray-800 whitespace-nowrap"
                 disabled={loading}
               >
                 Get early access
@@ -90,58 +84,9 @@ export default function Page() {
             <WaitlistBanner show={showBanner} email={email} />
           </form>
         </div>
-
-        <Separator className="mb-16 max-w-3xl mx-auto bg-gray-200" />
-
-        {/* Features Grid */}
-        <div className="grid md:grid-cols-2 gap-8 sm:gap-16 mt-16 sm:mt-32">
-          <div>
-            <Monitor className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-gray-900" />
-            <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-900">
-              White-label client portal
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600">
-              Turn scattered communications into a premium branded experience.
-              Custom domains, your design, your brand - all managed from one
-              place.
-            </p>
-          </div>
-
-          <div>
-            <GitPullRequest className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-gray-900" />
-            <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-900">
-              Scope management that pays
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600">
-              Transform scope creep from a profit killer into a revenue stream.
-              Track changes, assess impact, and manage client expectations
-              effortlessly.
-            </p>
-          </div>
-
-          <div>
-            <LayoutDashboard className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-gray-900" />
-            <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-900">
-              Project dashboard
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600">
-              Keep everything organized and visible. Track progress, manage
-              timelines, and deliver updates - all with professional polish.
-            </p>
-          </div>
-
-          <div>
-            <Settings2 className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-gray-900" />
-            <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4 text-gray-900">
-              Smart automation
-            </h3>
-            <p className="text-sm sm:text-base text-gray-600">
-              Save hours on routine tasks. Automated updates, scheduled
-              check-ins, and intelligent assistance when you need it.
-            </p>
-          </div>
-        </div>
       </main>
+
+      <BackgroundBeams />
     </div>
   );
 }
