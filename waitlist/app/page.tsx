@@ -5,32 +5,61 @@ import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { WaitlistBanner } from "@/components/WaitlistBanner";
-import { addToWaitlist } from "@/lib/utils";
 import { BackgroundBeams } from "@/components/ui/background-beams";
+import axios from "axios";
+import DOMPurify from "dompurify";
 
 export default function Page() {
   const [showBanner, setShowBanner] = useState(false);
   const [email, setEmail] = useState("");
+  const [successEmail, setSuccessEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const sanitizeInput = (input: string): string => {
+    return DOMPurify.sanitize(input.trim());
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!email) {
-      setError("Please enter your email");
+
+    // Sanitize and validate the email
+    const sanitizedEmail = sanitizeInput(email);
+    if (!sanitizedEmail || !validateEmail(sanitizedEmail)) {
+      setError("Please enter a valid email address.");
       return;
     }
-    try {
-      setLoading(true);
-      setError("");
-      const { error } = await addToWaitlist(email);
-      if (error) throw new Error(error.message);
 
-      setShowBanner(true);
-      setTimeout(() => setShowBanner(false), 3000);
-    } catch (error) {
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await axios.post("/api/waitlist", {
+        email: sanitizedEmail,
+      });
+
+      if (response.status === 200) {
+        setSuccessEmail(sanitizedEmail);
+        setShowBanner(true);
+        setTimeout(() => {
+          setShowBanner(false);
+        }, 5000);
+        setEmail("");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
+    } catch (error: any) {
       console.error(error);
-      setError(error?.message ?? "Something went wrong. Please try again.");
+      setError(
+        error?.response?.data?.error ??
+          error?.message ??
+          "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -41,12 +70,6 @@ export default function Page() {
       {/* Navigation */}
       <nav className="relative z-10 flex flex-col sm:flex-row justify-between items-center gap-4 px-4 py-2">
         <Image src="/images/logo.png" alt="Logo" width={150} height={150} />
-        {/* <a
-          href="https://instagram.com/useatelier08"
-          className="text-gray-900 border border-gray-900 px-4 py-2 rounded-full text-sm hover:bg-gray-900 hover:text-white transition-colors whitespace-nowrap"
-        >
-          Follow us on Instagram
-        </a> */}
       </nav>
 
       {/* Hero Section */}
@@ -77,11 +100,11 @@ export default function Page() {
                 className="bg-gray-900 text-white font-medium py-5 hover:bg-gray-800 whitespace-nowrap"
                 disabled={loading}
               >
-                Get early access
+                {loading ? "Submitting..." : "Get early access"}
               </Button>
             </div>
             {error && <p className="text-red-500 text-md mt-2">{error}</p>}
-            <WaitlistBanner show={showBanner} email={email} />
+            <WaitlistBanner show={showBanner} email={successEmail} />
           </form>
         </div>
       </main>
