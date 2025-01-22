@@ -6,8 +6,16 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { WaitlistBanner } from "@/components/WaitlistBanner";
 import { BackgroundBeams } from "@/components/ui/background-beams";
+import {
+  Monitor,
+  GitPullRequest,
+  LayoutDashboard,
+  Settings2,
+  ChartArea,
+} from "lucide-react";
 import axios from "axios";
 import DOMPurify from "dompurify";
+import { features } from "@/data";
 
 export default function Page() {
   const [showBanner, setShowBanner] = useState(false);
@@ -28,7 +36,6 @@ export default function Page() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    // Sanitize and validate the email
     const sanitizedEmail = sanitizeInput(email);
     if (!sanitizedEmail || !validateEmail(sanitizedEmail)) {
       setError("Please enter a valid email address.");
@@ -65,6 +72,29 @@ export default function Page() {
     }
   };
 
+  const getFeatureIcon = (feature: string) => {
+    switch (feature) {
+      case "Real-time Energy Monitoring":
+        return (
+          <Monitor className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-black" />
+        );
+      case "Smart Energy Control":
+        return (
+          <LayoutDashboard className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-black" />
+        );
+      case "Actionable Usage Insights":
+        return (
+          <ChartArea className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-black" />
+        );
+      case "Tokenized Economy & Incentives":
+        return (
+          <Settings2 className="w-8 h-8 sm:w-12 sm:h-12 mb-4 sm:mb-6 text-black" />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-white text-gray-900 overflow-hidden">
       {/* Navigation */}
@@ -76,11 +106,12 @@ export default function Page() {
       <main className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <div className="max-w-xl mx-auto flex flex-col items-center">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 text-center text-gray-900">
-            Effortless client management
+            Take Control of Your Energy
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 mb-8 text-center">
-            The all-in-one platform that helps freelancers and agencies deliver
-            premium client service while maintaining profitability and control.
+            The smart energy management platform that helps homeowners and
+            businesses monitor, optimize, and control electricity usage while
+            earning rewards for efficient energy consumption.
           </p>
           <form
             onSubmit={handleSubmit}
@@ -108,6 +139,25 @@ export default function Page() {
           </form>
         </div>
       </main>
+
+      {/* Features */}
+      <section className="relative  text-black py-16">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-16">
+            {features.map((feature, index) => (
+              <div key={index}>
+                {getFeatureIcon(feature.title)}
+                <h3 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">
+                  {feature.title}
+                </h3>
+                <p className="text-sm sm:text-base text-gray-400">
+                  {feature.description}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <BackgroundBeams />
     </div>

@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
+import WaitlistEmail from "@/components/EmailTemplate";
+import { render } from "@react-email/components";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json(); // Parse JSON body
+    const body = await req.json();
     const { email } = body;
 
     if (!email) {
@@ -23,11 +25,13 @@ export async function POST(req: Request) {
       },
     });
 
+    const emailTemplate = await render(WaitlistEmail({ userEmail: email }));
+
     const mailOptions = {
       from: process.env.SMTP_USER,
       to: email,
       subject: "Welcome to Lightly",
-      text: "Welcome to Lightly!",
+      html: emailTemplate,
     };
 
     const info = await transporter.sendMail(mailOptions);
