@@ -6,13 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { WaitlistBanner } from "@/components/WaitlistBanner";
 import { BackgroundBeams } from "@/components/ui/background-beams";
-import {
-  Monitor,
-  GitPullRequest,
-  LayoutDashboard,
-  Settings2,
-  ChartArea,
-} from "lucide-react";
+import { Monitor, LayoutDashboard, Settings2, ChartArea } from "lucide-react";
 import axios from "axios";
 import DOMPurify from "dompurify";
 import { features } from "@/data";
