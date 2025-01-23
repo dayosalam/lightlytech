@@ -23,7 +23,7 @@ const WaitlistEmail = ({ userEmail = "there" }: WaitlistEmailProps) => {
         <title>You're on the Lightly waitlist!</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </Head>
-      <Preview>You're on the Lightly waitlist!</Preview>
+      <Preview>You&apos;re on the Lightly waitlist!</Preview>
       <Body
         style={{
           backgroundColor: "white",
@@ -81,7 +81,7 @@ const WaitlistEmail = ({ userEmail = "there" }: WaitlistEmailProps) => {
                 textAlign: "left",
               }}
             >
-              You're on the Waitlist! 🎉
+              You&apos;re on the Waitlist! 🎉
             </Text>
 
             <Text
@@ -94,9 +94,10 @@ const WaitlistEmail = ({ userEmail = "there" }: WaitlistEmailProps) => {
                 textAlign: "left",
               }}
             >
-              Congratulations! You've secured a spot on the exclusive Waitlist
-              for Lightly. To deliver a seamless experience that meets our
-              customers' expectations, we will send out invitations in stages.
+              Congratulations! You&apos;ve secured a spot on the exclusive
+              Waitlist for Lightly. To deliver a seamless experience that meets
+              our customers&apos; expectations, we will send out invitations in
+              stages.
             </Text>
 
             <Button
@@ -124,9 +125,9 @@ const WaitlistEmail = ({ userEmail = "there" }: WaitlistEmailProps) => {
                 textAlign: "left",
               }}
             >
-              You're receiving this email because you signed up for the Lightly
-              waitlist. If this doesn't seem right, please feel free to
-              disregard this message.
+              You&apos;re receiving this email because you signed up for the
+              Lightly waitlist. If this doesn&apos;t seem right, please feel
+              free to disregard this message.
             </Text>
           </Section>
 
@@ -144,7 +145,7 @@ const WaitlistEmail = ({ userEmail = "there" }: WaitlistEmailProps) => {
                 textAlign: "center",
               }}
             >
-              Don't want any more emails from Lightly?{" "}
+              Don&apos;t want any more emails from Lightly?{" "}
               <Link
                 href={`${process.env.NEXT_PUBLIC_BASE_URL}/unsubscribe?email=${userEmail}`}
                 style={{

@@ -20,8 +20,8 @@ export function WaitlistBanner({ show, email }: WaitlistBannerProps) {
     >
       <CheckCircle className="w-4 h-4 text-green-600" />
       <span>
-        We've added <span className="font-semibold">{email}</span> to our
-        waitlist. We'll let you know when Lightlybox is ready.
+        We&apos;ve added <span className="font-semibold">{email}</span> to our
+        waitlist. We&apos;ll let you know when Lightlybox is ready.
       </span>
     </div>
   );

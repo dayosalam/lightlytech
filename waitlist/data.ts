@@ -3,7 +3,7 @@ export const features = [
     id: 1,
     title: "Real-time Energy Monitoring",
     description:
-      "Track electricity usage down to the last watt with real-time insights. See what's consuming the most power and take action instantly.",
+      "Track electricity usage down to the last watt with real-time insights. See what&pos;s consuming the most power and take action instantly.",
   },
   {
     id: 2,
