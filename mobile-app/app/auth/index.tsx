@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Pressable,
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -14,12 +15,38 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [authMode, setAuthMode] = useState("login");
+  const isLogin = authMode === "login";
 
   const router = useRouter();
 
-  const handleLogin = () => {
-    console.log("Login with email:", email, "and password:", password);
-    router.push("/(onboarding)");
+  const handleSubmit = async () => {
+    if (authMode === "login") {
+      console.log("Login with email:", email, "and password:", password);
+      router.push(`/otp?email=${encodeURIComponent(email)}`);
+    } else {
+      try {
+        // Simulating API request for signup
+        const response = await fetch("https://your-api.com/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          // Navigate to OTP screen
+          router.push({ pathname: "/otp", params: { email } });
+        } else {
+          setErrorMessage(data.message || "Signup failed");
+        }
+      } catch (error) {
+        setErrorMessage("An error occurred. Please try again.");
+      }
+    }
   };
 
   return (
@@ -65,12 +92,24 @@ const Index = () => {
       </View>
 
       {/* Login and Navigation */}
-      <Text style={styles.footerText}>
-        Already have an account? <Text style={styles.link}>Log in</Text>
-      </Text>
+      <View style={styles.footerContainer}>
+        <Text style={styles.footerText}>
+          {isLogin ? "Don't have an account?" : "Already have an account?"}
+        </Text>
+        <Pressable
+          onPress={() => setAuthMode(isLogin ? "signup" : "login")}
+          style={{ marginLeft: 5 }}
+        >
+          <Text style={[styles.link, { color: "black" }]}>
+            {isLogin ? "Sign up" : "Log in"}
+          </Text>
+        </Pressable>
+      </View>
 
-      <TouchableOpacity onPress={handleLogin} style={styles.primaryButton}>
-        <Text style={styles.primaryButtonText}>Sign up</Text>
+      <TouchableOpacity onPress={handleSubmit} style={styles.primaryButton}>
+        <Text style={styles.primaryButtonText}>
+          {isLogin ? "Log in" : "Sign up"}
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.orContainer}>
@@ -97,6 +136,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#F5F7FB", // Light background
     paddingHorizontal: 20,
+  },
+  footerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    // marginBottom: 20,
   },
   googleImage: {
     width: 24,
@@ -151,7 +196,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   link: {
-    color: "#000",
+    color: "#797979",
     fontWeight: "600",
   },
   primaryButton: {
@@ -195,11 +240,6 @@ const styles = StyleSheet.create({
     width: 300,
     height: 50,
     borderRadius: 40,
-  },
-  googleButtonText: {
-    color: "#000",
-    fontSize: 16,
-    fontWeight: "600",
   },
 });
 
