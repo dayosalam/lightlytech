@@ -24,28 +24,9 @@ const Index = () => {
   const handleSubmit = async () => {
     if (authMode === "login") {
       console.log("Login with email:", email, "and password:", password);
-      router.push(`/otp?email=${encodeURIComponent(email)}`);
+      router.push("/connectlightly");
     } else {
-      try {
-        // Simulating API request for signup
-        const response = await fetch("https://your-api.com/signup", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await response.json();
-
-        if (response.ok) {
-          // Navigate to OTP screen
-          router.push({ pathname: "/otp", params: { email } });
-        } else {
-          setErrorMessage(data.message || "Signup failed");
-        }
-      } catch (error) {
-        setErrorMessage("An error occurred. Please try again.");
-      }
+      router.push(`/otp?email=${encodeURIComponent(email)}`);
     }
   };
 

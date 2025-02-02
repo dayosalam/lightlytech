@@ -10,8 +10,8 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import "react-native-reanimated";
-
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { PortalHost } from "@rn-primitives/portal";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -41,8 +41,14 @@ export default function RootLayout() {
         <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
         <Stack.Screen name="auth/index" options={{ headerShown: false }} />
         <Stack.Screen name="otp/index" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="connectlightly/index"
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="+not-found" />
       </Stack>
+
+      <PortalHost name="connectlightly" />
       <StatusBar style="auto" />
     </ThemeProvider>
   );
