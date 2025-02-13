@@ -49,7 +49,7 @@ export default function RootLayout() {
       </Stack>
 
       <PortalHost name="connectlightly" />
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,35 +11,103 @@ import {
   StatusBar,
 } from "react-native";
 import { Image as ExpoImage } from "expo-image";
-import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import { onboardingSteps } from "@/constants/data";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+} from "react-native-gesture-handler";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
-  Easing,
-  interpolate,
+  useAnimatedGestureHandler,
+  runOnJS,
 } from "react-native-reanimated";
-import { useRouter } from "expo-router";
+import { Colors } from "@/constants/Colors";
 
 const { width } = Dimensions.get("window");
+const SWIPE_THRESHOLD = width * 0.4;
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const [currentPage, setCurrentPage] = useState(0);
 
   const totalPages = onboardingSteps.length;
-  const animationProgress = useSharedValue(0);
+  const translateX = useSharedValue(0);
 
-  useEffect(() => {
-    animationProgress.value = withTiming(currentPage, {
-      duration: 300,
-      easing: Easing.inOut(Easing.ease),
-    });
-  }, [currentPage]);
+  const updateCurrentPage = useCallback((newPage: number) => {
+    setCurrentPage(newPage);
+  }, []);
 
-  const renderPaginatorDots = () => {
+  const handleNext = useCallback(() => {
+    if (currentPage < totalPages - 1) {
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      translateX.value = withTiming(-newPage * width, { duration: 300 });
+    } else {
+      router.push("/auth");
+    }
+  }, [currentPage, totalPages, translateX, router]);
+
+  const handleSkip = useCallback(() => {
+    router.push("/auth");
+  }, [router]);
+
+  const onGestureEvent = useAnimatedGestureHandler({
+    onStart: (_, ctx: any) => {
+      ctx.startX = translateX.value;
+    },
+    onActive: (event, ctx) => {
+      const newTranslateX = ctx.startX + event.translationX;
+      translateX.value = Math.max(
+        Math.min(newTranslateX, 0),
+        -width * (totalPages - 1)
+      );
+    },
+    onEnd: (event) => {
+      const currentOffset = Math.abs(translateX.value);
+      const targetPage = Math.round(currentOffset / width);
+
+      if (
+        Math.abs(event.velocityX) > 500 ||
+        Math.abs(event.translationX) > SWIPE_THRESHOLD
+      ) {
+        if (event.velocityX > 0 && currentPage > 0) {
+          // Swipe right
+          translateX.value = withTiming(-(targetPage - 1) * width, {
+            duration: 300,
+          });
+          runOnJS(updateCurrentPage)(targetPage - 1);
+        } else if (event.velocityX < 0 && currentPage < totalPages - 1) {
+          // Swipe left
+          translateX.value = withTiming(-(targetPage + 1) * width, {
+            duration: 300,
+          });
+          runOnJS(updateCurrentPage)(targetPage + 1);
+        } else {
+          // Bounce back
+          translateX.value = withTiming(-targetPage * width, { duration: 300 });
+        }
+      } else {
+        // Snap to nearest page
+        translateX.value = withTiming(-targetPage * width, { duration: 300 });
+        runOnJS(updateCurrentPage)(targetPage);
+      }
+    },
+  });
+
+  const contentStyle = useAnimatedStyle(() => {
+    return {
+      flex: 1,
+      flexDirection: "row",
+      width: width * totalPages,
+      transform: [{ translateX: translateX.value }],
+    };
+  });
+
+  const renderPaginatorDots = useCallback(() => {
     return onboardingSteps.map((_, i) => (
       <View
         key={i}
@@ -47,108 +117,48 @@ export default function OnboardingScreen() {
         ]}
       />
     ));
-  };
-
-  const handleNext = () => {
-    if (currentPage < totalPages - 1) {
-      setCurrentPage(currentPage + 1);
-    } else {
-      router.push("/auth");
-    }
-  };
-
-  const handleSkip = () => {
-    router.push("/auth");
-  };
-
-  const titleStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      animationProgress.value,
-      [currentPage - 1, currentPage, currentPage + 1],
-      [0, 1, 0]
-    );
-    const translateY = interpolate(
-      animationProgress.value,
-      [currentPage - 1, currentPage, currentPage + 1],
-      [20, 0, -20]
-    );
-    return {
-      opacity,
-      transform: [{ translateY }],
-    };
-  });
-
-  const subtitleStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      animationProgress.value,
-      [currentPage - 1, currentPage, currentPage + 1],
-      [0, 1, 0]
-    );
-    const translateY = interpolate(
-      animationProgress.value,
-      [currentPage - 1, currentPage, currentPage + 1],
-      [20, 0, -20]
-    );
-    return {
-      opacity,
-      transform: [{ translateY }],
-    };
-  });
-
-  const imageStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      animationProgress.value,
-      [currentPage - 0.5, currentPage, currentPage + 0.5],
-      [0, 1, 0]
-    );
-    const scale = interpolate(
-      animationProgress.value,
-      [currentPage - 1, currentPage, currentPage + 1],
-      [0.8, 1, 0.8]
-    );
-    return {
-      opacity,
-      transform: [{ scale }],
-    };
-  });
+  }, [currentPage]);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" />
 
-      <View style={styles.header}>
-        <View style={styles.paginatorContainer}>{renderPaginatorDots()}</View>
-        <Pressable onPress={handleSkip} style={styles.skipButton}>
-          <Text style={styles.skipText}>Skip</Text>
-          <IconSymbol name="chevron.right" size={24} color="black" />
-        </Pressable>
-      </View>
+        <View style={styles.header}>
+          <View style={styles.paginatorContainer}>{renderPaginatorDots()}</View>
+          <Pressable onPress={handleSkip} style={styles.skipButton}>
+            <Text style={styles.skipText}>Skip</Text>
+            <IconSymbol name="chevron.right" size={24} color="black" />
+          </Pressable>
+        </View>
 
-      <View style={styles.content}>
-        <Animated.Text style={[styles.title, titleStyle]}>
-          {onboardingSteps[currentPage].title}
-        </Animated.Text>
-        <Animated.Text style={[styles.subtitle, subtitleStyle]}>
-          {onboardingSteps[currentPage].description}
-        </Animated.Text>
+        <PanGestureHandler onGestureEvent={onGestureEvent}>
+          <Animated.View style={contentStyle}>
+            {onboardingSteps.map((step, index) => (
+              <View key={index} style={styles.slide}>
+                <ExpoImage
+                  source={require("@/assets/images/mockup.png")}
+                  style={styles.illustration}
+                  contentFit="contain"
+                />
+                <View style={styles.textContainer}>
+                  <Text style={styles.title}>{step.title}</Text>
+                  <Text style={styles.subtitle}>{step.description}</Text>
+                </View>
+              </View>
+            ))}
+          </Animated.View>
+        </PanGestureHandler>
 
-        <Animated.View style={imageStyle}>
-          <ExpoImage
-            source={onboardingSteps[currentPage].image}
-            style={styles.illustration}
-            contentFit="cover"
-          />
-        </Animated.View>
-      </View>
-
-      <View style={styles.bottomContainer}>
-        <Pressable onPress={handleNext} style={styles.button}>
-          <Text style={styles.buttonText}>
-            {currentPage < totalPages - 1 ? "Continue" : "Get Started"}
-          </Text>
-        </Pressable>
-      </View>
-    </SafeAreaView>
+        <View style={styles.bottomContainer}>
+          <Pressable onPress={handleNext} style={styles.button}>
+            <Text style={styles.buttonText}>
+              {currentPage < totalPages - 1 ? "Continue" : "Get Started"}
+            </Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -176,7 +186,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   paginatorDotActive: {
-    backgroundColor: "#000",
+    backgroundColor: Colors.secondary,
     width: 40,
   },
   skipButton: {
@@ -189,46 +199,50 @@ const styles = StyleSheet.create({
     fontFamily: "InterRegular",
     marginRight: 4,
   },
-  content: {
-    flex: 1,
+  slide: {
+    width,
     paddingHorizontal: 20,
-    paddingTop: 40,
+    justifyContent: "center",
+  },
+  textContainer: {
     alignItems: "center",
+    marginTop: 40,
   },
   title: {
-    fontSize: 23,
+    fontSize: 25,
     fontWeight: "600",
-    color: "#000",
+    color: Colors.primary,
     marginBottom: 12,
-    lineHeight: 34,
+    lineHeight: 32,
     textAlign: "center",
     fontFamily: "InterBold",
+    paddingHorizontal: 20,
   },
   subtitle: {
-    fontSize: 16,
-    color: "#666",
-    lineHeight: 22,
+    fontSize: 18,
+    color: Colors.body,
+    lineHeight: 30,
     marginBottom: 40,
     textAlign: "center",
     fontFamily: "InterLight",
+    paddingHorizontal: 30,
   },
   illustration: {
-    width: width - 40,
-    height: (width - 40) * 0.75,
-    backgroundColor: "#E5E5E5",
+    width: width - 80,
+    height: (width - 80) * 0.8,
+    alignSelf: "center",
   },
   bottomContainer: {
-    padding: 20,
-    paddingBottom: 30,
-    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingBottom: 40,
   },
   button: {
-    backgroundColor: "#000",
-    height: 54,
-    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    height: 56,
+    borderRadius: 14,
     justifyContent: "center",
     alignItems: "center",
-    width: width - 80,
+    width: "100%",
   },
   buttonText: {
     color: "#fff",
