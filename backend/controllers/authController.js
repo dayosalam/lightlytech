@@ -40,9 +40,12 @@ exports.register = async (req, res) => {
         .json({ error: "Database error saving new user", details: dbError });
     }
 
-    res
-      .status(200)
-      .json({ message: "User registered successfully", user: data.user });
+    res.status(200).json({
+      message: "User registered successfully",
+      access_token: data.session?.access_token,
+      refresh_token: data.session?.refresh_token,
+      user: data.user,
+    });
   } catch (err) {
     console.error("❌ Unexpected Error:", err);
     res.status(500).json({
@@ -68,7 +71,14 @@ exports.signIn = async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  res.status(200).json({ user: data.user });
+  res.status(200).json({
+    message: "User logged in successfully",
+    access_token: data.session?.access_token,
+    refresh_token: data.session?.refresh_token,
+    user: data.user,
+  });
+
+  console.log(`✅ User logged in`);
 };
 
 exports.logout = async (req, res) => {
@@ -79,4 +89,5 @@ exports.logout = async (req, res) => {
   }
 
   res.status(200).json({ message: "Logged out successfully" });
+  console.log(`✅ user logged out`);
 };
