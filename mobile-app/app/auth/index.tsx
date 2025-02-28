@@ -24,7 +24,7 @@ const Index = () => {
   const handleSubmit = async () => {
     if (authMode === "login") {
       console.log("Login with email:", email, "and password:", password);
-      router.push("/connectlightly");
+      router.push("/(connectlightly)/index");
     } else {
       router.push(`/otp?email=${encodeURIComponent(email)}`);
     }

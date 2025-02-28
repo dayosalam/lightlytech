@@ -26,6 +26,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { Colors } from "@/constants/Colors";
+import { Storage } from "@/utils/storage";
 
 const { width } = Dimensions.get("window");
 const SWIPE_THRESHOLD = width * 0.4;
@@ -41,18 +42,20 @@ export default function OnboardingScreen() {
     setCurrentPage(newPage);
   }, []);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (currentPage < totalPages - 1) {
       const newPage = currentPage + 1;
       setCurrentPage(newPage);
       translateX.value = withTiming(-newPage * width, { duration: 300 });
     } else {
-      router.push("/auth");
+      await Storage.setHasSeenOnboarding(true);
+      router.push("/(getstarted)/distributionbox");
     }
   }, [currentPage, totalPages, translateX, router]);
 
-  const handleSkip = useCallback(() => {
-    router.push("/auth");
+  const handleSkip = useCallback(async () => {
+    await Storage.setHasSeenOnboarding(true);
+    router.push("/(getstarted)/distributionbox");
   }, [router]);
 
   const onGestureEvent = useAnimatedGestureHandler({
@@ -128,7 +131,6 @@ export default function OnboardingScreen() {
           <View style={styles.paginatorContainer}>{renderPaginatorDots()}</View>
           <Pressable onPress={handleSkip} style={styles.skipButton}>
             <Text style={styles.skipText}>Skip</Text>
-            <IconSymbol name="chevron.right" size={24} color="black" />
           </Pressable>
         </View>
 
@@ -165,7 +167,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#F5F5F5",
   },
   header: {
     flexDirection: "row",
@@ -195,7 +197,7 @@ const styles = StyleSheet.create({
   },
   skipText: {
     fontSize: 16,
-    color: "#000",
+    color: "#878787",
     fontFamily: "InterRegular",
     marginRight: 4,
   },
