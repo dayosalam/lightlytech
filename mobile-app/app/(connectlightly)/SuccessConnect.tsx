@@ -9,15 +9,47 @@ import {
   Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { Storage } from "@/utils/storage";
 
 const { width } = Dimensions.get("window");
 
 export default function SuccessConnect() {
   const router = useRouter();
-  const handleSetupDevice = () => {
-    // Navigate to device setup screen
-    router.push("/(connectlightly)/index");
-    // navigation.navigate('DeviceSetup');
+  const [showButton, setShowButton] = useState(false);
+
+  useEffect(() => {
+    // Set a timeout to navigate to home after showing the success screen
+    const timer = setTimeout(async () => {
+      try {
+        await Storage.setHasSeenOnboarding(true);
+        router.replace("/(home)");
+      } catch (error) {
+        console.error("Navigation error:", error);
+        setShowButton(true);
+      }
+    }, 3000); // 3 seconds delay
+
+    // Show the manual button after 5 seconds as a fallback
+    const buttonTimer = setTimeout(() => {
+      setShowButton(true);
+    }, 5000);
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(buttonTimer);
+    };
+  }, [router]);
+
+  const handleManualNavigation = async () => {
+    try {
+      await Storage.setHasSeenOnboarding(true);
+      router.push("/(home)");
+    } catch (error) {
+      console.error("Manual navigation error:", error);
+      // Try an alternative navigation method
+      router.navigate("/(home)");
+    }
   };
 
   return (
@@ -37,6 +69,15 @@ export default function SuccessConnect() {
             You have finish setting up your account, now relax while we build
             your experience....
           </Text>
+
+          {showButton && (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleManualNavigation}
+            >
+              <Text style={styles.buttonText}>Go to Home</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </SafeAreaView>
@@ -60,6 +101,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     marginVertical: "auto",
+    alignItems: "center",
   },
   title: {
     fontSize: 40,
@@ -72,6 +114,7 @@ const styles = StyleSheet.create({
     fontFamily: "InterRegular",
     color: "#AAAAAA",
     lineHeight: 28,
+    marginBottom: 30,
   },
   button: {
     backgroundColor: "#FF5722",
@@ -79,7 +122,8 @@ const styles = StyleSheet.create({
     padding: 14,
     alignItems: "center",
     justifyContent: "center",
-    width: "100%",
+    width: "80%",
+    marginTop: 20,
   },
   buttonText: {
     color: "#FFFFFF",

@@ -15,35 +15,6 @@ import DocumentComplete from "@/assets/icons/document-text-complete.svg";
 import Wifi from "@/assets/icons/wifi.svg";
 import WifiComplete from "@/assets/icons/wifi-complete.svg";
 
-// Step screen components
-const CameraSetup = () => (
-  <View style={styles.stepContent}>
-    <Text style={styles.stepTitle}>Camera Setup</Text>
-    <Text style={styles.stepDescription}>Configure your camera settings</Text>
-  </View>
-);
-
-const DocumentUpload = () => (
-  <View style={styles.stepContent}>
-    <Text style={styles.stepTitle}>Document Upload</Text>
-    <Text style={styles.stepDescription}>Upload required documents</Text>
-  </View>
-);
-
-const WifiSetup = () => (
-  <View style={styles.stepContent}>
-    <Text style={styles.stepTitle}>WiFi Setup</Text>
-    <Text style={styles.stepDescription}>Connect to WiFi network</Text>
-  </View>
-);
-
-const Complete = () => (
-  <View style={styles.stepContent}>
-    <Text style={styles.stepTitle}>Complete</Text>
-    <Text style={styles.stepDescription}>Complete the setup process</Text>
-  </View>
-);
-
 export default function ConnectToLightly() {
   const [currentStep, setCurrentStep] = useState(0);
 

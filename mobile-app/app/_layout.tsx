@@ -5,13 +5,12 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter } from "expo-router";
+import { Slot, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { PortalHost } from "@rn-primitives/portal";
 import { Storage } from "@/utils/storage";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
@@ -20,7 +19,8 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const [initialRoute, setInitialRoute] = useState<string | null>(null);
+  const [isReady, setIsReady] = useState(false);
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState(false);
 
   const [loaded] = useFonts({
     InterLight: require("../assets/fonts/Inter_24pt-Light.ttf"),
@@ -30,58 +30,48 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    async function checkOnboarding() {
-      const hasSeenOnboarding = await Storage.getHasSeenOnboarding();
-      setInitialRoute(
-        hasSeenOnboarding ? "(connectlightly)/index" : "(onboarding)"
-      );
-    }
-    checkOnboarding();
-  }, []);
+    async function prepareApp() {
+      try {
+        // Check if onboarding has been completed
+        const hasSeenOnboarding = await Storage.getHasSeenOnboarding();
+        console.log(hasSeenOnboarding);
 
-  useEffect(() => {
+        // const hasSeenOnboarding = false;
+
+        // For testing purposes, set onboarding as seen
+        if (!hasSeenOnboarding) {
+          await Storage.setHasSeenOnboarding(true);
+          setHasSeenOnboarding(true);
+        }
+
+        setIsReady(true);
+      } catch (error) {
+        console.error("Error in app preparation:", error);
+        setIsReady(true);
+      }
+    }
+
     if (loaded) {
-      SplashScreen.hideAsync();
+      prepareApp();
     }
   }, [loaded]);
 
-  if (!loaded || !initialRoute) {
+  useEffect(() => {
+    if (loaded && isReady) {
+      SplashScreen.hideAsync();
+      if (!hasSeenOnboarding) {
+        router.navigate("/(home)");
+      }
+    }
+  }, [loaded, isReady]);
+
+  if (!loaded || !isReady) {
     return null;
   }
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack initialRouteName={initialRoute}>
-        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-        <Stack.Screen name="otp/index" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="(getstarted)/distributionbox"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="(getstarted)/auth"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="(getstarted)/verify-email"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="(getstarted)/success"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="(connectlightly)/index"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="(connectlightly)/SuccessConnect"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-
-      {/* <PortalHost name="connectlightly" /> */}
+      <Slot />
       <StatusBar style="dark" />
     </ThemeProvider>
   );
