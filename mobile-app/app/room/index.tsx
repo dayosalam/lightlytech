@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Switch,
   SafeAreaView,
+  Image,
   StatusBar,
   Dimensions,
   TouchableOpacity,
@@ -13,6 +14,8 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import PowerUsageChart from "../../components/PowerUsageChart";
+import UsageBreakdownCard from "../../components/UsageBreakdownCard";
+import Edit from "@/assets/icons/edit.svg";
 
 const { width } = Dimensions.get("window");
 
@@ -21,14 +24,15 @@ const timeOptions = ["Today", "7 days", "1M", "1Y"];
 export default function RoomDetailsScreen() {
   const { id } = useLocalSearchParams();
   const [selectedTimeOption, setSelectedTimeOption] = useState("Today");
-  const [isSocketOn, setIsSocketOn] = useState(true);
-  const [isLightOn, setIsLightOn] = useState(true);
+  const [isSocketOn, setIsSocketOn] = useState(false);
+  const [isLightOn, setIsLightOn] = useState(false);
+  const [activeTab, setActiveTab] = useState("socket"); // Track active tab
 
   // Mock data for the room
   const roomData = {
     name: "Living room",
-    icon: "😊",
-    iconBgColor: "#e7e4f9",
+    icon: require("@/assets/images/smiley.png"),
+    iconBgColor: "#D6E0FF",
     powerUsage: {
       cost: "₦8,008.04",
       energy: "11.89Kw/H",
@@ -40,7 +44,7 @@ export default function RoomDetailsScreen() {
   };
 
   // Mock chart data for power usage
-  const powerChartData = [500, 1200, 800, 1500, 2000, 1800, 2500];
+  const powerChartData = [500, 1200, 800, 1500, 2000, 1800, 500];
   const powerChartLabels = [
     "07:00",
     "08:00",
@@ -66,9 +70,13 @@ export default function RoomDetailsScreen() {
               { backgroundColor: roomData.iconBgColor },
             ]}
           >
-            <Text style={styles.roomEmoji}>{roomData.icon}</Text>
+            <Image
+              source={roomData.icon}
+              style={{ width: 20, height: 20 }}
+              resizeMode="contain"
+            />
             <View style={styles.editIconContainer}>
-              <Ionicons name="pencil" size={20} color="#696969" />
+              <Edit width={26} height={26} />
             </View>
           </View>
           <Text style={styles.roomName}>{roomData.name}</Text>
@@ -139,61 +147,46 @@ export default function RoomDetailsScreen() {
         />
 
         {/* Usage breakdown */}
-        <View style={styles.usageBreakdownContainer}>
-          <View style={styles.usageItem}>
-            <Text style={styles.usageLabel}>Socket usage</Text>
-            <Text style={styles.usageValue}>{roomData.socketUsage}</Text>
-            <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBar,
-                  styles.socketProgressBar,
-                  { width: "70%" },
-                ]}
-              />
-            </View>
-          </View>
-
-          <View style={styles.usageItem}>
-            <Text style={styles.usageLabel}>Light usage</Text>
-            <Text style={styles.usageValue}>{roomData.lightUsage}</Text>
-            <View style={styles.progressBarContainer}>
-              <View
-                style={[
-                  styles.progressBar,
-                  styles.lightProgressBar,
-                  { width: "45%" },
-                ]}
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Control switches */}
-        <View style={styles.controlsContainer}>
-          <View style={styles.controlCard}>
-            <Text style={styles.controlLabel}>Socket switch</Text>
-            <Switch
-              value={isSocketOn}
-              onValueChange={setIsSocketOn}
-              trackColor={{ false: "#d6d6d6", true: "#b1bbba" }}
-              thumbColor={isSocketOn ? "#28a745" : "#f4f3f4"}
-              ios_backgroundColor="#d6d6d6"
-            />
-          </View>
-
-          <View style={styles.controlCard}>
-            <Text style={styles.controlLabel}>Light switch</Text>
-            <Switch
-              value={isLightOn}
-              onValueChange={setIsLightOn}
-              trackColor={{ false: "#d6d6d6", true: "#b1bbba" }}
-              thumbColor={isLightOn ? "#28a745" : "#f4f3f4"}
-              ios_backgroundColor="#d6d6d6"
-            />
-          </View>
-        </View>
+        <UsageBreakdownCard
+          socketUsage="7.13Kw/H"
+          lightUsage="4.76Kw/H"
+          socketPercentage={60}
+          lightPercentage={40}
+          containerStyle={{ marginTop: 10 }}
+        />
       </ScrollView>
+
+      {/* Fixed bottom tab that sticks to the screen even when scrolled */}
+      <View style={styles.fixedBottomTab}>
+        <View style={styles.fixedTabContent}>
+          {/* You can add your tab content here */}
+          <View style={styles.switches}>
+            <TouchableOpacity style={styles.switch}>
+              <Text style={styles.switchLabel}>Socket switch</Text>
+              <Switch
+                value={isSocketOn}
+                onValueChange={setIsSocketOn}
+                trackColor={{ false: "#d6d6d6", true: "#28a745" }}
+                thumbColor={"#ffffff"}
+                ios_backgroundColor="#d6d6d6"
+              />
+            </TouchableOpacity>
+
+            <View style={styles.divider} />
+
+            <TouchableOpacity style={styles.switch}>
+              <Text style={styles.switchLabel}>Light switch</Text>
+              <Switch
+                value={isLightOn}
+                onValueChange={setIsLightOn}
+                trackColor={{ false: "#d6d6d6", true: "#28a745" }}
+                thumbColor={"#ffffff"}
+                ios_backgroundColor="#d6d6d6"
+              />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -205,7 +198,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingTop: 10,
-    paddingBottom: 20,
+    paddingBottom: 100, // Add padding to account for the bottom tabs
   },
   roomProfile: {
     alignItems: "center",
@@ -219,11 +212,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
   },
   roomEmoji: {
     fontSize: 34,
@@ -231,7 +219,7 @@ const styles = StyleSheet.create({
   editIconContainer: {
     position: "absolute",
     bottom: 0,
-    right: 0,
+    right: -2,
     width: 26,
     height: 26,
     justifyContent: "center",
@@ -328,77 +316,77 @@ const styles = StyleSheet.create({
     color: "#dc3545",
     fontFamily: "InterRegular",
   },
-  usageBreakdownContainer: {
-    flexDirection: "row",
+  tabsContainer: {
     marginHorizontal: 20,
-    marginTop: 25,
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  switches: {
+    flexDirection: "row",
     justifyContent: "space-between",
   },
-  usageItem: {
-    flex: 1,
+  switch: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#f5f5f5",
+    borderRadius: 12,
+    padding: 8,
+    width: "48%",
+  },
+
+  switchLabel: {
+    fontSize: 16,
+    color: "#022322",
+    fontFamily: "InterBold",
+    marginRight: 10,
+  },
+  tabContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     backgroundColor: "#ffffff",
     borderRadius: 12,
-    padding: 15,
-    marginHorizontal: 5,
+    padding: 16,
+    marginTop: 15,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
   },
-  usageLabel: {
-    fontSize: 16,
-    color: "#696969",
-    marginBottom: 5,
-    fontFamily: "InterRegular",
-  },
-  usageValue: {
-    fontSize: 20,
+  tabContentTitle: {
+    fontSize: 18,
     fontFamily: "InterSemiBold",
     color: "#022322",
     marginBottom: 10,
   },
-  progressBarContainer: {
-    height: 8,
-    backgroundColor: "#f0f0f0",
-    borderRadius: 4,
-    overflow: "hidden",
+  tabContentText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#696969",
+    fontFamily: "InterRegular",
   },
-  progressBar: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  socketProgressBar: {
-    backgroundColor: "#8B4513",
-  },
-  lightProgressBar: {
-    backgroundColor: "#696969",
-  },
-  controlsContainer: {
-    flexDirection: "row",
-    marginHorizontal: 20,
-    marginTop: 25,
-    marginBottom: 25,
-    justifyContent: "space-between",
-  },
-  controlCard: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  fixedBottomTab: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 15,
-    marginHorizontal: 5,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 3,
+    elevation: 5,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    zIndex: 1000,
   },
-  controlLabel: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
-    color: "#022322",
+  fixedTabContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  divider: {
+    width: 1,
+    backgroundColor: "#E0E0E0",
   },
 });

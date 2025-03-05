@@ -32,7 +32,7 @@ interface PowerUsageChartProps {
 }
 
 export default function PowerUsageChart({
-  data = [500, 1200, 800, 1500, 2000, 1800, 2500],
+  data = [500, 1200, 800, 1500, 2000, 1800, 500],
   labels = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00"],
   height = 220,
   lineColor = "#ff671f",
@@ -170,7 +170,6 @@ export default function PowerUsageChart({
             chartConfig={{
               backgroundColor,
               backgroundGradientFrom: backgroundColor,
-
               backgroundGradientTo: backgroundColor,
               decimalPlaces: 0,
               color: (opacity = 1) => `rgba(255, 103, 31, ${opacity})`,
