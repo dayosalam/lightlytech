@@ -11,13 +11,13 @@
   "description": "",
   "dependencies": {
     "@influxdata/influxdb-client": "^1.35.0",
-    "@supabase/supabase-js": "^2.48.1",
+    "@supabase/supabase-js": "^2.49.1",
     "backend": "file:",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "mqtt": "^5.10.3",
+    "mqtt": "^5.10.4",
     "nodemon": "^3.1.9",
     "socket.io": "^4.8.1"
   }
