@@ -112,25 +112,28 @@ const storeSensorData = async (req, res) => {
 // API Endpoint: Retrieve Sensor Data for a User
 
 const getSensorData = async (req, res) => {
-  const user_id = req.user.id; // Get authenticated user ID
-
-  if (!user_id) {
-    return res.status(400).json({ error: "User ID is required" });
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from("data_records")
-      .select("*")
-      .eq("user_id", user_id)
-      .order("created_at", { ascending: false });
-
-    if (error) throw error;
-
-    return res.status(200).json(data);
-  } catch (error) {
-    console.error("Error retrieving sensor data:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
-};
+    const user_id = req.user.id; // Get authenticated user ID
+  
+    if (!user_id) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+  
+    try {
+      const { data, error } = await supabase
+        .from("data_records")
+        .select("id, recorded_at, values, created_at")
+        .eq("user_id", user_id)
+        .order("created_at", { ascending: false });
+  
+      if (error) throw error;
+  
+      return res.status(200).json({
+        user_id: user_id,
+        sensor_readings: data, // Return sensor readings grouped under user_id
+      });
+    } catch (error) {
+      console.error("Error retrieving sensor data:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  };
 module.exports = { storeSensorData, getSensorData, client };
