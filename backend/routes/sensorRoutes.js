@@ -1,10 +1,11 @@
 const express = require("express");
-const { saveSensorData, getUserSensorData } = require("../controllers/sensorController");
-const authMiddleware = require("../middlewares/authMiddleware");
 
+const authMiddleware = require("../middlewares/authMiddleware");
+const { storeSensorData, getSensorData, client } = require("../controllers/sensorController.js");
 const router = express.Router();
 
-router.post("/receive_data", authMiddleware, saveSensorData);
-router.get("/user_data", authMiddleware, getUserSensorData);
+// Define sensor routes
+router.post("/store", authMiddleware, storeSensorData);
+router.get("/readings", authMiddleware, getSensorData);
 
 module.exports = router;

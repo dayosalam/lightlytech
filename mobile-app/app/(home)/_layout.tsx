@@ -4,12 +4,11 @@ import { useEffect } from "react";
 import { Storage } from "@/utils/storage";
 
 export default function TabsLayout() {
-  // Ensure we mark onboarding as seen when user reaches the home screen
   useEffect(() => {
     const markOnboardingComplete = async () => {
       await Storage.setHasSeenOnboarding(true);
     };
-    
+
     markOnboardingComplete();
   }, []);
 
@@ -42,6 +41,17 @@ export default function TabsLayout() {
         name="insights"
         options={{
           title: "Insights",
+          headerShown: true,
+          headerTitle: "Insights",
+          headerStyle: {
+            backgroundColor: "#f8f8f8",
+            elevation: 0,
+          },
+          headerTitleStyle: {
+            fontSize: 24,
+            fontFamily: "InterBold",
+            color: "#022322",
+          },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="analytics-outline" size={size} color={color} />
           ),
