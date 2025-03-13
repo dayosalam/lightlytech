@@ -4,17 +4,17 @@ import React, { useState } from "react";
 interface TimePeriodSelectorProps {
   selectedTimeOption: string;
   setSelectedTimeOption: (option: string) => void;
+  options: string[];
 }
 
 const TimePeriodSelector = ({
   selectedTimeOption,
   setSelectedTimeOption,
+  options,
 }: TimePeriodSelectorProps) => {
-  const timeOptions = ["Today", "7 days", "1M", "1Y"];
-
   return (
     <View style={styles.timeSelector}>
-      {timeOptions.map((option) => (
+      {options.map((option) => (
         <TouchableOpacity
           key={option}
           style={[
