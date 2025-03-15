@@ -3,7 +3,7 @@ import { Stack, useRouter, Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { TouchableOpacity, StyleSheet, Text } from "react-native";
 
-export default function RoomLayout() {
+export default function ScheduleLayout() {
   const router = useRouter();
 
   return (

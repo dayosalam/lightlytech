@@ -15,27 +15,24 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Storage } from "@/utils/storage";
 
 export default function EmailVerificationScreen() {
   const [verificationCode, setVerificationCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
+    // For demo purposes, we'll just navigate to the success screen
+    // In a real app, you would verify the code with your backend
+    
+    // Navigate to the success screen
     router.push("/(getstarted)/success");
-    // if (verificationCode.length === 4) {
-    //   setIsLoading(true);
-    //   // Simulate API call
-    //   setTimeout(() => {
-    //     setIsLoading(false);
-    //     // Navigate to next screen after verification
-    //     // navigation.navigate('Home');
-    //   }, 1500);
-    // }
   };
 
   const handleResendCode = () => {
     // Implement resend code logic here
+    console.log("Resending verification code");
   };
 
   return (

@@ -14,7 +14,7 @@ import { Storage } from "@/utils/storage";
 
 const { width } = Dimensions.get("window");
 
-export default function SuccessConnect() {
+export default function SetupSuccess() {
   const router = useRouter();
   const [showButton, setShowButton] = useState(false);
 
@@ -22,7 +22,9 @@ export default function SuccessConnect() {
     // Set a timeout to navigate to home after showing the success screen
     const timer = setTimeout(async () => {
       try {
-        await Storage.setHasSeenOnboarding(true);
+        // Mark that the user has connected their box
+        await Storage.setHasConnectedBox(true);
+
         router.replace("/(home)");
       } catch (error) {
         console.error("Navigation error:", error);
@@ -43,7 +45,7 @@ export default function SuccessConnect() {
 
   const handleManualNavigation = async () => {
     try {
-      await Storage.setHasSeenOnboarding(true);
+      await Storage.setHasConnectedBox(true);
       router.push("/(home)");
     } catch (error) {
       console.error("Manual navigation error:", error);
@@ -66,8 +68,8 @@ export default function SuccessConnect() {
           </View>
           <Text style={styles.title}>Yay! You made it</Text>
           <Text style={styles.description}>
-            You have finish setting up your account, now relax while we build
-            your experience....
+            You have finished setting up your Lightly box, now relax while we
+            build your experience....
           </Text>
 
           {showButton && (
@@ -91,6 +93,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     marginHorizontal: "auto",
+    alignItems: "center",
   },
   content: {
     flex: 1,
@@ -100,34 +103,35 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   textContainer: {
-    marginVertical: "auto",
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
   title: {
-    fontSize: 40,
+    fontSize: 28,
     fontFamily: "InterBold",
-    color: "#FFFFFF",
-    marginBottom: 16,
+    color: "#ffffff",
+    marginTop: 30,
+    textAlign: "center",
   },
   description: {
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "InterRegular",
-    color: "#AAAAAA",
-    lineHeight: 28,
-    marginBottom: 30,
+    color: "#ffffff",
+    textAlign: "center",
+    marginTop: 16,
+    marginBottom: 40,
   },
   button: {
-    backgroundColor: "#FF5722",
-    borderRadius: 12,
-    padding: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "80%",
+    backgroundColor: "#ffffff",
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 8,
     marginTop: 20,
   },
   buttonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 16,
     fontFamily: "InterSemiBold",
+    color: "#002020",
   },
 });

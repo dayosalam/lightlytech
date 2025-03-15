@@ -3,10 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
   ScrollView,
+  TouchableOpacity,
   Switch,
+  SafeAreaView,
   Modal,
   Pressable,
 } from "react-native";
@@ -14,6 +14,12 @@ import { Ionicons } from "@expo/vector-icons";
 import AlertCarousel from "@/components/home/AlertCarousel";
 import TimePeriodSelector from "@/components/TimePeriodSelector";
 import { router } from "expo-router";
+import {
+  RoomSelectionModal,
+  CustomScheduleModal,
+  ScheduleTypeModal,
+  BaddiesCondoModal,
+} from "@/components/modals";
 
 // Room data
 const roomsData = [
@@ -94,8 +100,33 @@ export default function AutomationScreen() {
   });
   const [modalVisible, setModalVisible] = useState(false);
   const [baddiesModalVisible, setBaddiesModalVisible] = useState(false);
+  const [roomSelectionModalVisible, setRoomSelectionModalVisible] =
+    useState(false);
+  const [customScheduleModalVisible, setCustomScheduleModalVisible] =
+    useState(false);
+  const [selectedScheduleType, setSelectedScheduleType] = useState<
+    string | null
+  >(null);
   const [lightsSwitch, setLightsSwitch] = useState(true);
   const [socketsSwitch, setSocketsSwitch] = useState(true);
+  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
+  const [expandedRooms, setExpandedRooms] = useState<string[]>([]);
+  const [expandedOptions, setExpandedOptions] = useState<
+    { roomId: string; option: string }[]
+  >([]);
+  const [roomSettings, setRoomSettings] = useState<
+    Record<
+      string,
+      {
+        lights: boolean;
+        sockets: boolean;
+        lightsStartTime: string;
+        lightsEndTime: string;
+        socketsStartTime: string;
+        socketsEndTime: string;
+      }
+    >
+  >({});
 
   const handleToggle = (id: string) => {
     setToggles((prev) => ({
@@ -105,7 +136,7 @@ export default function AutomationScreen() {
   };
 
   const handleSchedulePress = (id: string) => {
-    router.push(`/schedule-details/index?id=${id}`);
+    router.push(`/schedule-details?id=${id}`);
   };
 
   const openScheduleModal = () => {
@@ -126,29 +157,116 @@ export default function AutomationScreen() {
   };
 
   const handleScheduleTypeSelect = (type: string) => {
-    // Handle schedule type selection
-    console.log("Selected schedule type:", type);
-
+    setSelectedScheduleType(type);
     if (type === "baddies") {
-      openBaddiesModal();
-    } else {
-      closeScheduleModal();
-      // Navigate to schedule creation with the selected type
-      router.push(`/schedule-details/index?type=${type}`);
+      setModalVisible(false);
+      setBaddiesModalVisible(true);
+    } else if (type === "custom") {
+      setModalVisible(false);
+      setRoomSelectionModalVisible(true);
     }
   };
 
-  const saveSchedule = () => {
-    closeBaddiesModal();
-    console.log(
-      "Schedule saved with lights:",
-      lightsSwitch,
-      "and sockets:",
-      socketsSwitch
+  const closeRoomSelectionModal = () => {
+    setRoomSelectionModalVisible(false);
+  };
+
+  const toggleRoomSelection = (roomId: string) => {
+    setSelectedRooms((prev) => {
+      if (prev.includes(roomId)) {
+        return prev.filter((id) => id !== roomId);
+      } else {
+        return [...prev, roomId];
+      }
+    });
+  };
+
+  const continueWithSelectedRooms = () => {
+    closeRoomSelectionModal();
+    // Initialize room settings for selected rooms
+    const initialSettings: Record<
+      string,
+      {
+        lights: boolean;
+        sockets: boolean;
+        lightsStartTime: string;
+        lightsEndTime: string;
+        socketsStartTime: string;
+        socketsEndTime: string;
+      }
+    > = {};
+    selectedRooms.forEach((roomId) => {
+      initialSettings[roomId] = {
+        lights: true,
+        sockets: true,
+        lightsStartTime: "12:00",
+        lightsEndTime: "18:00",
+        socketsStartTime: "12:00",
+        socketsEndTime: "18:00",
+      };
+    });
+    setRoomSettings(initialSettings);
+    // Expand the first room by default if any rooms are selected
+    if (selectedRooms.length > 0) {
+      setExpandedRooms([selectedRooms[0]]);
+    }
+    // Show the custom schedule modal instead of navigating
+    setCustomScheduleModalVisible(true);
+  };
+
+  const closeCustomScheduleModal = () => {
+    setCustomScheduleModalVisible(false);
+    setExpandedRooms([]);
+    setExpandedOptions([]);
+  };
+
+  const toggleRoomExpansion = (roomId: string) => {
+    setExpandedRooms((prev) => {
+      if (prev.includes(roomId)) {
+        return prev.filter((id) => id !== roomId);
+      } else {
+        return [...prev, roomId];
+      }
+    });
+  };
+
+  const toggleOptionExpansion = (roomId: string, option: string) => {
+    setExpandedOptions((prev) => {
+      const existingIndex = prev.findIndex(
+        (item) => item.roomId === roomId && item.option === option
+      );
+      if (existingIndex >= 0) {
+        return prev.filter((_, index) => index !== existingIndex);
+      } else {
+        return [...prev, { roomId, option }];
+      }
+    });
+  };
+
+  const isOptionExpanded = (roomId: string, option: string) => {
+    return expandedOptions.some(
+      (item) => item.roomId === roomId && item.option === option
     );
+  };
+
+  const toggleRoomSetting = (roomId: string, setting: "lights" | "sockets") => {
+    setRoomSettings((prev) => ({
+      ...prev,
+      [roomId]: {
+        ...prev[roomId],
+        [setting]: !prev[roomId][setting],
+      },
+    }));
+  };
+
+  const saveCustomSchedule = () => {
+    closeCustomScheduleModal();
+    console.log("Custom schedule saved with rooms and settings:", roomSettings);
     // You could navigate to the schedules tab or show a success message
     setActiveTab("Schedules");
   };
+
+  const saveSchedule = () => {};
 
   return (
     <SafeAreaView style={styles.container}>
@@ -162,7 +280,9 @@ export default function AutomationScreen() {
           )}
         </View>
 
-        <AlertCarousel />
+        <View style={styles.alertCarouselContainer}>
+          <AlertCarousel />
+        </View>
 
         {/* Tab Navigation */}
         <TimePeriodSelector
@@ -235,208 +355,47 @@ export default function AutomationScreen() {
       </ScrollView>
 
       {/* Schedule Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <ScheduleTypeModal
         visible={modalVisible}
-        onRequestClose={closeScheduleModal}
-        statusBarTranslucent
-      >
-        <Pressable style={styles.modalOverlay} onPress={closeScheduleModal}>
-          <View style={styles.modalContainerWrapper}>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHandle} />
-                <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Set schedule</Text>
-                  <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={closeScheduleModal}
-                  >
-                    <Ionicons name="close" size={24} color="#878787" />
-                  </TouchableOpacity>
-                </View>
+        onClose={closeScheduleModal}
+        selectedScheduleType={selectedScheduleType}
+        onScheduleTypeSelect={handleScheduleTypeSelect}
+      />
 
-                <View style={styles.scheduleOptions}>
-                  {/* Baddie's Condo Option */}
-                  <TouchableOpacity
-                    style={styles.scheduleOption}
-                    onPress={() => handleScheduleTypeSelect("baddies")}
-                  >
-                    <View style={styles.scheduleOptionContent}>
-                      <View style={styles.scheduleOptionIconContainer}>
-                        <View style={styles.homeIconContainer}>
-                          <Ionicons
-                            name="home-outline"
-                            size={24}
-                            color="#FF671F"
-                          />
-                        </View>
-                        <View style={styles.checkIconContainer}>
-                          <Ionicons
-                            name="checkmark-circle"
-                            size={20}
-                            color="#34C759"
-                          />
-                        </View>
-                      </View>
-                      <Text style={styles.scheduleOptionTitle}>
-                        Baddie's Condo
-                      </Text>
-                      <Text style={styles.scheduleOptionDescription}>
-                        All rooms including sockets & lights
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+      {/* Room Selection Modal */}
+      <RoomSelectionModal
+        visible={roomSelectionModalVisible}
+        onClose={closeRoomSelectionModal}
+        onContinue={continueWithSelectedRooms}
+        rooms={roomsData}
+        selectedRooms={selectedRooms}
+        onRoomSelect={toggleRoomSelection}
+      />
 
-                  {/* Custom Option */}
-                  <TouchableOpacity
-                    style={[styles.scheduleOption, styles.customOption]}
-                    onPress={() => handleScheduleTypeSelect("custom")}
-                  >
-                    <View style={styles.scheduleOptionContent}>
-                      <View style={styles.scheduleOptionIconContainer}>
-                        <View style={styles.addIconContainer}>
-                          <Ionicons name="add" size={24} color="#8B9A99" />
-                        </View>
-                      </View>
-                      <Text style={styles.scheduleOptionTitle}>Custom</Text>
-                      <Text style={styles.scheduleOptionDescription}>
-                        Choose the rooms you want to work with
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
+      {/* Custom Schedule Modal */}
+      <CustomScheduleModal
+        visible={customScheduleModalVisible}
+        onClose={closeCustomScheduleModal}
+        onSave={saveCustomSchedule}
+        rooms={roomsData}
+        selectedRooms={selectedRooms}
+        roomSettings={roomSettings}
+        expandedOptions={expandedOptions}
+        expandedRooms={expandedRooms}
+        onRoomExpansion={toggleRoomExpansion}
+        onOptionExpansion={toggleOptionExpansion}
+        isOptionExpanded={isOptionExpanded}
+        onRoomSettingChange={toggleRoomSetting}
+      />
 
-      {/* Baddies Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
+      {/* Baddies Condo Modal */}
+      <BaddiesCondoModal
         visible={baddiesModalVisible}
-        onRequestClose={closeBaddiesModal}
-        statusBarTranslucent
-      >
-        <Pressable style={styles.modalOverlay} onPress={closeBaddiesModal}>
-          <View style={styles.modalContainerWrapper}>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <View style={styles.modalHandle} />
-                <TouchableOpacity
-                  style={[styles.closeButton, styles.baddiesCloseButton]}
-                  onPress={closeBaddiesModal}
-                >
-                  <Ionicons name="close" size={24} color="#878787" />
-                </TouchableOpacity>
-
-                {/* Baddie's Condo Header */}
-                <View style={styles.baddiesHeader}>
-                  <View style={styles.baddiesIconContainer}>
-                    <Ionicons name="leaf-outline" size={24} color="#34C759" />
-                    <View style={styles.editIconContainer}>
-                      <Ionicons name="pencil" size={12} color="#000000" />
-                    </View>
-                  </View>
-                  <Text style={styles.baddiesTitle}>Baddie's Condo</Text>
-                </View>
-
-                <View style={styles.baddiesDivider} />
-
-                {/* Lights Section */}
-
-                {/* Time Selection */}
-                <View style={styles.timeSection}>
-                  <View style={styles.scheduleSection}>
-                    <View style={styles.sectionHeader}>
-                      <View style={styles.sectionIconContainer}>
-                        <Ionicons
-                          name="bulb-outline"
-                          size={20}
-                          color="#022322"
-                        />
-                        <Text style={styles.sectionTitle}>Lights</Text>
-                      </View>
-                      <Ionicons name="chevron-down" size={20} color="#022322" />
-                    </View>
-
-                    <View style={styles.baddiesDivider} />
-
-                    <View style={styles.timeRow}>
-                      <Text style={styles.timeLabel}>Start time</Text>
-                      <Text style={styles.timeValue}>12:00</Text>
-                    </View>
-
-                    <View style={styles.timePickerContainer}>
-                      <Text style={styles.timePickerValue}>12</Text>
-                      <Text style={styles.timePickerSeparator}>:</Text>
-                      <Text style={styles.timePickerValue}>00</Text>
-                    </View>
-
-                    <View style={styles.timeRow}>
-                      <Text style={styles.timeLabel}>End time</Text>
-                      <Text style={styles.timeValue}>18:00</Text>
-                    </View>
-
-                    <View style={styles.timePickerContainer}>
-                      <Text style={styles.timePickerValue}>18</Text>
-                      <Text style={styles.timePickerSeparator}>:</Text>
-                      <Text style={styles.timePickerValue}>00</Text>
-                    </View>
-
-                    <View style={styles.baddiesDivider} />
-
-                    <View style={styles.switchRow}>
-                      <Text style={styles.switchLabel}>Switch</Text>
-                      <Switch
-                        value={lightsSwitch}
-                        onValueChange={() => setLightsSwitch(!lightsSwitch)}
-                        trackColor={{ false: "#D1D1D6", true: "#34C759" }}
-                        thumbColor="#FFFFFF"
-                        ios_backgroundColor="#D1D1D6"
-                      />
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.baddiesDivider} />
-
-                {/* Sockets Section */}
-                <View style={styles.scheduleSection}>
-                  <View style={styles.sectionHeader}>
-                    <View style={styles.sectionIconContainer}>
-                      <Ionicons
-                        name="power-outline"
-                        size={20}
-                        color="#022322"
-                      />
-                      <Text style={styles.sectionTitle}>Sockets</Text>
-                    </View>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={20}
-                      color="#022322"
-                    />
-                  </View>
-                </View>
-
-                {/* Save Button */}
-                <TouchableOpacity
-                  style={styles.baddiesSaveButton}
-                  onPress={saveSchedule}
-                >
-                  <Text style={styles.baddiesSaveButtonText}>
-                    Save schedule
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
+        onClose={closeBaddiesModal}
+        onSave={saveSchedule}
+        lightsSwitch={lightsSwitch}
+        setLightsSwitch={setLightsSwitch}
+      />
     </SafeAreaView>
   );
 }
@@ -467,6 +426,13 @@ const styles = StyleSheet.create({
     fontFamily: "InterMedium",
     color: "#FF671F",
   },
+  alertCarouselContainer: {
+    marginBottom: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    height: 180,
+    overflow: "hidden",
+  },
   alertCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
@@ -493,6 +459,12 @@ const styles = StyleSheet.create({
   },
   alertEmoji: {
     fontSize: 24,
+  },
+  iconContainer: {
+    padding: 4,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "100%",
   },
   alertButton: {
     backgroundColor: "#FF671F",
@@ -642,16 +614,15 @@ const styles = StyleSheet.create({
   },
   scheduleOption: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: "#FFE8E0",
-    backgroundColor: "#FFF8F6",
     borderRadius: 16,
     padding: 16,
+    borderWidth: 1,
+    borderColor: "#E5E5E5",
     height: 150,
   },
-  customOption: {
-    backgroundColor: "#FFFFFF",
-    borderColor: "#E5E5E5",
+  selectedOption: {
+    borderColor: "#FFE8E0",
+    backgroundColor: "#FFF8F6",
   },
   scheduleOptionContent: {
     flex: 1,
@@ -676,8 +647,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#FF671F",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -847,5 +816,183 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 16,
     right: 16,
+  },
+  // Room Selection Modal Styles
+  roomModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  roomModalContainer: {
+    backgroundColor: "white",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: "80%",
+  },
+  roomModalContent: {
+    padding: 20,
+    flex: 1,
+  },
+  roomModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  roomModalTitle: {
+    fontSize: 20,
+    fontFamily: "InterBold",
+    color: "#022322",
+  },
+  roomSelectionListContainer: {
+    flex: 1,
+    // backgroundColor: "#F5F5F5",
+  },
+  roomSelectionItemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 20,
+  },
+  roomSelectionLeftSide: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  roomIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  roomEmojiText: {
+    fontSize: 16,
+  },
+  roomNameText: {
+    fontSize: 16,
+    fontFamily: "InterSemiBold",
+  },
+  roomCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  roomCheckboxSelected: {
+    backgroundColor: "#FF6B00",
+    borderColor: "#FF6B00",
+  },
+  continueButtonContainer: {
+    backgroundColor: "#022322",
+    fontFamily: "InterSemiBold",
+    borderRadius: 8,
+    padding: 16,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  continueButtonLabel: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  customRoomItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 16,
+    borderRadius: 8,
+    marginBottom: 1,
+    paddingHorizontal: 12,
+  },
+  roomOptionsContainer: {
+    paddingVertical: 16,
+    marginBottom: 10,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    backgroundColor: "#F5F5F5",
+  },
+  roomOptionItem: {
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 8,
+    marginHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  roomOptionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  roomOptionText: {
+    fontSize: 16,
+    fontFamily: "InterSemiBold",
+    marginLeft: 12,
+  },
+  optionDetailsContainer: {
+    backgroundColor: "white",
+    padding: 16,
+    marginHorizontal: 12,
+    marginVertical: 4,
+    borderRadius: 8,
+  },
+  timeRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  timeLabel: {
+    fontSize: 16,
+    fontFamily: "InterRegular",
+    color: "#022322",
+  },
+  timeValue: {
+    fontSize: 16,
+    fontFamily: "InterSemiBold",
+    color: "#022322",
+  },
+  timePickerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  timePickerValue: {
+    backgroundColor: "#FFF2EB",
+    color: "#FF6B00",
+    fontSize: 18,
+    fontFamily: "InterSemiBold",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  timePickerSeparator: {
+    fontSize: 18,
+    fontFamily: "InterSemiBold",
+    paddingHorizontal: 8,
+    color: "#8B9A99",
+  },
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontFamily: "InterRegular",
+    color: "#022322",
   },
 });

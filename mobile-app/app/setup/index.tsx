@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import ConnectToBox from "@/screens/ConnectToBox";
 import SerialNumber from "@/screens/SerialNumber";
 import WifiConnection from "@/screens/WifiConnection";
@@ -14,9 +15,24 @@ import DocumentActive from "@/assets/icons/document-text-active.svg";
 import DocumentComplete from "@/assets/icons/document-text-complete.svg";
 import Wifi from "@/assets/icons/wifi.svg";
 import WifiComplete from "@/assets/icons/wifi-complete.svg";
+import { Storage } from "@/utils/storage";
 
-export default function ConnectToLightly() {
+export default function DeviceSetup() {
   const [currentStep, setCurrentStep] = useState(0);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if the user has already connected their box
+    const checkBoxConnection = async () => {
+      const hasConnectedBox = await Storage.getHasConnectedBox();
+      if (hasConnectedBox) {
+        // If box is already connected, navigate to home
+        router.replace("/(home)");
+      }
+    };
+
+    checkBoxConnection();
+  }, [router]);
 
   const steps = [
     {
@@ -117,32 +133,6 @@ export default function ConnectToLightly() {
       />
 
       <View style={styles.content}>{renderStepContent()}</View>
-
-      {/* <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.backButton,
-            currentStep === 0 && styles.disabledButton,
-          ]}
-          onPress={handleBack}
-          disabled={currentStep === 0}
-        >
-          <Text style={styles.buttonText}>Back</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.button,
-            styles.nextButton,
-            currentStep === steps.length - 1 && styles.disabledButton,
-          ]}
-          onPress={handleNext}
-          disabled={currentStep === steps.length - 1}
-        >
-          <Text style={styles.buttonText}>Next</Text>
-        </TouchableOpacity>
-      </View> */}
     </SafeAreaView>
   );
 }
@@ -200,7 +190,7 @@ const styles = StyleSheet.create({
   },
   stepDescription: {
     fontSize: 16,
-    color: "#666",
     textAlign: "center",
+    marginBottom: 20,
   },
 });

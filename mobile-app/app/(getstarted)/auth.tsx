@@ -10,10 +10,14 @@ import {
   SafeAreaView,
   TouchableWithoutFeedback,
   Keyboard,
+  KeyboardAvoidingView,
   Image,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { Storage } from "@/utils/storage";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AuthScreen() {
   const [email, setEmail] = useState("");
@@ -21,19 +25,37 @@ export default function AuthScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState<string | null>(null);
   const router = useRouter();
+  const { login } = useAuth();
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     // Handle authentication logic here
     console.log("Email:", email);
     console.log("Password:", password);
+
+    // Set authentication state
+    await Storage.setIsAuthenticated(true);
+
+    // Navigate to email verification screen
     router.push("/(getstarted)/verify-email");
-    // Navigate to next screen
-    // navigation.navigate('Home');
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     // Handle Google sign in
     console.log("Google Sign In");
+
+    // For demo purposes, set as authenticated
+    await Storage.setIsAuthenticated(true);
+
+    // Check if user has connected their box
+    const hasConnectedBox = await Storage.getHasConnectedBox();
+
+    if (hasConnectedBox) {
+      // If box is already connected, navigate to home
+      router.replace("/(home)");
+    } else {
+      // If box is not connected, navigate to setup
+      router.replace("/setup");
+    }
   };
 
   const handleNeedHelp = () => {
@@ -43,119 +65,124 @@ export default function AuthScreen() {
 
   const handleGetDevice = () => {
     // Navigate to device screen
-    // navigation.navigate('Device');
+    router.push("/(getstarted)/distributionbox");
   };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.innerContainer}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Image
-              source={require("@/assets/images/logo.png")}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-            <View style={styles.headerRight}>
-              <TouchableOpacity onPress={handleNeedHelp}>
-                <Text style={styles.helpText}>Need help</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleGetDevice}>
-                <Text style={styles.deviceText}>Get device</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Main Content */}
-          <View style={styles.content}>
-            <Text style={styles.title}>Let's get you started</Text>
-            <Text style={styles.subtitle}>
-              Create an account to get started with your Lightly app.
-            </Text>
-
-            {/* Form */}
-            <View style={styles.form}>
-              <Text style={styles.label}>Email</Text>
-              <TextInput
-                style={[styles.input, isFocused === "email" && styles.onFocus]}
-                placeholder="e.g johndoe@gmail.com"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                onFocus={() => setIsFocused("email")}
-                onBlur={() => setIsFocused(null)}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <SafeAreaView style={styles.container}>
+          <View style={styles.innerContainer}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Image
+                source={require("@/assets/images/logo.png")}
+                style={styles.logo}
+                resizeMode="contain"
               />
+              <View style={styles.headerRight}>
+                <TouchableOpacity onPress={handleNeedHelp}>
+                  <Text style={styles.helpText}>Need help</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleGetDevice}>
+                  <Text style={styles.deviceText}>Get device</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
 
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.passwordContainer}>
+            {/* Main Content */}
+            <View style={styles.content}>
+              <Text style={styles.title}>Let's get you started</Text>
+              <Text style={styles.subtitle}>
+                Create an account to get started with your Lightly app.
+              </Text>
+
+              {/* Form */}
+              <View style={styles.form}>
+                <Text style={styles.label}>Email</Text>
                 <TextInput
-                  style={[
-                    styles.passwordInput,
-                    isFocused === "password" && styles.onFocus,
-                  ]}
-                  placeholder="Enter password"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
+                  style={[styles.input, isFocused === "email" && styles.onFocus]}
+                  placeholder="e.g johndoe@gmail.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
                   autoCapitalize="none"
-                  onFocus={() => setIsFocused("password")}
+                  onFocus={() => setIsFocused("email")}
                   onBlur={() => setIsFocused(null)}
                 />
-                <TouchableOpacity
-                  style={styles.eyeIcon}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
-                    size={24}
-                    color="#878787"
+
+                <Text style={styles.label}>Password</Text>
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={[
+                      styles.passwordInput,
+                      isFocused === "password" && styles.onFocus,
+                    ]}
+                    placeholder="Enter password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                    onFocus={() => setIsFocused("password")}
+                    onBlur={() => setIsFocused(null)}
                   />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={24}
+                      color="#878787"
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.continueButton}
+                  onPress={handleContinue}
+                >
+                  <Text style={styles.continueText}>Continue</Text>
                 </TouchableOpacity>
               </View>
 
+              {/* Divider */}
+              <View style={styles.dividerContainer}>
+                <View style={styles.divider} />
+                <Text style={styles.dividerText}>Or get started with</Text>
+                <View style={styles.divider} />
+              </View>
+
+              {/* Social Sign In */}
               <TouchableOpacity
-                style={styles.continueButton}
-                onPress={handleContinue}
+                style={styles.googleButton}
+                onPress={handleGoogleSignIn}
               >
-                <Text style={styles.continueText}>Continue</Text>
+                <Image
+                  source={{
+                    uri: "https://developers.google.com/identity/images/g-logo.png",
+                  }}
+                  style={styles.googleIcon}
+                />
+                <Text style={styles.googleText}>Google</Text>
               </TouchableOpacity>
             </View>
 
-            {/* Divider */}
-            <View style={styles.dividerContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>Or get started with</Text>
-              <View style={styles.divider} />
+            {/* Footer */}
+            <View style={styles.footer}>
+              <Text style={styles.termsText}>
+                By signing up, you agree to the{" "}
+                <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
+                <Text style={styles.termsLink}>Data Processing Agreement</Text>
+              </Text>
             </View>
-
-            {/* Social Sign In */}
-            <TouchableOpacity
-              style={styles.googleButton}
-              onPress={handleGoogleSignIn}
-            >
-              <Image
-                source={{
-                  uri: "https://developers.google.com/identity/images/g-logo.png",
-                }}
-                style={styles.googleIcon}
-              />
-              <Text style={styles.googleText}>Google</Text>
-            </TouchableOpacity>
           </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.termsText}>
-              By signing up, you agree to the{" "}
-              <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
-              <Text style={styles.termsLink}>Data Processing Agreement</Text>
-            </Text>
-          </View>
-        </View>
-      </SafeAreaView>
-    </TouchableWithoutFeedback>
+        </SafeAreaView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 

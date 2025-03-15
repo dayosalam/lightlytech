@@ -8,15 +8,28 @@ import {
   Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { Storage } from "@/utils/storage";
 
 const { width } = Dimensions.get("window");
 
 export default function SuccessScreen() {
   const router = useRouter();
-  const handleSetupDevice = () => {
+  
+  useEffect(() => {
+    // Set authentication state when this screen is shown
+    const setAuthState = async () => {
+      await Storage.setIsAuthenticated(true);
+      console.log("User authenticated successfully");
+    };
+    
+    setAuthState();
+  }, []);
+  
+  const handleSetupDevice = async () => {
     // Navigate to device setup screen
-    router.push("/(connectlightly)");
-    // navigation.navigate('DeviceSetup');
+    console.log("Navigating to setup screen");
+    router.push("/setup");
   };
 
   return (
@@ -27,12 +40,15 @@ export default function SuccessScreen() {
         <View style={styles.textContainer}>
           <Text style={styles.title}>Yay! All good</Text>
           <Text style={styles.description}>
-            Your account as being set with koskiddoo@gmail.com. Now let's set up
+            Your account has been set up with koskiddoo@gmail.com. Now let's set up
             your device with your distribution box
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleSetupDevice}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={handleSetupDevice}
+        >
           <Text style={styles.buttonText}>Set my device up</Text>
         </TouchableOpacity>
       </View>

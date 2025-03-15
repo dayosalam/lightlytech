@@ -12,7 +12,6 @@ import {
   ScrollView,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import ScheduleCard from "@/components/ScheduleCard";
 import { Ionicons } from "@expo/vector-icons";
 
 const { width } = Dimensions.get("window");
@@ -21,6 +20,7 @@ const timeOptions = ["Today", "7 days", "1M", "1Y"];
 
 export default function RoomDetailsScreen() {
   const { id } = useLocalSearchParams();
+  const [expandedRooms, setExpandedRooms] = useState<string[]>([]);
 
   // Mock data for the room
   const roomData = {
@@ -37,22 +37,59 @@ export default function RoomDetailsScreen() {
     lightUsage: "4.76Kw/H",
   };
 
-  const schedules = [
+  // Mock data for rooms
+  const rooms = [
     {
       id: "1",
-      name: "Lights",
-      icon: <Ionicons name="bulb-outline" size={24} color="black" />,
-      switch: true,
-      time: "19:00 - 20:00",
+      name: "Living room 2",
+      emoji: "🌿",
+      backgroundColor: "#E8F5E9",
+      lights: {
+        status: "off",
+        time: "19:00-12:00",
+      },
+      sockets: {
+        status: "off",
+        time: "19:00-12:00",
+      },
     },
     {
       id: "2",
-      name: "Sockets",
-      icon: <Ionicons name="plug" size={24} color="black" />,
-      switch: true,
-      time: "19:00 - 20:00",
+      name: "Living room 2",
+      emoji: "🌿",
+      backgroundColor: "#E8F5E9",
+      lights: {
+        status: "off",
+        time: "19:00-12:00",
+      },
+      sockets: {
+        status: "off",
+        time: "19:00-12:00",
+      },
+    },
+    {
+      id: "3",
+      name: "Living room 2",
+      emoji: "🌿",
+      backgroundColor: "#E8F5E9",
+      lights: {
+        status: "off",
+        time: "19:00-12:00",
+      },
+      sockets: {
+        status: "off",
+        time: "19:00-12:00",
+      },
     },
   ];
+
+  const toggleRoomExpansion = (roomId: string) => {
+    setExpandedRooms((prev) =>
+      prev.includes(roomId)
+        ? prev.filter((id) => id !== roomId)
+        : [...prev, roomId]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -78,10 +115,68 @@ export default function RoomDetailsScreen() {
           <Text style={styles.roomName}>{roomData.name}</Text>
         </View>
 
-        {/* Schedule cards */}
-        <View style={styles.scheduleCards}>
-          {schedules.map((schedule) => (
-            <ScheduleCard schedule={schedule} key={schedule.id} />
+        {/* Expandable Room Cards */}
+        <View style={styles.roomCardsContainer}>
+          {rooms.map((room) => (
+            <View key={room.id} style={styles.roomCardWrapper}>
+              <TouchableOpacity
+                style={styles.roomHeader}
+                onPress={() => toggleRoomExpansion(room.id)}
+              >
+                <View style={styles.roomHeaderLeft}>
+                  <View
+                    style={[
+                      styles.roomEmojiContainer,
+                      { backgroundColor: room.backgroundColor },
+                    ]}
+                  >
+                    <Text style={styles.roomEmoji}>{room.emoji}</Text>
+                  </View>
+                  <Text style={styles.roomHeaderText}>{room.name}</Text>
+                </View>
+                <Ionicons
+                  name={
+                    expandedRooms.includes(room.id)
+                      ? "chevron-up"
+                      : "chevron-down"
+                  }
+                  size={24}
+                  color="#8B9A99"
+                />
+              </TouchableOpacity>
+
+              {expandedRooms.includes(room.id) && (
+                <View style={styles.roomDetailsContainer}>
+                  <View style={styles.deviceRow}>
+                    <View style={styles.deviceInfo}>
+                      <Ionicons name="bulb-outline" size={22} color="#022322" />
+                      <Text style={styles.deviceText}>Lights</Text>
+                    </View>
+                    <View style={styles.deviceStatus}>
+                      <Text style={styles.deviceStatusText}>
+                        Switch {room.lights.status} · {room.lights.time}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.deviceRow}>
+                    <View style={styles.deviceInfo}>
+                      <Ionicons
+                        name="flash-outline"
+                        size={22}
+                        color="#022322"
+                      />
+                      <Text style={styles.deviceText}>Sockets</Text>
+                    </View>
+                    <View style={styles.deviceStatus}>
+                      <Text style={styles.deviceStatusText}>
+                        Switch {room.sockets.status} · {room.sockets.time}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              )}
+            </View>
           ))}
         </View>
       </ScrollView>
@@ -97,6 +192,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingTop: 10,
     paddingBottom: 100, // Add padding to account for the bottom tabs
+    paddingHorizontal: 16,
   },
   roomProfile: {
     alignItems: "center",
@@ -112,7 +208,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   roomEmoji: {
-    fontSize: 34,
+    fontSize: 18,
   },
   editIconContainer: {
     position: "absolute",
@@ -129,8 +225,69 @@ const styles = StyleSheet.create({
     color: "#022322",
     marginTop: 12,
   },
-  scheduleCards: {
-    marginTop: 25,
+  roomCardsContainer: {
+    marginTop: 20,
+  },
+  roomCardWrapper: {
+    marginBottom: 8,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#FFFFFF",
+  },
+  roomHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#f5f5f5",
+  },
+  roomHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  roomEmojiContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  roomHeaderText: {
+    fontSize: 16,
+    fontFamily: "InterSemiBold",
+    color: "#022322",
+  },
+  roomDetailsContainer: {
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  deviceRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 12,
+    paddingVertical: 12,
+  },
+  deviceInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  deviceText: {
+    fontSize: 16,
+    fontFamily: "InterRegular",
+    color: "#022322",
+    marginLeft: 12,
+  },
+  deviceStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  deviceStatusText: {
+    fontSize: 14,
+    fontFamily: "InterRegular",
+    color: "#8B9A99",
   },
   timeSelector: {
     flexDirection: "row",
@@ -198,96 +355,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#696969",
     fontFamily: "InterRegular",
-  },
-  comparisonContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 10,
-    backgroundColor: "#fcebec",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    alignSelf: "flex-start",
-  },
-  increaseIndicator: {
-    marginRight: 5,
-  },
-  comparisonText: {
-    fontSize: 14,
-    color: "#dc3545",
-    fontFamily: "InterRegular",
-  },
-  tabsContainer: {
-    marginHorizontal: 20,
-    marginTop: 20,
-    marginBottom: 30,
-  },
-  switches: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  switch: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 12,
-    padding: 8,
-    width: "48%",
-  },
-
-  switchLabel: {
-    fontSize: 16,
-    color: "#022322",
-    fontFamily: "InterBold",
-    marginRight: 10,
-  },
-  tabContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  tabContentTitle: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
-    color: "#022322",
-    marginBottom: 10,
-  },
-  tabContentText: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: "#696969",
-    fontFamily: "InterRegular",
-  },
-  fixedBottomTab: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#ffffff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 5,
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    zIndex: 1000,
-  },
-  fixedTabContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  divider: {
-    width: 1,
-    backgroundColor: "#E0E0E0",
   },
 });
