@@ -12,7 +12,7 @@ import { User } from "@/interfaces";
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (userData: User) => Promise<void>;
+  login: (userData: User) => Promise<any>;
   logout: () => Promise<void>;
 }
 
@@ -41,11 +41,22 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error("Email and password are required");
     }
 
-    const response = await signIn(email, password);
-    if (response.status === 200) {
-      await Storage.setItem("userToken", response.data.token);
+    try {
+      const response = await signIn(email, password);
+      
+      // Store the access token from the response
+      await Storage.setItem("userToken", response.access_token);
       setIsAuthenticated(true);
-      setUser(response.data);
+      setUser({
+        email,
+        token: response.access_token,
+        id: response.user?.id,
+        name: response.user?.user_metadata?.name
+      });
+      return response;
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
     }
   };
 

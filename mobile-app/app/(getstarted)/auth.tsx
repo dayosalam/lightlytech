@@ -24,19 +24,32 @@ export default function AuthScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
   const handleContinue = async () => {
-    // Handle authentication logic here
-    console.log("Email:", email);
-    console.log("Password:", password);
-
-    // Set authentication state
-    await Storage.setIsAuthenticated(true);
-
-    // Navigate to email verification screen
-    router.push("/(getstarted)/verify-email");
+    try {
+      setError(null);
+      setIsLoading(true);
+      console.log("Attempting to login with:", email);
+      
+      if (!email || !password) {
+        setError("Email and password are required");
+        setIsLoading(false);
+        return;
+      }
+      
+      const response = await login({ email, password });
+      console.log("Login successful, navigating to verify-email");
+      router.push("/(getstarted)/verify-email");
+    } catch (error: any) {
+      console.error("Error logging in:", error.message || error);
+      setError(error.message || "Failed to login. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -104,10 +117,17 @@ export default function AuthScreen() {
               <View style={styles.form}>
                 <Text style={styles.label}>Email</Text>
                 <TextInput
-                  style={[styles.input, isFocused === "email" && styles.onFocus]}
+                  style={[
+                    styles.input,
+                    isFocused === "email" && styles.onFocus,
+                    error && styles.inputError
+                  ]}
                   placeholder="e.g johndoe@gmail.com"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (error) setError(null);
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   onFocus={() => setIsFocused("email")}
@@ -120,10 +140,14 @@ export default function AuthScreen() {
                     style={[
                       styles.passwordInput,
                       isFocused === "password" && styles.onFocus,
+                      error && styles.inputError
                     ]}
                     placeholder="Enter password"
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(text) => {
+                      setPassword(text);
+                      if (error) setError(null);
+                    }}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
                     onFocus={() => setIsFocused("password")}
@@ -141,11 +165,18 @@ export default function AuthScreen() {
                   </TouchableOpacity>
                 </View>
 
+                {error && (
+                  <Text style={styles.errorText}>{error}</Text>
+                )}
+
                 <TouchableOpacity
-                  style={styles.continueButton}
+                  style={[styles.continueButton, isLoading && styles.disabledButton]}
                   onPress={handleContinue}
+                  disabled={isLoading}
                 >
-                  <Text style={styles.continueText}>Continue</Text>
+                  <Text style={styles.continueText}>
+                    {isLoading ? "Connecting..." : "Continue"}
+                  </Text>
                 </TouchableOpacity>
               </View>
 
@@ -345,5 +376,17 @@ const styles = StyleSheet.create({
   termsLink: {
     color: "#ff671f",
     fontFamily: "InterSemiBold",
+  },
+  errorText: {
+    color: '#ff3b30',
+    marginTop: 8,
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  inputError: {
+    borderColor: '#ff3b30',
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
 });
