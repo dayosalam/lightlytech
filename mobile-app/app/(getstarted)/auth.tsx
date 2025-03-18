@@ -34,16 +34,17 @@ export default function AuthScreen() {
       setError(null);
       setIsLoading(true);
       console.log("Attempting to login with:", email);
-      
+
       if (!email || !password) {
         setError("Email and password are required");
         setIsLoading(false);
         return;
       }
-      
-      const response = await login({ email, password });
-      console.log("Login successful, navigating to verify-email");
-      router.push("/(getstarted)/verify-email");
+
+      await login({ email, password });
+      console.log("Login successful, navigating to home");
+      // router.push("/(getstarted)/verify-email");
+      router.push("/(home)");
     } catch (error: any) {
       console.error("Error logging in:", error.message || error);
       setError(error.message || "Failed to login. Please try again.");
@@ -120,7 +121,7 @@ export default function AuthScreen() {
                   style={[
                     styles.input,
                     isFocused === "email" && styles.onFocus,
-                    error && styles.inputError
+                    error && styles.inputError,
                   ]}
                   placeholder="e.g johndoe@gmail.com"
                   value={email}
@@ -140,7 +141,7 @@ export default function AuthScreen() {
                     style={[
                       styles.passwordInput,
                       isFocused === "password" && styles.onFocus,
-                      error && styles.inputError
+                      error && styles.inputError,
                     ]}
                     placeholder="Enter password"
                     value={password}
@@ -165,12 +166,13 @@ export default function AuthScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {error && (
-                  <Text style={styles.errorText}>{error}</Text>
-                )}
+                {error && <Text style={styles.errorText}>{error}</Text>}
 
                 <TouchableOpacity
-                  style={[styles.continueButton, isLoading && styles.disabledButton]}
+                  style={[
+                    styles.continueButton,
+                    isLoading && styles.disabledButton,
+                  ]}
                   onPress={handleContinue}
                   disabled={isLoading}
                 >
@@ -378,13 +380,13 @@ const styles = StyleSheet.create({
     fontFamily: "InterSemiBold",
   },
   errorText: {
-    color: '#ff3b30',
+    color: "#ff3b30",
     marginTop: 8,
     marginBottom: 8,
     fontSize: 14,
   },
   inputError: {
-    borderColor: '#ff3b30',
+    borderColor: "#ff3b30",
   },
   disabledButton: {
     opacity: 0.7,

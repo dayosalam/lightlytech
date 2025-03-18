@@ -70,6 +70,17 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: "Profile",
+          headerShown: true,
+          headerTitle: "Profile",
+          headerStyle: {
+            backgroundColor: "#f8f8f8",
+            elevation: 0,
+          },
+          headerTitleStyle: {
+            fontSize: 24,
+            fontFamily: "InterBold",
+            color: "#022322",
+          },
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),

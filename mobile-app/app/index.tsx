@@ -1,7 +1,7 @@
-import { Redirect } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { View, ActivityIndicator } from 'react-native';
-import { Storage } from '@/utils/storage';
+import { Redirect } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator } from "react-native";
+import { Storage } from "@/utils/storage";
 
 export default function Index() {
   const [loading, setLoading] = useState(true);
@@ -12,15 +12,16 @@ export default function Index() {
       try {
         // Check user state
         const hasSeenOnboarding = await Storage.getHasSeenOnboarding();
-        const isAuthenticated = await Storage.getIsAuthenticated();
+        // const isAuthenticated = await Storage.getIsAuthenticated();
+        const isAuthenticated = false;
         const hasConnectedBox = await Storage.getHasConnectedBox();
-        
+
         console.log("Root index - Has seen onboarding:", hasSeenOnboarding);
         console.log("Root index - Is authenticated:", isAuthenticated);
         console.log("Root index - Has connected box:", hasConnectedBox);
-        
+
         let route = "/(home)";
-        
+
         if (!hasSeenOnboarding) {
           route = "/(onboarding)";
         } else if (!isAuthenticated) {
@@ -28,7 +29,7 @@ export default function Index() {
         } else if (!hasConnectedBox) {
           route = "/setup";
         }
-        
+
         console.log("Root index - Navigating to:", route);
         setInitialRoute(route);
       } catch (error) {
@@ -45,7 +46,7 @@ export default function Index() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#004D40" />
       </View>
     );

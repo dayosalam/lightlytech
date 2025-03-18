@@ -28,6 +28,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuthStatus = async () => {
     const token = await Storage.getItem("userToken");
+
     if (token) {
       setIsAuthenticated(true);
       // Fetch user data here if needed
