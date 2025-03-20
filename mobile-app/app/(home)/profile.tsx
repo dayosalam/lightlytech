@@ -75,28 +75,28 @@ export default function ProfileScreen() {
             }
             title="Notifications"
             subtitle="Set up notifications"
-            onPress={() => handleNavigation("/(home)/notifications")}
+            onPress={() => handleNavigation("/(profile)/notifications")}
           />
 
           <MenuItem
             icon={<Ionicons name="shield-outline" size={24} color="#022322" />}
             title="Security"
             subtitle="Change your email and password"
-            onPress={() => handleNavigation("/(home)/security")}
+            onPress={() => handleNavigation("/(profile)/security")}
           />
 
           <MenuItem
             icon={<Ionicons name="gift-outline" size={24} color="#022322" />}
             title="Rewards"
             subtitle="Manage earned rewards"
-            onPress={() => handleNavigation("/(home)/rewards")}
+            onPress={() => handleNavigation("/(profile)/rewards")}
           />
 
           <MenuItem
             icon={<Ionicons name="cube-outline" size={24} color="#022322" />}
             title="My Lightly Box"
             subtitle="Manage your Lightly Box"
-            onPress={() => handleNavigation("/(home)/box")}
+            onPress={() => handleNavigation("/(profile)/lightly-box-settings")}
           />
 
           <MenuItem
@@ -105,7 +105,7 @@ export default function ProfileScreen() {
             }
             title="Support"
             subtitle="Reach out to us"
-            onPress={() => handleNavigation("/(home)/support")}
+            onPress={() => handleNavigation("/(profile)/support")}
           />
         </View>
       </ScrollView>

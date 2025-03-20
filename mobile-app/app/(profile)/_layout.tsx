@@ -9,9 +9,10 @@ const ProfileLayout = () => {
 
   // Log the actual pathname to see what we're getting
   console.log("Current pathname:", pathname);
-  
+
   // Use includes instead of exact matching
-  const isAccount = pathname.includes("/account") && !pathname.includes("/edit-account");
+  const isAccount =
+    pathname.includes("/account") && !pathname.includes("/edit-account");
   console.log("isAccount", isAccount);
   const isEditAccount = pathname.includes("/edit-account");
   console.log("isEditAccount", isEditAccount);
@@ -51,6 +52,34 @@ const ProfileLayout = () => {
         />
         <Stack.Screen
           name="edit-account"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="notifications"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="security"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="change-password"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="change-email"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="rewards"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="lightly-box-settings"
+          options={{ headerShown: true, title: "" }}
+        />
+        <Stack.Screen
+          name="support"
           options={{ headerShown: true, title: "" }}
         />
       </Stack>
