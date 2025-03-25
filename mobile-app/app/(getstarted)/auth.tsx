@@ -33,17 +33,17 @@ export default function AuthScreen() {
     try {
       setError(null);
       setIsLoading(true);
-      // console.log("Attempting to login with:", email);
+      console.log("Attempting to login with:", email);
 
-      // if (!email || !password) {
-      //   setError("Email and password are required");
-      //   setIsLoading(false);
-      //   return;
-      // }
+      if (!email || !password) {
+        setError("Email and password are required");
+        setIsLoading(false);
+        return;
+      }
 
-      // await login({ email, password });
-      // console.log("Login successful, navigating to home");
-      // router.push("/(getstarted)/verify-email");
+      await login({ email, password });
+      console.log("Login successful, navigating to home");
+      router.push("/(getstarted)/verify-email");
       router.push("/(home)");
     } catch (error: any) {
       console.error("Error logging in:", error.message || error);

@@ -1,4 +1,12 @@
-import { StyleSheet, Text, View, ScrollView, Alert, Share } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Alert,
+  Share,
+  Modal,
+} from "react-native";
 import React, { useState } from "react";
 import RewardsSummary from "@/components/rewards/RewardsSummary";
 import InviteFriends from "@/components/rewards/InviteFriends";
@@ -16,12 +24,12 @@ interface TokenReward {
 const Rewards = () => {
   const [totalRewards, setTotalRewards] = useState(10.05);
   const [inviteTokens, setInviteTokens] = useState(2);
-  
+
   const [tokenRewards, setTokenRewards] = useState<TokenReward[]>([
     {
       id: "reward1",
       title: "Token Reward",
-      description: "Use N20 today to unlock your first reward!",
+      description: "Use ₦20 today to unlock your first reward!",
       progress: 80,
       goal: 12,
       current: 20,
@@ -29,7 +37,7 @@ const Rewards = () => {
     {
       id: "reward2",
       title: "Token Reward",
-      description: "Use N20 today to unlock your first reward!",
+      description: "Use ₦20 today to unlock your first reward!",
       progress: 80,
       goal: 12,
       current: 20,
@@ -37,7 +45,7 @@ const Rewards = () => {
     {
       id: "reward3",
       title: "Token Reward",
-      description: "Use N20 today to unlock your first reward!",
+      description: "Use ₦20 today to unlock your first reward!",
       progress: 80,
       goal: 12,
       current: 20,
@@ -55,7 +63,7 @@ const Rewards = () => {
         message:
           "Join me on Lightly! Save energy and earn rewards. Use my referral code: LIGHTLY123",
       });
-      
+
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
           // shared with activity type of result.activityType
@@ -81,22 +89,22 @@ const Rewards = () => {
       >
         <View style={styles.container}>
           <Text style={styles.heading}>Rewards</Text>
-          
+
           {/* Rewards Summary */}
-          <RewardsSummary 
-            totalRewards={totalRewards} 
-            onHistoryPress={handleRewardHistoryPress} 
+          <RewardsSummary
+            totalRewards={totalRewards}
+            onHistoryPress={handleRewardHistoryPress}
           />
-          
+
           {/* Invite Friends */}
-          <InviteFriends 
-            tokenAmount={inviteTokens} 
-            onInvitePress={handleInviteFriends} 
+          <InviteFriends
+            tokenAmount={inviteTokens}
+            onInvitePress={handleInviteFriends}
           />
-          
+
           {/* Earn Rewards Section */}
           <Text style={styles.sectionTitle}>Earn rewards</Text>
-          
+
           <View style={styles.rewardsContainer}>
             {tokenRewards.map((reward) => (
               <RewardCard

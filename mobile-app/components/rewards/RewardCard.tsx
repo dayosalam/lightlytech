@@ -1,6 +1,5 @@
-import { StyleSheet, Text, View, Image } from "react-native";
-import React from "react";
-import { Ionicons } from "@expo/vector-icons";
+import { StyleSheet, Text, View, Modal } from "react-native";
+import React, { useState } from "react";
 import Token from "@/assets/icons/points.svg";
 
 interface RewardCardProps {
@@ -20,6 +19,8 @@ const RewardCard = ({
 }: RewardCardProps) => {
   // Calculate percentage for progress bar
   const percentage = Math.min(100, (progress / 100) * 100);
+
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    fontFamily: "InterRegular",
+    fontFamily: "InterSemiBold",
     color: "#8b9a99",
     marginBottom: 12,
   },
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
-    fontFamily: "InterRegular",
+    fontFamily: "InterSemiBold",
     color: "#8b9a99",
   },
   iconContainer: {

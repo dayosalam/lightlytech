@@ -43,18 +43,17 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await signIn(email, password);
-      
+      const { user, access_token } = await signIn(email, password);
+
       // Store the access token from the response
-      await Storage.setItem("userToken", response.access_token);
+      await Storage.setItem("userToken", access_token);
       setIsAuthenticated(true);
       setUser({
         email,
-        token: response.access_token,
-        id: response.user?.id,
-        name: response.user?.user_metadata?.name
+        token: access_token,
+        id: user?.id,
+        name: user?.user_metadata?.name,
       });
-      return response;
     } catch (error) {
       console.error("Login error:", error);
       throw error;

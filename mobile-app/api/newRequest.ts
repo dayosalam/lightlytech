@@ -2,7 +2,7 @@ import axios from "axios";
 import { Storage } from "@/utils/storage";
 
 // Try different base URLs for development
-const API_URL = "http://localhost:3003/api"; // For Android emulator
+const API_URL = "https://lightlytech.onrender.com/api"; // For Android emulator
 
 const newRequest = axios.create({
   baseURL: API_URL,
