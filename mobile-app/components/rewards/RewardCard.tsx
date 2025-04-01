@@ -20,8 +20,6 @@ const RewardCard = ({
   // Calculate percentage for progress bar
   const percentage = Math.min(100, (progress / 100) * 100);
 
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
   return (
     <View style={styles.container}>
       <View style={styles.contentContainer}>
@@ -52,7 +50,7 @@ export default RewardCard;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#F5F5F5",
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,

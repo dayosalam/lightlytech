@@ -4,6 +4,9 @@ import { Ionicons } from "@expo/vector-icons";
 import RoomUsageItem from "./RoomUsageItem";
 import { useState } from "react";
 import SaveRecommendationCard from "./SaveRecommendationCard";
+import smiley from "@/assets/images/smiley.png";
+import wink from "@/assets/images/wink.png";
+import chess from "@/assets/images/chess.png";
 
 const RoomUsageSection = () => {
   const [selectedRoomFilter, setSelectedRoomFilter] =
@@ -20,28 +23,28 @@ const RoomUsageSection = () => {
 
       {/* Room Items */}
       <RoomUsageItem
-        icon="🏠"
+        icon={smiley}
         roomName="Living room"
         usageBreakdown="Light: 20% · Socket: 80%"
         usagePercentage={52}
         price="₦1223"
       />
       <RoomUsageItem
-        icon="🛏️"
+        icon={wink}
         roomName="Room 1"
         usageBreakdown="Light: 20% · Socket: 80%"
         usagePercentage={52}
         price="₦1223"
       />
       <RoomUsageItem
-        icon="🚿"
+        icon={chess}
         roomName="Restroom (Room 1)"
         usageBreakdown="Light: 20% · Socket: 80%"
         usagePercentage={52}
         price="₦1223"
       />
       <RoomUsageItem
-        icon="🚿"
+        icon={chess}
         roomName="Restroom (Room 1)"
         usageBreakdown="Light: 20% · Socket: 80%"
         usagePercentage={52}

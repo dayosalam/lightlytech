@@ -1,4 +1,11 @@
-import { StyleSheet, Text, View, Dimensions } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Dimensions,
+  Image,
+  ImageSourcePropType,
+} from "react-native";
 import React from "react";
 
 const { width } = Dimensions.get("window");
@@ -10,7 +17,7 @@ const RoomUsageItem = ({
   usagePercentage,
   price,
 }: {
-  icon: string;
+  icon: ImageSourcePropType;
   roomName: string;
   usageBreakdown: string;
   usagePercentage: number;
@@ -20,7 +27,7 @@ const RoomUsageItem = ({
     <View style={styles.roomItem}>
       <View style={styles.roomItemLeft}>
         <View style={styles.roomIcon}>
-          <Text style={styles.roomIconText}>{icon}</Text>
+          <Image source={icon} />
         </View>
         <View style={styles.roomInfo}>
           <Text style={styles.roomName}>{roomName}</Text>
@@ -52,10 +59,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   roomIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#F5F5F5",
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#F8E3DA",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

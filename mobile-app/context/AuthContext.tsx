@@ -47,6 +47,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
       // Store the access token from the response
       await Storage.setItem("userToken", access_token);
+      await Storage.setIsAuthenticated(true);
       setIsAuthenticated(true);
       setUser({
         email,

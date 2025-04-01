@@ -13,7 +13,7 @@ export default function Index() {
         // Check user state
         const hasSeenOnboarding = await Storage.getHasSeenOnboarding();
         // const isAuthenticated = await Storage.getIsAuthenticated();
-        const isAuthenticated = false;
+        const isAuthenticated = await Storage.getIsAuthenticated();
         const hasConnectedBox = await Storage.getHasConnectedBox();
 
         console.log("Root index - Has seen onboarding:", hasSeenOnboarding);

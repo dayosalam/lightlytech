@@ -1,23 +1,9 @@
 import React, { useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Dimensions,
-  TouchableWithoutFeedback,
-} from "react-native";
-import { LineChart } from "react-native-chart-kit";
-import Svg, { Circle, Rect, Text as SvgText, Path } from "react-native-svg";
+import { View, StyleSheet, Dimensions, Platform, Text } from "react-native";
+import { LineChart } from "react-native-gifted-charts";
+import { LinearGradient } from "expo-linear-gradient";
 
 const { width: screenWidth } = Dimensions.get("window");
-
-interface ChartData {
-  labels: string[];
-  datasets: {
-    data: number[];
-    color?: (opacity: number) => string;
-    strokeWidth?: number;
-  }[];
-}
 
 interface PowerUsageChartProps {
   // Chart data and appearance props
@@ -32,47 +18,26 @@ interface PowerUsageChartProps {
 }
 
 export default function PowerUsageChart({
-  data = [500, 1200, 800, 1500, 2000, 1800, 500],
-  labels = ["07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00"],
+  data = [800, 1200, 500, 600, 800, 1700, 1400, 1100],
+  labels = [
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+  ],
   height = 220,
   lineColor = "#ff671f",
   backgroundColor = "#f5f5f5",
   containerStyle = {},
   chartStyle = {},
 }: PowerUsageChartProps) {
-  const [activeTooltipIndex, setActiveTooltipIndex] = useState<number | null>(
+  const [selectedDataPoint, setSelectedDataPoint] = useState<number | null>(
     null
   );
-
-  // Calculate chart dimensions
-  const chartWidth = screenWidth;
-  const chartHeight = height;
-
-  // Prepare chart data
-  const chartData: ChartData = {
-    labels,
-    datasets: [
-      {
-        data,
-        color: (opacity = 1) => `rgba(255, 103, 31, ${opacity})`,
-        strokeWidth: 2,
-      },
-    ],
-  };
-
-  // Handle touch on chart
-  const handleChartPress = (event: any) => {
-    const { locationX } = event.nativeEvent;
-
-    // Calculate which data point was touched based on x position
-    const segmentWidth = chartWidth / (data.length - 1);
-    const touchIndex = Math.round(locationX / segmentWidth);
-
-    // Ensure index is within bounds
-    const validIndex = Math.min(Math.max(0, touchIndex), data.length - 1);
-
-    setActiveTooltipIndex(validIndex);
-  };
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -84,125 +49,133 @@ export default function PowerUsageChart({
     return `${(value / 100).toFixed(2)}Kw/H`;
   };
 
-  // Render tooltip at the active index
+  // Calculate responsive dimensions based on platform and screen size
+  const getResponsiveDimensions = () => {
+    // Get available width (accounting for potential padding in parent containers)
+    const availableWidth = Math.min(screenWidth, 500); // Cap max width
+
+    // Calculate chart width with some padding
+    const chartWidth = availableWidth - 20;
+
+    // Adjust height based on width for proper aspect ratio
+    const responsiveHeight =
+      Platform.OS === "ios" ? height : Math.min(height, chartWidth / 1.8);
+
+    return {
+      chartWidth,
+      responsiveHeight,
+    };
+  };
+
+  const { chartWidth, responsiveHeight } = getResponsiveDimensions();
+
+  // Prepare chart data for Gifted Charts
+  const chartData = data.map((value, index) => ({
+    value,
+    dataPointText: "",
+    onPress: () => setSelectedDataPoint(index),
+    label: labels[index],
+    labelComponent: () => (
+      <Text style={styles.labelText} numberOfLines={1} adjustsFontSizeToFit>
+        {labels[index]}
+      </Text>
+    ),
+  }));
+
+  // Render selected point tooltip
   const renderTooltip = () => {
-    if (activeTooltipIndex === null) return null;
+    if (selectedDataPoint === null) return null;
 
-    // Calculate position based on chart width and data points
-    const xPosition = (chartWidth / (data.length - 1)) * activeTooltipIndex;
-
-    // Calculate y position based on data value (inverted, since SVG y increases downward)
-    const dataValue = data[activeTooltipIndex];
-    const maxValue = Math.max(...data);
-    const yRatio = 1 - dataValue / maxValue;
-    const yPosition = chartHeight * 0.8 * yRatio + chartHeight * 0.1; // Adjust for chart padding
-
-    const tooltipValue = formatCurrency(dataValue);
-    const tooltipUnit = formatEnergy(dataValue);
+    const value = data[selectedDataPoint];
 
     return (
-      <View style={[StyleSheet.absoluteFill, styles.decoratorContainer]}>
-        <Svg height={chartHeight} width={chartWidth}>
-          {/* Tooltip background */}
-          <Path
-            d={`
-              M ${xPosition - 45} ${yPosition - 65}
-              h 90
-              a 5 5 0 0 1 5 5
-              v 40
-              a 5 5 0 0 1 -5 5
-              h -35
-              l -10 10
-              l -10 -10
-              h -35
-              a 5 5 0 0 1 -5 -5
-              v -40
-              a 5 5 0 0 1 5 -5
-              z
-            `}
-            fill="#022322"
-          />
-
-          {/* Tooltip text - value */}
-          <SvgText
-            x={xPosition}
-            y={yPosition - 40}
-            fill="white"
-            fontSize="16"
-            fontWeight="bold"
-            textAnchor="middle"
-          >
-            {tooltipValue}
-          </SvgText>
-
-          {/* Tooltip text - unit */}
-          <SvgText
-            x={xPosition}
-            y={yPosition - 25}
-            fill="white"
-            fontSize="10"
-            textAnchor="middle"
-          >
-            {tooltipUnit}
-          </SvgText>
-
-          {/* Data point circle */}
-          <Circle
-            cx={xPosition}
-            cy={yPosition}
-            r={5}
-            fill="#022322"
-            strokeWidth={2}
-          />
-        </Svg>
+      <View style={styles.tooltipWrapper}>
+        <View style={styles.tooltipContainer}>
+          <Text style={styles.tooltipValueText}>{formatCurrency(value)}</Text>
+          <Text style={styles.tooltipUnitText}>{formatEnergy(value)}</Text>
+        </View>
+        <View style={styles.tooltipArrow} />
       </View>
     );
   };
 
   return (
-    <View style={[styles.chartContainer, containerStyle]}>
-      <TouchableWithoutFeedback onPress={handleChartPress}>
-        <View>
-          <LineChart
-            data={chartData}
-            width={chartWidth}
-            height={chartHeight}
-            chartConfig={{
-              backgroundColor,
-              backgroundGradientFrom: backgroundColor,
-              backgroundGradientTo: backgroundColor,
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(255, 103, 31, ${opacity})`,
-              labelColor: (opacity = 1) => `rgba(105, 105, 105, ${opacity})`,
-              style: {
-                borderRadius: 0, // Remove border radius to touch the sides
+    <View
+      style={[styles.chartContainer, containerStyle, { width: chartWidth }]}
+    >
+      <View
+        style={[{ backgroundColor, width: chartWidth }, styles.chartWrapper]}
+      >
+        <LineChart
+          data={chartData}
+          height={responsiveHeight}
+          width={chartWidth}
+          hideDataPoints
+          showDataPointOnPress
+          spacing={(chartWidth - 40) / (data.length - 1)}
+          color={lineColor}
+          thickness={2}
+          startFillColor={lineColor}
+          endFillColor={backgroundColor}
+          startOpacity={0.2}
+          endOpacity={0.0}
+          initialSpacing={20}
+          endSpacing={20}
+          noOfSections={4}
+          yAxisTextStyle={{ color: "transparent" }}
+          yAxisColor="transparent"
+          xAxisColor="#e0e0e0"
+          xAxisIndicesHeight={0}
+          xAxisLabelsHeight={30}
+          curved
+          areaChart
+          rulesType="solid"
+          rulesColor="#e0e0e0"
+          rulesThickness={1}
+          dataPointsColor={lineColor}
+          dataPointsRadius={5}
+          showStripOnPress
+          stripColor={lineColor}
+          stripWidth={1}
+          stripOpacity={0.1}
+          style={[styles.chart, chartStyle]}
+          isAnimated
+          animationDuration={500}
+          onPress={(item, index) => {
+            setSelectedDataPoint(selectedDataPoint === index ? null : index);
+          }}
+          renderCustomLinearGradient={() => (
+            <LinearGradient
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 0, y: 1 }}
+              colors={[`${lineColor}30`, `${backgroundColor}00`]}
+            />
+          )}
+        />
+
+        {/* Render the data point and tooltip for selected index */}
+        {selectedDataPoint !== null && (
+          <View
+            style={[
+              styles.selectedPointContainer,
+              {
+                left:
+                  20 +
+                  selectedDataPoint * ((chartWidth - 40) / (data.length - 1)),
+                bottom:
+                  selectedDataPoint !== null
+                    ? (data[selectedDataPoint] / Math.max(...data)) *
+                        (responsiveHeight * 0.7) +
+                      50
+                    : 0,
               },
-              propsForDots: {
-                r: "0", // Hide regular dots
-                strokeWidth: "0",
-              },
-              propsForBackgroundLines: {
-                strokeDasharray: "",
-                stroke: "#e0e0e0",
-                strokeWidth: 1,
-              },
-              formatYLabel: () => "", // Hide Y-axis labels
-            }}
-            bezier
-            style={[styles.chart, chartStyle, { borderRadius: 0 }]} // Remove border radius
-            withInnerLines={false}
-            withOuterLines={false}
-            withVerticalLines={false}
-            withHorizontalLines={true}
-            withVerticalLabels={true}
-            withHorizontalLabels={false}
-            fromZero={true}
-            segments={4}
-            yAxisInterval={1000}
-          />
-          {renderTooltip()}
-        </View>
-      </TouchableWithoutFeedback>
+            ]}
+          >
+            <View style={[styles.dataPoint, { backgroundColor: lineColor }]} />
+            {renderTooltip()}
+          </View>
+        )}
+      </View>
     </View>
   );
 }
@@ -210,7 +183,19 @@ export default function PowerUsageChart({
 const styles = StyleSheet.create({
   chartContainer: {
     marginTop: 10,
-    position: "relative",
+    alignSelf: "center",
+  },
+  chartWrapper: {
+    borderRadius: 10,
+    overflow: "hidden",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+    }),
     width: "100%",
   },
   chart: {
@@ -218,13 +203,58 @@ const styles = StyleSheet.create({
     paddingRight: 0,
     paddingLeft: 0,
   },
-  decoratorContainer: {
+  labelText: {
+    fontSize: 11,
+    color: "#696969",
+    textAlign: "center",
+    marginTop: 4,
+    width: 40,
+  },
+  selectedPointContainer: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 10,
-    pointerEvents: "none",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 100,
+  },
+  dataPoint: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 2,
+    borderColor: "#ffffff",
+  },
+  tooltipWrapper: {
+    position: "absolute",
+    bottom: 15,
+    alignItems: "center",
+  },
+  tooltipContainer: {
+    backgroundColor: "#022322",
+    borderRadius: 5,
+    padding: 8,
+    alignItems: "center",
+    minWidth: 90,
+  },
+  tooltipValueText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  tooltipUnitText: {
+    color: "white",
+    fontSize: 10,
+    marginTop: 2,
+  },
+  tooltipArrow: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderTopWidth: 8,
+    borderStyle: "solid",
+    backgroundColor: "transparent",
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderTopColor: "#022322",
   },
 });

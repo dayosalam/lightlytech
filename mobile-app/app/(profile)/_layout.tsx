@@ -82,6 +82,10 @@ const ProfileLayout = () => {
           name="support"
           options={{ headerShown: true, title: "" }}
         />
+        <Stack.Screen
+          name="invite-friends"
+          options={{ headerShown: true, title: "" }}
+        />
       </Stack>
     </View>
   );

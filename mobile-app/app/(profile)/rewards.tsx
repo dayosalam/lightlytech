@@ -3,14 +3,19 @@ import {
   Text,
   View,
   ScrollView,
-  Alert,
   Share,
+  Animated,
+  Dimensions,
+  Pressable,
   Modal,
+  TouchableOpacity,
 } from "react-native";
-import React, { useState } from "react";
+import { useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
 import RewardsSummary from "@/components/rewards/RewardsSummary";
 import InviteFriends from "@/components/rewards/InviteFriends";
 import RewardCard from "@/components/rewards/RewardCard";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 interface TokenReward {
   id: string;
@@ -24,6 +29,11 @@ interface TokenReward {
 const Rewards = () => {
   const [totalRewards, setTotalRewards] = useState(10.05);
   const [inviteTokens, setInviteTokens] = useState(2);
+  const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const modalAnimation = useRef(
+    new Animated.Value(Dimensions.get("window").height)
+  ).current;
 
   const [tokenRewards, setTokenRewards] = useState<TokenReward[]>([
     {
@@ -53,31 +63,45 @@ const Rewards = () => {
   ]);
 
   const handleRewardHistoryPress = () => {
-    // Navigate to reward history or show modal
-    Alert.alert("Coming Soon", "Reward history will be available soon!");
+    setShowModal(true);
+    Animated.timing(modalAnimation, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const closeModal = () => {
+    Animated.timing(modalAnimation, {
+      toValue: Dimensions.get("window").height,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowModal(false);
+    });
   };
 
   const handleInviteFriends = async () => {
-    try {
-      const result = await Share.share({
-        message:
-          "Join me on Lightly! Save energy and earn rewards. Use my referral code: LIGHTLY123",
-      });
-
-      if (result.action === Share.sharedAction) {
-        if (result.activityType) {
-          // shared with activity type of result.activityType
-          Alert.alert("Success", "Invitation sent successfully!");
-        } else {
-          // shared
-          Alert.alert("Success", "Invitation sent successfully!");
-        }
-      } else if (result.action === Share.dismissedAction) {
-        // dismissed
-      }
-    } catch (error) {
-      Alert.alert("Error", "Could not share the invitation");
-    }
+    // try {
+    //   const result = await Share.share({
+    //     message:
+    //       "Join me on Lightly! Save energy and earn rewards. Use my referral code: LIGHTLY123",
+    //   });
+    //   if (result.action === Share.sharedAction) {
+    //     if (result.activityType) {
+    //       // shared with activity type of result.activityType
+    //       Alert.alert("Success", "Invitation sent successfully!");
+    //     } else {
+    //       // shared
+    //       Alert.alert("Success", "Invitation sent successfully!");
+    //     }
+    //   } else if (result.action === Share.dismissedAction) {
+    //     // dismissed
+    //   }
+    // } catch (error) {
+    //   Alert.alert("Error", "Could not share the invitation");
+    // }
+    router.push("/(profile)/invite-friends");
   };
 
   return (
@@ -119,6 +143,54 @@ const Rewards = () => {
           </View>
         </View>
       </ScrollView>
+      <Modal
+        visible={showModal}
+        animationType="none"
+        transparent
+        statusBarTranslucent
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            style={[
+              styles.modalContainer,
+              { transform: [{ translateY: modalAnimation }] },
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Reward History</Text>
+              <TouchableOpacity
+                style={{
+                  borderWidth: 1,
+                  padding: 4,
+                  borderRadius: "100%",
+                  borderColor: "#878787",
+                }}
+                onPress={closeModal}
+              >
+                <Ionicons name="close" size={24} color="#878787" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView
+              horizontal={false}
+              showsVerticalScrollIndicator={true}
+              style={styles.rewardsScrollView}
+              contentContainerStyle={styles.rewardsScrollContent}
+            >
+              {tokenRewards.map((reward) => (
+                <RewardCard
+                  key={reward.id}
+                  title={reward.title}
+                  description={reward.description}
+                  progress={reward.progress}
+                  goal={reward.goal}
+                  current={reward.current}
+                />
+              ))}
+            </ScrollView>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -130,6 +202,39 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     alignItems: "center",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    padding: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "90%",
+    paddingBottom: 40,
+  },
+  rewardsScrollView: {
+    maxHeight: 550,
+  },
+  rewardsScrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
+  modalHandle: {
+    width: 40,
+    height: 5,
+    backgroundColor: "#ccc",
+    borderRadius: 3,
+    marginBottom: 16,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   scrollView: {
     flex: 1,
@@ -162,5 +267,31 @@ const styles = StyleSheet.create({
   },
   rewardsContainer: {
     width: "100%",
+  },
+
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: "InterBold",
+    color: "#022322",
+    marginBottom: 16,
+  },
+  modalText: {
+    fontSize: 16,
+    fontFamily: "InterRegular",
+    color: "#022322",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  closeButton: {
+    backgroundColor: "#022322",
+    padding: 16,
+    borderRadius: 8,
+    width: "100%",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontFamily: "InterBold",
+    color: "#fff",
   },
 });

@@ -2,6 +2,16 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { Storage } from "@/utils/storage";
+import { usePathname } from "expo-router";
+
+import Home from "@/assets/icons/home-2.svg";
+import HomeActive from "@/assets/icons/home-active.svg";
+import InsightsActive from "@/assets/icons/insights-active.svg";
+import Insights from "@/assets/icons/insights.svg";
+import Automation from "@/assets/icons/automation.svg";
+import AutomationActive from "@/assets/icons/automation-active.svg";
+import ProfileActive from "@/assets/icons/profile-active.svg";
+import Profile from "@/assets/icons/profile.svg";
 
 export default function TabsLayout() {
   useEffect(() => {
@@ -11,6 +21,13 @@ export default function TabsLayout() {
 
     markOnboardingComplete();
   }, []);
+
+  const pathname = usePathname();
+
+  const isHomeIndex = pathname === "/";
+  const isInsights = pathname === "/insights";
+  const isAutomation = pathname === "/automation";
+  const isProfile = pathname === "/profile";
 
   return (
     <Tabs
@@ -32,9 +49,12 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) =>
+            isHomeIndex ? (
+              <HomeActive width={size} />
+            ) : (
+              <Home color={color} width={size} />
+            ),
         }}
       />
       <Tabs.Screen
@@ -52,18 +72,24 @@ export default function TabsLayout() {
             fontFamily: "InterBold",
             color: "#022322",
           },
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="analytics-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) =>
+            isInsights ? (
+              <InsightsActive width={size} />
+            ) : (
+              <Insights color={color} width={size} />
+            ),
         }}
       />
       <Tabs.Screen
         name="automation"
         options={{
           title: "Automation",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="options-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) =>
+            isAutomation ? (
+              <AutomationActive width={size} />
+            ) : (
+              <Automation color={color} width={size} />
+            ),
         }}
       />
       <Tabs.Screen
@@ -81,9 +107,12 @@ export default function TabsLayout() {
             fontFamily: "InterBold",
             color: "#022322",
           },
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) =>
+            isProfile ? (
+              <ProfileActive width={size} />
+            ) : (
+              <Profile color={color} width={size} />
+            ),
         }}
       />
     </Tabs>

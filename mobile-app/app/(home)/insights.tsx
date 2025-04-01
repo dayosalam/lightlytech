@@ -15,6 +15,7 @@ import { Svg, Path, Circle, Line } from "react-native-svg";
 import AverageUsage from "@/components/AverageUsage";
 import RoomUsageItem from "@/components/RoomUsageItem";
 import RoomUsageSection from "@/components/RoomUsageSection";
+import PowerUsageChart from "@/components/PowerUsageChart";
 
 // Tab options for time period selection
 const timeOptions = ["Today", "1 M", "1 Y", "All time"];
@@ -62,10 +63,6 @@ export default function InsightsScreen() {
                 <Text style={styles.powerUsageValue}>₦8,008.04</Text>
                 <Text style={styles.powerUsageUnit}>11.89kWh</Text>
               </View>
-              <View style={styles.powerUsageTooltip}>
-                <Text style={styles.tooltipValue}>₦12,000</Text>
-                <Text style={styles.tooltipUnit}>(13kWh)</Text>
-              </View>
             </View>
 
             <Text style={styles.powerUsageIncrease}>
@@ -74,28 +71,7 @@ export default function InsightsScreen() {
             </Text>
 
             {/* Power Usage Graph */}
-            <View style={styles.graphContainer}>
-              <Svg height="120" width="100%">
-                {/* This is a simplified representation of the graph */}
-                <Path
-                  d="M0,80 C20,70 40,100 60,60 C80,20 100,40 120,30 C140,20 160,50 180,40 C200,30 220,60 240,50 C260,40 280,70 300,60"
-                  stroke="#FF671F"
-                  strokeWidth="3"
-                  fill="none"
-                />
-                <Circle cx="240" cy="50" r="6" fill="#022322" />
-                <Circle cx="240" cy="50" r="4" fill="#FF671F" />
-              </Svg>
-
-              {/* X-axis labels */}
-              <View style={styles.graphLabels}>
-                <Text style={styles.graphLabel}>Jun</Text>
-                <Text style={styles.graphLabel}>Jul</Text>
-                <Text style={styles.graphLabel}>Aug</Text>
-                <Text style={styles.graphLabel}>Sep</Text>
-                <Text style={styles.graphLabel}>Oct</Text>
-              </View>
-            </View>
+            <PowerUsageChart />
           </View>
         </View>
 
@@ -167,7 +143,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   powerUsageContainer: {
-    backgroundColor: "#FFFFFF",
+    // backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
   },
@@ -178,7 +154,7 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   powerUsageValue: {
-    fontSize: 24,
+    fontSize: 30,
     fontFamily: "InterBold",
     color: "#022322",
   },
