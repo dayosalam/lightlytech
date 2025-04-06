@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const sensorRoutes = require("./routes/sensorRoutes");
+const profileRoutes = require('./routes/profileRoutes');
 const authRoutes = require("./routes/authRoutes");
 const mqtt = require("mqtt");
 const http = require("http");
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3003;
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static("public"));
+
 
 // MQTT Settings
 const MQTT_BROKER = "mqtt://localhost";
@@ -62,6 +64,7 @@ console.log("✅ WebSocket Server Initialized");
 // Routes
 app.use("/api/sensors", sensorRoutes);
 app.use("/api/auth", authRoutes);
+app.use('/api', profileRoutes);
 
 // Start the server
 server.listen(PORT, () => {
