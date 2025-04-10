@@ -30,7 +30,7 @@ const getUserProfile = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("full_name, phone, notifications_enabled, avatar_url, created_at")
+      .select("full_name, phone, notifications_enabled, avatar_url, band, created_at")
       .eq("user_id", user_id)
       .maybeSingle();
 
@@ -43,6 +43,7 @@ const getUserProfile = async (req, res) => {
         phone: null,
         notifications_enabled: true,
         avatar_url: null,
+        band: null,
         created_at: null,
       });
     }
@@ -56,35 +57,40 @@ const getUserProfile = async (req, res) => {
 
 // PUT /profile
 const updateUserProfile = async (req, res) => {
-  const user_id = req.user.id;
-  const { full_name, phone, avatar_url } = req.body;
-
-  const token = req.headers.authorization.split(" ")[1];
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
+    const user_id = req.user.id;
+    const { full_name, phone, band, avatar_url } = req.body;
+  
+    // ✅ Validate band input
+    if (band && !["A", "B", "C"].includes(band)) {
+      return res.status(400).json({ error: "Invalid band value" });
     }
-  );
-
-  try {
-    const { error } = await supabase
-      .from("profiles")
-      .upsert([{ user_id, full_name, phone, avatar_url }]);
-
-    if (error) throw error;
-
-    return res.status(200).json({ message: "Profile updated successfully" });
-  } catch (error) {
-    console.error("Error updating profile:", error.message);
-    return res.status(500).json({ error: "Failed to update profile" });
-  }
-};
+  
+    const token = req.headers.authorization.split(" ")[1];
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_KEY,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      }
+    );
+  
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert([{ user_id, full_name, phone, band, avatar_url }]);
+  
+      if (error) throw error;
+  
+      return res.status(200).json({ message: "Profile updated successfully" });
+    } catch (error) {
+      console.error("Error updating profile:", error.message);
+      return res.status(500).json({ error: "Failed to update profile" });
+    }
+  };
 
 const updateNotifications = async (req, res) => {
   const user_id = req.user.id;
@@ -128,7 +134,7 @@ const uploadAvatar = async (req, res) => {
 
   console.log("user_id from auth:", user_id);
   console.log("auth.uid from token:", user_id);
-  
+
   if (!file) {
     return res.status(400).json({ error: "No file uploaded" });
   }
@@ -155,7 +161,7 @@ const uploadAvatar = async (req, res) => {
     const filePath = `${user_id}/avatar${fileExt}`;
 
     // ✅ Upload to Supabase Storage
-    
+
     const { error: uploadError } = await supabase.storage
       .from("avatars")
       .upload(filePath, file.buffer, {
@@ -193,7 +199,6 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-
 const changePassword = async (req, res) => {
   const { new_password, confirm_password } = req.body;
   const user_id = req.user.id; // comes from authMiddleware
@@ -213,9 +218,12 @@ const changePassword = async (req, res) => {
   );
 
   try {
-    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(user_id, {
-      password: new_password,
-    });
+    const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
+      user_id,
+      {
+        password: new_password,
+      }
+    );
 
     if (error) {
       console.error("Password update error:", error.message);
@@ -228,6 +236,25 @@ const changePassword = async (req, res) => {
     return res.status(500).json({ error: "Unexpected server error" });
   }
 };
+const updateUserBand = async (req, res) => {
+  const { band } = req.body;
+  const user_id = req.user.id;
+
+  if (!["A", "B", "C"].includes(band)) {
+    return res.status(400).json({ error: "Invalid band" });
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ band })
+    .eq("user_id", user_id);
+
+  if (error) {
+    return res.status(500).json({ error: "Failed to update band" });
+  }
+
+  return res.status(200).json({ message: `Band set to ${band}` });
+};
 
 module.exports = {
   getUserProfile,
@@ -235,5 +262,6 @@ module.exports = {
   updateNotifications,
   uploadAvatar,
   avatarUploadMiddleware,
+  updateUserBand,
   changePassword,
 };
