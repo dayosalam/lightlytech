@@ -12,7 +12,7 @@ interface AvatarProps {
 }
 
 const Avatar = ({ 
-  name = "Baddie's Condo", 
+  name = "Baddie's", 
   email, 
   edit, 
   emoji, 

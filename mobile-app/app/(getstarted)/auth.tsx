@@ -30,6 +30,7 @@ export default function AuthScreen() {
   const { login } = useAuth();
 
   const handleContinue = async () => {
+    const isConnectedBox = await Storage.getHasConnectedBox();
     try {
       setError(null);
       setIsLoading(true);
@@ -42,9 +43,9 @@ export default function AuthScreen() {
       }
 
       await login({ email, password });
-      console.log("Login successful, navigating to home");
-      router.push("/(getstarted)/verify-email");
-      router.push("/(home)");
+
+
+      isConnectedBox ? router.push("/(home)") : router.push("/setup");
     } catch (error: any) {
       console.error("Error logging in:", error.message || error);
       setError(error.message || "Failed to login. Please try again.");
@@ -177,7 +178,7 @@ export default function AuthScreen() {
                   disabled={isLoading}
                 >
                   <Text style={styles.continueText}>
-                    {isLoading ? "Connecting..." : "Continue"}
+                    Continue
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -315,7 +316,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   continueButton: {
-    backgroundColor: "#b1bbba",
+    backgroundColor: "#022322",
     borderRadius: 8,
     padding: 16,
     alignItems: "center",

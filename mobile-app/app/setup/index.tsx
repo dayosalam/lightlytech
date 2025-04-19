@@ -21,18 +21,18 @@ export default function DeviceSetup() {
   const [currentStep, setCurrentStep] = useState(0);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if the user has already connected their box
-    const checkBoxConnection = async () => {
-      const hasConnectedBox = await Storage.getHasConnectedBox();
-      if (hasConnectedBox) {
-        // If box is already connected, navigate to home
-        router.replace("/(home)");
-      }
-    };
+  // useEffect(() => {
+  //   // Check if the user has already connected their box
+  //   const checkBoxConnection = async () => {
+  //     const hasConnectedBox = await Storage.getHasConnectedBox();
+  //     if (hasConnectedBox) {
+  //       // If box is already connected, navigate to home
+  //       router.replace("/(home)");
+  //     }
+  //   };
 
-    checkBoxConnection();
-  }, [router]);
+  //   checkBoxConnection();
+  // }, [router]);
 
   const steps = [
     {
@@ -114,7 +114,7 @@ export default function DeviceSetup() {
       case 2:
         return <WifiConnection next={handleNext} />;
       case 3:
-        return <PersonalizHome next={handleNext} />;
+        return <PersonalizHome />;
       default:
         return null;
     }

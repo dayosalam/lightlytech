@@ -17,11 +17,13 @@ import Avatar from "@/components/profile/Avatar";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useAuth } from "@/context/AuthContext";
 
 const { height } = Dimensions.get("window");
 
 const EditAccount = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEmojiModal, setShowEmojiModal] = useState(false);
   const uploadModalAnimation = useRef(new Animated.Value(height)).current;
@@ -35,9 +37,8 @@ const EditAccount = () => {
 
   // Initial user data - would typically come from context or API
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    homeName: "",
+    firstName: user?.name || "",
+    homeName: user?.condo_name || "",
   });
 
   const MAX_HOME_NAME_LENGTH = 10;
@@ -209,7 +210,7 @@ const EditAccount = () => {
               placeholderTextColor="#8b9a99"
             />
           </View>
-
+{/* 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Last name</Text>
             <TextInput
@@ -219,7 +220,7 @@ const EditAccount = () => {
               placeholder="e.g doe"
               placeholderTextColor="#8b9a99"
             />
-          </View>
+          </View> */}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Home name</Text>
@@ -394,7 +395,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontFamily: "InterMedium",
+    fontFamily: "InterSemiBold",
     color: "#022322",
     marginBottom: 8,
   },
@@ -499,7 +500,7 @@ const styles = StyleSheet.create({
   },
   modalOptionText: {
     fontSize: 16,
-    fontFamily: "InterMedium",
+    fontFamily: "InterSemiBold",
     color: "#022322",
   },
   emojiGrid: {

@@ -16,6 +16,8 @@ import AverageUsage from "@/components/AverageUsage";
 import RoomUsageItem from "@/components/RoomUsageItem";
 import RoomUsageSection from "@/components/RoomUsageSection";
 import PowerUsageChart from "@/components/PowerUsageChart";
+import { useReadings } from "@/context/ReadingsContext";
+import { totalEnergy } from "@/utils/helpers";
 
 // Tab options for time period selection
 const timeOptions = ["Today", "1 M", "1 Y", "All time"];
@@ -24,6 +26,7 @@ export default function InsightsScreen() {
   const [selectedTimeOption, setSelectedTimeOption] = useState("Today");
   const [selectedRoomFilter, setSelectedRoomFilter] =
     useState("Most consuming");
+  const { readings } = useReadings();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -60,8 +63,8 @@ export default function InsightsScreen() {
           <View style={styles.powerUsageContainer}>
             <View style={styles.powerUsageHeader}>
               <View>
-                <Text style={styles.powerUsageValue}>₦8,008.04</Text>
-                <Text style={styles.powerUsageUnit}>11.89kWh</Text>
+                <Text style={styles.powerUsageValue}>₦{readings[0].bill}</Text>
+                <Text style={styles.powerUsageUnit}>{totalEnergy(readings[0].energy_kwh)}kWh</Text>
               </View>
             </View>
 
@@ -71,7 +74,14 @@ export default function InsightsScreen() {
             </Text>
 
             {/* Power Usage Graph */}
-            <PowerUsageChart />
+            <PowerUsageChart 
+              readings={readings.length > 0 ? [readings[0]] : []}
+              dataType="energy"
+              timePeriod={selectedTimeOption}
+              lineColor="#ff671f"
+              backgroundColor="#f5f5f5"
+              height={220}
+            />
           </View>
         </View>
 

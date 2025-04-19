@@ -4,11 +4,10 @@
     "slug": "lightly",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/splash-icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "ios": {
       "supportsTablet": true,
       "splash": {
@@ -19,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/splash-icon.png",
         "backgroundColor": "#022322"
       },
       "splash": {
@@ -51,7 +50,13 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "http://192.168.0.185:3003/api"
+      "API_URL": "http://192.168.0.185:3003/api",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "0044769b-7b16-4544-9aae-76fe0109323e"
+      }
     }
   }
 }

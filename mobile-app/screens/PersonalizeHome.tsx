@@ -12,19 +12,32 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Storage } from "@/utils/storage";
+import { saveCondoName } from "@/api/profile";
 
 const MAX_LENGTH = 10;
 
 export default function PersonalizeHome() {
   const router = useRouter();
   const [homeName, setHomeName] = useState("");
-  const handleSaveSetup = () => {
+  const [loading, setLoading] = useState(false);
+  const handleSaveSetup = async () => {
     if (homeName.trim()) {
       // Handle save logic here
-      router.push("/(connectlightly)/SuccessConnect");
-      // navigation.navigate('NextScreen');
+      try {
+        setLoading(true);
+        await Storage.setHasConnectedBox(true);
+        await saveCondoName(homeName);
+        router.push("/setup/success");
+        // navigation.navigate('NextScreen');
+      } catch (error) {
+        console.error("Error saving condo name:", error);
+      }finally{
+        setLoading(false);
+      }
     }
   };
+
 
   const handleChangeText = (text: string) => {
     if (text.length <= MAX_LENGTH) {
@@ -76,7 +89,7 @@ export default function PersonalizeHome() {
                 homeName.trim() ? styles.saveButtonTextActive : null,
               ]}
             >
-              Save setup
+              {loading ? "Saving..." : "Save setup"}
             </Text>
           </TouchableOpacity>
         </View>

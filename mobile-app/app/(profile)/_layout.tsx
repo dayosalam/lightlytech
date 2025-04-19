@@ -8,7 +8,6 @@ const ProfileLayout = () => {
   const pathname = usePathname();
 
   // Log the actual pathname to see what we're getting
-  console.log("Current pathname:", pathname);
 
   // Use includes instead of exact matching
   const isAccount =

@@ -16,8 +16,12 @@ import PowerUsage from "@/components/home/PowerUsage";
 import AlertCarousel from "@/components/home/AlertCarousel";
 import PowerUsageSection from "@/components/home/PowerUsageSection";
 import RewardSection from "@/components/home/RewardSection";
+import { useReadings } from "@/context/ReadingsContext";
+import { totalEnergy } from "@/utils/helpers";
 
 export default function HomeScreen() {
+  const { readings } = useReadings();
+  
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style="dark" />
@@ -26,7 +30,7 @@ export default function HomeScreen() {
         <Header />
 
         {/* Power Usage */}
-        <PowerUsage />
+        <PowerUsage bill={readings[0]?.bill || 0} totalEnergy={Number(readings[0]?.total_energy.toFixed(2)) || 0} />
 
         {/* Alert Carousel */}
         <AlertCarousel />

@@ -26,7 +26,7 @@ export default function Index() {
           route = "/(onboarding)";
         } else if (!isAuthenticated) {
           route = "/(getstarted)/auth";
-        } else if (!hasConnectedBox) {
+        } else if (!hasConnectedBox && !isAuthenticated) {
           route = "/setup";
         }
 

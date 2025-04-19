@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Avatar from "@/components/profile/Avatar";
 import { useRouter } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
 
 // Menu item component
 const MenuItem = ({
@@ -41,6 +42,7 @@ const MenuItem = ({
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   const handleNavigation = (route: string) => {
     // Use the route as is without type checking
@@ -54,7 +56,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <Avatar />
+          <Avatar name={user?.condo_name || ""} />
         </View>
 
         <View style={styles.menuContainer}>
@@ -108,6 +110,10 @@ export default function ProfileScreen() {
             onPress={() => handleNavigation("/(profile)/support")}
           />
         </View>
+        <TouchableOpacity className="my-4 items-center" onPress={() => logout()
+        }>
+          <Text className="text-black font-[InterSemiBold]">Logout</Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

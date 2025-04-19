@@ -1,8 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuth } from "@/context/AuthContext";
 
 const Header = () => {
+  const { user } = useAuth();
+
+
+
   const formatString = (str: string) => {
     if (str.length > 10) {
       return str.substring(0, 8) + "...";
@@ -18,7 +23,7 @@ const Header = () => {
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.greeting}>Hey there!</Text>
-          <Text style={styles.condoName}>Baddie's Condo</Text>
+          <Text style={styles.condoName}>{user?.condo_name || "User"} Condo</Text>
         </View>
       </View>
       <TouchableOpacity style={styles.lightSavingsButton}>

@@ -32,6 +32,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       setIsAuthenticated(true);
       // Fetch user data here if needed
+
+      const user = await Storage.getItem("user");
+      setUser(user ? JSON.parse(user) : null);
     }
   };
 
@@ -45,15 +48,19 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { user, access_token } = await signIn(email, password);
 
+      console.log(user)
+
       // Store the access token from the response
       await Storage.setItem("userToken", access_token);
+      await Storage.setItem("user", JSON.stringify(user));
       await Storage.setIsAuthenticated(true);
       setIsAuthenticated(true);
       setUser({
         email,
         token: access_token,
         id: user?.id,
-        name: user?.user_metadata?.name,
+        name: user?.name,
+        condo_name: user?.condo_name,
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -63,6 +70,7 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     await Storage.removeItem("userToken");
+    await Storage.removeItem("user");
     await logOut();
     setIsAuthenticated(false);
     setUser(null);

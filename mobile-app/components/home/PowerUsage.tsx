@@ -2,21 +2,21 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-const PowerUsage = () => {
+const PowerUsage = ({ bill, totalEnergy }: { bill: number; totalEnergy: number }) => {
   return (
     <View style={styles.powerUsageSection}>
       <Text style={styles.sectionTitle}>Today's power usage</Text>
       <View style={styles.powerUsageAmount}>
         <Text style={styles.currency}>₦</Text>
-        <Text style={styles.amount}>20,032.65</Text>
-        <Text style={styles.unit}> / 29.73Kw/H</Text>
+        <Text style={styles.amount}>{bill}</Text>
+        <Text style={styles.unit}> / {totalEnergy}Kw/H</Text>
       </View>
-      <View style={styles.comparisonContainer}>
+      {/* <View style={styles.comparisonContainer}>
         <View style={styles.increaseIndicator}>
           <Ionicons name="arrow-up" size={16} color="#dc3545" />
         </View>
         <Text style={styles.comparisonText}>12% more than yesterday</Text>
-      </View>
+      </View> */}
     </View>
   );
 };

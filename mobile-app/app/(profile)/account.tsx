@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import React from "react";
 import Avatar from "@/components/profile/Avatar";
+import { useAuth } from "@/context/AuthContext";
 
 const AccountInfoItem = ({
   label,
@@ -18,12 +19,11 @@ const AccountInfoItem = ({
 };
 
 const Account = () => {
+  const { user } = useAuth();
   // This would typically come from your user context or API
   const userInfo = {
-    name: "Baddie's Condo",
-    email: "koskiddoo@gmail.com",
-    firstName: null,
-    lastName: null,
+    name: user?.name || "",
+    email: user?.email || "",
   };
 
   return (
@@ -31,12 +31,11 @@ const Account = () => {
       <Text style={styles.heading}>Account information</Text>
 
       <View style={styles.profileSection}>
-        <Avatar name={userInfo.name} />
+        <Avatar name={userInfo.name} email={userInfo.email} />
       </View>
 
       <View style={styles.infoSection}>
-        <AccountInfoItem label="First name" value={userInfo.firstName} />
-        <AccountInfoItem label="Last name" value={userInfo.lastName} />
+        <AccountInfoItem label="Name" value={userInfo.name} />
         <AccountInfoItem label="Email" value={userInfo.email} />
       </View>
     </ScrollView>

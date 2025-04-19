@@ -13,7 +13,6 @@ import {
 import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
 import { onboardingSteps } from "@/constants/data";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import {
   GestureHandlerRootView,
   PanGestureHandler,
@@ -49,13 +48,13 @@ export default function OnboardingScreen() {
       translateX.value = withTiming(-newPage * width, { duration: 300 });
     } else {
       await Storage.setHasSeenOnboarding(true);
-      router.push("/(getstarted)/auth");
+      router.push("/(getstarted)/distributionbox");
     }
   }, [currentPage, totalPages, translateX, router]);
 
   const handleSkip = useCallback(async () => {
     await Storage.setHasSeenOnboarding(true);
-    router.push("/(getstarted)/auth");
+    router.push("/(getstarted)/distributionbox");
   }, [router]);
 
   const onGestureEvent = useAnimatedGestureHandler({
@@ -139,7 +138,7 @@ export default function OnboardingScreen() {
             {onboardingSteps.map((step, index) => (
               <View key={index} style={styles.slide}>
                 <ExpoImage
-                  source={require("@/assets/images/mockup.png")}
+                  source={step.image}
                   style={styles.illustration}
                   contentFit="contain"
                 />
@@ -212,7 +211,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 25,
-    fontWeight: "600",
     color: Colors.primary,
     marginBottom: 12,
     lineHeight: 32,
@@ -221,8 +219,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 17,
     color: Colors.body,
+    width: 400,
     lineHeight: 30,
     marginBottom: 40,
     textAlign: "center",
