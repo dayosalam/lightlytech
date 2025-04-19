@@ -3,6 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const storage = multer.memoryStorage();
 const avatarUploadMiddleware = multer({ storage }).single("avatar");
+const supabase = require("../config/supabaseConfig");
 // configure multer storage (in memory)
 const upload = multer({ storage });
 
@@ -13,19 +14,6 @@ exports.avatarUploadMiddleware = upload.single("avatar");
 
 const getUserProfile = async (req, res) => {
   const user_id = req.user.id;
-  const token = req.headers.authorization.split(" ")[1];
-
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY, // or SUPABASE_ANON_KEY if renamed
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    }
-  );
 
   try {
     const { data, error } = await supabase
@@ -64,19 +52,6 @@ const updateUserProfile = async (req, res) => {
     if (band && !["A", "B", "C"].includes(band)) {
       return res.status(400).json({ error: "Invalid band value" });
     }
-  
-    const token = req.headers.authorization.split(" ")[1];
-    const supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_KEY,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      }
-    );
   
     try {
       const { error } = await supabase
@@ -130,7 +105,6 @@ const updateNotifications = async (req, res) => {
 const uploadAvatar = async (req, res) => {
   const user_id = req.user.id;
   const file = req.file;
-  const token = req.headers.authorization?.split(" ")[1];
 
   console.log("user_id from auth:", user_id);
   console.log("auth.uid from token:", user_id);
@@ -138,23 +112,6 @@ const uploadAvatar = async (req, res) => {
   if (!file) {
     return res.status(400).json({ error: "No file uploaded" });
   }
-
-  if (!token) {
-    return res.status(401).json({ error: "Unauthorized: No token provided" });
-  }
-
-  // ✅ Create Supabase client with user's token for RLS
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    }
-  );
 
   try {
     const fileExt = path.extname(file.originalname);
@@ -263,19 +220,6 @@ const saveCondoName = async (req, res) => {
   const { condo_name } = req.body;
   const user_id = req.user.id;
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    }
-  );
-
-  
   const { error } = await supabase
     .from("users")
     .update({ condo_name })
