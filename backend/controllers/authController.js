@@ -61,30 +61,42 @@ exports.signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log(req.body);
 
     if (!email || !password) {
       console.log("❌ Missing email or password");
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    console.log(`✅ Attempting to sign in user with email: ${email}`);
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
-      console.error("❌ Supabase Auth Error:", error.message);
-      return res.status(400).json({ error: error.message });
+    if (signInError) {
+      console.error("❌ Supabase Auth Error:", signInError.message);
+      return res.status(400).json({ error: signInError.message });
     }
 
-    console.log(`✅ User logged in successfully: ${email}`);
+    // fetch user details from db
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("id", signInData.user.id)
+      .single();
+
+    if (error) {
+      console.error("❌ Database Error:", error.message);
+      return res.status(500).json({
+        error: "Database error fetching user details",
+        details: error.message,
+      });
+    }
+
     return res.status(200).json({
       message: "User logged in successfully",
       access_token: data.session?.access_token,
       refresh_token: data.session?.refresh_token,
-      user: data.user,
+      user: user,
     });
   } catch (err) {
     console.error("❌ Unexpected error during sign in:", err);
@@ -94,6 +106,7 @@ exports.signIn = async (req, res) => {
     });
   }
 };
+
 
 exports.logout = async (req, res) => {
   const { error } = await supabase.auth.signOut();
