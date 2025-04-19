@@ -262,6 +262,19 @@ const updateUserBand = async (req, res) => {
 const saveCondoName = async (req, res) => {
   const { condo_name } = req.body;
   const user_id = req.user.id;
+
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY,
+    {
+      global: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }
+  );
+
   
   const { error } = await supabase
     .from("users")
