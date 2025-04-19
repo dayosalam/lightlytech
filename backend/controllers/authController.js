@@ -94,8 +94,8 @@ exports.signIn = async (req, res) => {
 
     return res.status(200).json({
       message: "User logged in successfully",
-      access_token: data.session?.access_token,
-      refresh_token: data.session?.refresh_token,
+      access_token: signInData.session?.access_token,
+      refresh_token: signInData.session?.refresh_token,
       user: user,
     });
   } catch (err) {
