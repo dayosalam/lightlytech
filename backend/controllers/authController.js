@@ -56,29 +56,43 @@ exports.register = async (req, res) => {
 };
 
 exports.signIn = async (req, res) => {
-  const { email, password } = req.body;
+  console.log("✅ SignIn endpoint called with body:", JSON.stringify(req.body));
 
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
+  try {
+    const { email, password } = req.body;
+
+    console.log(req.body);
+
+    if (!email || !password) {
+      console.log("❌ Missing email or password");
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    console.log(`✅ Attempting to sign in user with email: ${email}`);
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error("❌ Supabase Auth Error:", error.message);
+      return res.status(400).json({ error: error.message });
+    }
+
+    console.log(`✅ User logged in successfully: ${email}`);
+    return res.status(200).json({
+      message: "User logged in successfully",
+      access_token: data.session?.access_token,
+      refresh_token: data.session?.refresh_token,
+      user: data.user,
+    });
+  } catch (err) {
+    console.error("❌ Unexpected error during sign in:", err);
+    return res.status(500).json({
+      error: "Unexpected error during sign in",
+      details: err.message,
+    });
   }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return res.status(400).json({ error: error.message });
-  }
-
-  res.status(200).json({
-    message: "User logged in successfully",
-    access_token: data.session?.access_token,
-    refresh_token: data.session?.refresh_token,
-    user: data.user,
-  });
-
-  console.log(`✅ User logged in`);
 };
 
 exports.logout = async (req, res) => {

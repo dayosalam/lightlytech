@@ -15,7 +15,14 @@ const server = http.createServer(app);
 const PORT = process.env.PORT || 3003;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: false, // Set to false for mobile app connections
+  })
+);
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
@@ -65,6 +72,11 @@ console.log("✅ WebSocket Server Initialized");
 app.use("/api/sensors", sensorRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api', profileRoutes);
+
+// health
+app.get("/", (req, res) => {
+  res.json({ status: "ok" });
+});
 
 // Start the server
 server.listen(PORT, () => {

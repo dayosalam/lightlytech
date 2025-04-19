@@ -236,6 +236,8 @@ const changePassword = async (req, res) => {
     return res.status(500).json({ error: "Unexpected server error" });
   }
 };
+
+
 const updateUserBand = async (req, res) => {
   const { band } = req.body;
   const user_id = req.user.id;
@@ -256,6 +258,23 @@ const updateUserBand = async (req, res) => {
   return res.status(200).json({ message: `Band set to ${band}` });
 };
 
+
+const saveCondoName = async (req, res) => {
+  const { condo_name } = req.body;
+  const user_id = req.user.id;
+  
+  const { error } = await supabase
+    .from("users")
+    .update({ condo_name })
+    .eq("id", user_id);
+  
+  if (error) {
+    return res.status(500).json({ error: "Failed to update condo name" });
+  }
+  
+  return res.status(200).json({ message: `Condo name set to ${condo_name}` });
+}
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
@@ -264,4 +283,5 @@ module.exports = {
   avatarUploadMiddleware,
   updateUserBand,
   changePassword,
+  saveCondoName,
 };
