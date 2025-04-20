@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const sensorRoutes = require("./routes/sensorRoutes");
+const deviceRoutes = require("./routes/deviceRoutes");
 const profileRoutes = require('./routes/profileRoutes');
 const authRoutes = require("./routes/authRoutes");
 const mqtt = require("mqtt");
@@ -72,6 +73,7 @@ console.log("✅ WebSocket Server Initialized");
 app.use("/api/sensors", sensorRoutes);
 app.use("/api/auth", authRoutes);
 app.use('/api', profileRoutes);
+app.use("/api/device", deviceRoutes);
 
 // health
 app.get("/", (req, res) => {

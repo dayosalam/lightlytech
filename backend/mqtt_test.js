@@ -7,8 +7,8 @@ client.on("connect", () => {
 
   const payload = {
     voltage: 230,
-    currents: [7.2,9.5, 8.4, 5.6],
-    user_id: "9f597885-d868-4a36-80ff-dcd2ae55d175"  // ✅ Replace with valid UUID in Supabase
+    currents: [0.2,0.5, 0.4, 0.6],
+    user_id: "1f87412a-50d8-409a-bf63-4fd3e7d34457"  // ✅ Replace with valid UUID in Supabase
   };
 
   client.publish("sensor/data", JSON.stringify(payload), {}, (err) => {

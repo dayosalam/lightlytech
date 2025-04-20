@@ -53,6 +53,18 @@ client.on("message", async (topic, message) => {
       return;
     }
 
+    // Fetch user's devices
+    const { data: devices } = await supabase
+      .from("devices")
+      .select("id, name, sensor_index")
+      .eq("user_id", user_id);
+
+    if (!devices || devices.length === 0) {
+      console.warn("No devices found for user:", user_id);
+      return;
+    }
+
+    // Get time elapsed since last reading
     const { data: lastRecords } = await supabase
       .from("data_records")
       .select("created_at")
@@ -67,12 +79,21 @@ client.on("message", async (topic, message) => {
       time_elapsed_hours = diffMs / (1000 * 60 * 60);
     }
 
-    const power_watts = currents.map((c) => voltage * c);
-    const energy_kwh = power_watts.map((p) => (p * time_elapsed_hours) / 1000);
-    const total_energy = energy_kwh.reduce((a, b) => a + b, 0);
-    console.log(`⏱️ Time elapsed (hrs):`, time_elapsed_hours.toFixed(4));
-    console.log(`🔋 Total energy (kWh):`, total_energy.toFixed(4));
-    console.log(`⚡ Power breakdown per sensor:`, power_watts);
+    // Calculate energy for each device
+    const deviceReadings = devices.map((device) => {
+      const current = currents[device.sensor_index] || 0;
+      const power = voltage * current;
+      const energy = (power * time_elapsed_hours) / 1000;
+      return {
+        device_id: device.id,
+        name: device.name,
+        current,
+        power,
+        energy,
+      };
+    });
+
+    const total_energy = deviceReadings.reduce((sum, d) => sum + d.energy, 0);
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -84,15 +105,15 @@ client.on("message", async (topic, message) => {
     const rate = BAND_RATES[band] || BAND_RATES["A"];
     const bill = parseFloat((total_energy * rate).toFixed(2));
 
+    // ✅ Save reading
     const { error } = await supabase.from("data_records").insert([
       {
         user_id,
         voltage,
         currents,
-        power_watts,
-        energy_kwh,
         total_energy,
         bill,
+        device_readings: deviceReadings,
         created_at: now.toISOString(),
       },
     ]);
@@ -118,6 +139,15 @@ const storeSensorData = async (req, res) => {
   }
 
   try {
+    const { data: devices } = await supabase
+      .from("devices")
+      .select("id, name, sensor_index")
+      .eq("user_id", user_id);
+
+    if (!devices || devices.length === 0) {
+      return res.status(400).json({ error: "No devices found for user" });
+    }
+
     const { data: lastRecords } = await supabase
       .from("data_records")
       .select("created_at")
@@ -130,13 +160,26 @@ const storeSensorData = async (req, res) => {
       const lastTimestamp = new Date(lastRecords[0].created_at);
       const diffMs = now - lastTimestamp;
       time_elapsed_hours = diffMs / (1000 * 60 * 60);
+      console.log("⏱️ Last reading timestamp:", lastTimestamp);
+      console.log("⏱️ Current time:", now);
+      console.log("⏱️ Time diff ms:", diffMs);
+      console.log("⏱️ Time elapsed (hours):", time_elapsed_hours.toFixed(4));
     }
 
-    const power_watts = currents.map((c) => voltage * c);
-    const energy_kwh = power_watts.map((p) => (p * time_elapsed_hours) / 1000);
-    const total_energy = energy_kwh.reduce((a, b) => a + b, 0);
-    console.log(`⏱️ Time elapsed (hrs):`, time_elapsed_hours.toFixed(4));
-    console.log(`🔋 Total energy (kWh):`, total_energy.toFixed(4));
+    const deviceReadings = devices.map((device) => {
+      const current = currents[device.sensor_index] || 0;
+      const power = voltage * current;
+      const energy = (power * time_elapsed_hours) / 1000;
+      return {
+        device_id: device.id,
+        name: device.name,
+        current,
+        power,
+        energy,
+      };
+    });
+
+    const total_energy = deviceReadings.reduce((sum, d) => sum + d.energy, 0);
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -153,10 +196,9 @@ const storeSensorData = async (req, res) => {
         user_id,
         voltage,
         currents,
-        power_watts,
-        energy_kwh,
         total_energy,
         bill,
+        device_readings: deviceReadings,
         created_at: now.toISOString(),
       },
     ]);
@@ -170,7 +212,7 @@ const storeSensorData = async (req, res) => {
       message: "Sensor data stored successfully",
       bill,
       total_energy,
-      energy_kwh,
+      device_readings: deviceReadings,
     });
   } catch (err) {
     console.error("Error processing sensor data:", err);
@@ -188,9 +230,7 @@ const getSensorData = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("data_records")
-      .select(
-        "id, recorded_at, currents, power_watts, energy_kwh, bill, total_energy, created_at"
-      )
+      .select("id, currents, device_readings, total_energy, bill, created_at")
       .eq("user_id", user_id)
       .order("created_at", { ascending: false });
 
