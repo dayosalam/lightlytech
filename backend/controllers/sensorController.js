@@ -236,7 +236,7 @@ const getSensorData = async (req, res) => {
     const { data, error } = await supabase
       .from("data_records")
       .select(
-        "id, recorded_at, currents, power_watts, energy_kwh, bill, total_energy, created_at"
+        "id, currents, power_watts, energy_kwh, bill, total_energy, created_at"
       )
       .eq("user_id", user_id)
       .order("created_at", { ascending: false });
