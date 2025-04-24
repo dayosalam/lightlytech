@@ -23,14 +23,14 @@ supabase
 
 const MQTT_BROKER = "mqtt://5.tcp.eu.ngrok.io:13087";
 const MQTT_TOPIC_SUBSCRIBE = "esp32/power";
-// const MQTT_TOPIC_PUBLISH = "sensor/data2";
+const MQTT_TOPIC_PUBLISH = "esp32/control";
 
 const client = mqtt.connect(MQTT_BROKER);
 
 const BAND_RATES = {
-  A: 209.5,
+  A: 250.0,
   B: 225.0,
-  C: 250.0,
+  C: 209.5,
 };
 
 client.on("connect", () => {
@@ -43,14 +43,10 @@ client.on("connect", () => {
 client.on("message", async (topic, message) => {
   if (topic !== MQTT_TOPIC_SUBSCRIBE) return;
 
-
   try {
     const data = JSON.parse(message.toString());
-
-    const { voltage, currents} = data;
-
-    const user_id = "37172b12-b000-4752-ab17-d430f4996fec"
-
+    const { voltage, currents } = data;
+    const user_id = "37172b12-b000-4752-ab17-d430f4996fec";
     const now = new Date();
 
     if (!voltage || !Array.isArray(currents) || !user_id) {
@@ -58,29 +54,29 @@ client.on("message", async (topic, message) => {
       return;
     }
 
+    // Get the most recent record for this user to calculate time difference
+    // and to retrieve accumulated values
     const { data: lastRecords } = await supabase
       .from("data_records")
-      .select("created_at")
+      .select("*") // Select all fields to get accumulated values
       .eq("user_id", user_id)
       .order("created_at", { ascending: false })
       .limit(1);
 
-    let time_elapsed_hours = 1 / 60;
+    // Calculate time elapsed since last reading
+    let time_elapsed_hours = 1 / 60; // Default to 1 minute if no previous record
     if (lastRecords && lastRecords.length > 0) {
       const lastTimestamp = new Date(lastRecords[0].created_at);
       const diffMs = now - lastTimestamp;
       time_elapsed_hours = diffMs / (1000 * 60 * 60);
     }
 
+    // Calculate current power and energy for this reading
     const power_watts = currents.map((c) => voltage * c);
-    const energy_kwh = power_watts.map((p) => (p * time_elapsed_hours) / 1000);
-    const total_energy = energy_kwh.reduce((a, b) => a + b, 0);
-    console.log(`⏱️ Time elapsed (hrs):`, time_elapsed_hours.toFixed(4));
-    console.log(`🔋 Total energy (kWh):`, total_energy.toFixed(4));
-    console.log(`⚡ Power breakdown per sensor:`, power_watts);
-    console.log("energy watts", energy_kwh)
-    console.log("Power watts", power_watts)
+    const incremental_energy_kwh = power_watts.map((p) => (p * time_elapsed_hours) / 1000);
+    const incremental_total_energy = incremental_energy_kwh.reduce((a, b) => a + b, 0);
 
+    // Get the user's tariff band
     const { data: profile } = await supabase
       .from("profiles")
       .select("band")
@@ -89,9 +85,28 @@ client.on("message", async (topic, message) => {
 
     const band = profile?.band || "A";
     const rate = BAND_RATES[band] || BAND_RATES["A"];
-    const bill = parseFloat((total_energy * rate).toFixed(2));
 
-    // First, get the most recent record for this user
+    // Initialize accumulated values
+    let accumulated_energy = incremental_total_energy;
+    let accumulated_bill = parseFloat((incremental_total_energy * rate).toFixed(2));
+
+    // If we have a previous record, add to the accumulated values
+    if (lastRecords && lastRecords.length > 0) {
+      const lastRecord = lastRecords[0];
+      
+      // If previous accumulated values exist, add the new incremental values
+      if (lastRecord.accumulated_energy !== undefined) {
+        accumulated_energy = parseFloat(lastRecord.accumulated_energy) + incremental_total_energy;
+        accumulated_bill = parseFloat(lastRecord.accumulated_bill) + parseFloat((incremental_total_energy * rate).toFixed(2));
+      }
+    }
+
+    // Format values to prevent floating point issues
+    accumulated_energy = parseFloat(accumulated_energy.toFixed(4));
+    accumulated_bill = parseFloat(accumulated_bill.toFixed(2));
+    
+
+    // First, get the most recent record for this user to update
     const { data: latestRecord } = await supabase
       .from("data_records")
       .select("id")
@@ -99,15 +114,18 @@ client.on("message", async (topic, message) => {
       .order("created_at", { ascending: false })
       .limit(1);
 
-    // If record exists, update it. Otherwise, create a new one
+    // Prepare record with both current and accumulated values
     const recordToUpsert = {
       user_id,
       voltage,
       currents,
       power_watts,
-      energy_kwh,
-      total_energy,
-      bill,
+      energy_kwh: incremental_energy_kwh,
+      total_energy: incremental_total_energy,
+      // Add accumulated fields
+      accumulated_energy,
+      accumulated_bill,
+      bill: accumulated_bill, // Set bill to the accumulated value
       created_at: now.toISOString(),
     };
 
@@ -126,7 +144,7 @@ client.on("message", async (topic, message) => {
     if (error) {
       console.error("Supabase insert error:", error);
     } else {
-      console.log(`Stored reading for user ${user_id} | Bill: ₦${bill}`);
+      console.log(`Stored reading for user ${user_id} | Current Energy: ${incremental_total_energy.toFixed(4)} kWh | Accumulated Energy: ${accumulated_energy.toFixed(4)} kWh | Bill: ₦${accumulated_bill.toFixed(2)}`);
     }
   } catch (err) {
     console.error("MQTT processing error:", err);
@@ -253,4 +271,30 @@ const getSensorData = async (req, res) => {
   }
 };
 
-module.exports = { storeSensorData, getSensorData, client };
+
+const INSTRUCTION_TOPIC = "esp/instructions"; 
+
+const sendInstruction = async (req, res) => {
+  try {
+    const { code } = req.params;
+
+    
+    // Validate that the code is a binary string
+    if (!/^[01]+$/.test(code)) {
+      return res.status(400).json({ error: "Code must be a binary string." });
+    }
+    console.log("code", code)
+
+    // Publish the code to the MQTT topic
+    client.publish(INSTRUCTION_TOPIC, code, (err) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to send instruction to ESP." });
+      }
+      return res.json({ success: true, message: "Instruction sent to ESP.", code });
+    });
+  } catch (error) {
+    return res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+module.exports = { storeSensorData, getSensorData, sendInstruction, client };
