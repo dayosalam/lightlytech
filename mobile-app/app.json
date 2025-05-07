@@ -14,6 +14,9 @@
         "image": "./assets/images/splash-icon.png",
         "resizeMode": "contain",
         "backgroundColor": "#022322"
+      },
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
     },
     "android": {
@@ -26,7 +29,17 @@
         "resizeMode": "contain",
         "backgroundColor": "#022322"
       },
-      "package": "com.x3bube.lightly"
+      "package": "com.x3bube.lightly",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "INTERNET",
+        "READ_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "SYSTEM_ALERT_WINDOW",
+        "VIBRATE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -44,6 +57,15 @@
           "imageWidth": 300,
           "imageHeight": 300
         }
+      ],
+      "react-native-wifi-reborn",
+      [
+        "react-native-permissions",
+        {
+          "ios": {
+            "permissions": []
+          }
+        }
       ]
     ],
     "experiments": {
@@ -51,12 +73,17 @@
     },
     "extra": {
       "API_URL": "http://192.168.0.185:3003/api",
+      "SUPABASE_URL": "https://scludyaklhcevtahonwi.supabase.co",
+      "SUPABASE_API": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNjbHVkeWFrbGhjZXZ0YWhvbndpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NjkzNjgsImV4cCI6MjA1MjU0NTM2OH0.T3KUMrXvLlZVHhMpvV-sI69iBfzfDxcPUMlyvRptvYk",
       "router": {
         "origin": false
       },
       "eas": {
         "projectId": "0044769b-7b16-4544-9aae-76fe0109323e"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/0044769b-7b16-4544-9aae-76fe0109323e"
     }
   }
 }

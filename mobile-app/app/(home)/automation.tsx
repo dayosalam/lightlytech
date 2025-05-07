@@ -20,6 +20,7 @@ import {
   ScheduleTypeModal,
   BaddiesCondoModal,
 } from "@/components/modals";
+import { sendInstruction } from "@/api/automation";
 
 // Room data
 const roomsData = [
@@ -30,27 +31,27 @@ const roomsData = [
     usage: "N12/9Kw/H · 52% usage",
     backgroundColor: "#E6F2FF",
   },
-  {
-    id: "2",
-    name: "Room 1",
-    emoji: "😘",
-    usage: "N12/9Kw/H · 52% usage",
-    backgroundColor: "#FFEEE6",
-  },
-  {
-    id: "3",
-    name: "Restroom (Room 1)",
-    emoji: "♟️",
-    usage: "N12/9Kw/H · 52% usage",
-    backgroundColor: "#F5F5F5",
-  },
-  {
-    id: "4",
-    name: "Restroom (Room 1)",
-    emoji: "♟️",
-    usage: "N12/9Kw/H · 52% usage",
-    backgroundColor: "#F5F5F5",
-  },
+  // {
+  //   id: "2",
+  //   name: "Room 1",
+  //   emoji: "😘",
+  //   usage: "N12/9Kw/H · 52% usage",
+  //   backgroundColor: "#FFEEE6",
+  // },
+  // {
+  //   id: "3",
+  //   name: "Restroom (Room 1)",
+  //   emoji: "♟️",
+  //   usage: "N12/9Kw/H · 52% usage",
+  //   backgroundColor: "#F5F5F5",
+  // },
+  // {
+  //   id: "4",
+  //   name: "Restroom (Room 1)",
+  //   emoji: "♟️",
+  //   usage: "N12/9Kw/H · 52% usage",
+  //   backgroundColor: "#F5F5F5",
+  // },
 ];
 
 // Schedule data
@@ -128,11 +129,28 @@ export default function AutomationScreen() {
     >
   >({});
 
-  const handleToggle = (id: string) => {
+  const handleToggle = async (id: string) => {
+    // Update the toggle state in the UI
+    const newValue = !toggles[id];
     setToggles((prev) => ({
       ...prev,
-      [id]: !prev[id],
+      [id]: newValue,
     }));
+    
+    try {
+      // Send binary instruction to the ESP device
+      // 1 for ON, 0 for OFF
+      const binaryCode = newValue ? 1 : 0;
+      console.log(`Sending instruction: ${binaryCode} for device ${id}`);
+      
+      // Call the API to send the instruction
+      const response = await sendInstruction(binaryCode);
+      console.log('Instruction sent successfully:', response);
+    } catch (error) {
+      console.error('Failed to send instruction:', error);
+      // Optionally revert the toggle if the instruction fails
+      // setToggles((prev) => ({ ...prev, [id]: !newValue }));
+    }
   };
 
   const handleSchedulePress = (id: string) => {
@@ -269,139 +287,139 @@ export default function AutomationScreen() {
   const saveSchedule = () => {};
 
   return (
-    // <SafeAreaView style={styles.container}>
-    //   <ScrollView style={styles.scrollView}>
-    //     <View style={styles.header}>
-    //       <Text style={styles.title}>Automation</Text>
-    //       {activeTab === "Schedules" && (
-    //         <TouchableOpacity onPress={openScheduleModal}>
-    //           <Text style={styles.createScheduleButton}>Create schedule</Text>
-    //         </TouchableOpacity>
-    //       )}
-    //     </View>
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.header}>
+          <Text style={styles.title}>Automation</Text>
+          {activeTab === "Schedules" && (
+            <TouchableOpacity onPress={openScheduleModal}>
+              <Text style={styles.createScheduleButton}>Create schedule</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-    //     <View style={styles.alertCarouselContainer}>
-    //       <AlertCarousel />
-    //     </View>
+        <View style={styles.alertCarouselContainer}>
+          <AlertCarousel />
+        </View>
 
-    //     {/* Tab Navigation */}
-    //     <TimePeriodSelector
-    //       selectedTimeOption={activeTab}
-    //       setSelectedTimeOption={setActiveTab}
-    //       options={["Controls", "Schedules"]}
-    //     />
+        {/* Tab Navigation */}
+        <TimePeriodSelector
+          selectedTimeOption={activeTab}
+          setSelectedTimeOption={setActiveTab}
+          options={["Controls", "Schedules"]}
+        />
 
-    //     {/* Room List */}
-    //     <View style={styles.roomList}>
-    //       {activeTab === "Controls"
-    //         ? roomsData.map((room) => (
-    //             <View key={room.id} style={styles.roomItem}>
-    //               <View style={styles.roomInfo}>
-    //                 <View
-    //                   style={[
-    //                     styles.emojiContainer,
-    //                     { backgroundColor: room.backgroundColor },
-    //                   ]}
-    //                 >
-    //                   <Text style={styles.emoji}>{room.emoji}</Text>
-    //                 </View>
-    //                 <View style={styles.roomDetails}>
-    //                   <Text style={styles.roomName}>{room.name}</Text>
-    //                   <Text style={styles.roomUsage}>{room.usage}</Text>
-    //                 </View>
-    //               </View>
-    //               <Switch
-    //                 value={toggles[room.id]}
-    //                 onValueChange={() => handleToggle(room.id)}
-    //                 trackColor={{ false: "#D1D1D6", true: "#34C759" }}
-    //                 thumbColor="#FFFFFF"
-    //                 ios_backgroundColor="#D1D1D6"
-    //                 style={styles.switch}
-    //               />
-    //             </View>
-    //           ))
-    //         : schedulesData.map((schedule) => (
-    //             <TouchableOpacity
-    //               onPress={() => handleSchedulePress(schedule.id)}
-    //               key={schedule.id}
-    //               style={styles.scheduleItem}
-    //             >
-    //               <View style={styles.roomInfo}>
-    //                 <View
-    //                   style={[
-    //                     styles.emojiContainer,
-    //                     { backgroundColor: schedule.backgroundColor },
-    //                   ]}
-    //                 >
-    //                   <Text style={styles.emoji}>{schedule.emoji}</Text>
-    //                 </View>
-    //                 <View style={styles.roomDetails}>
-    //                   <Text style={styles.roomName}>{schedule.name}</Text>
-    //                 </View>
-    //               </View>
-    //               <View style={styles.scheduleStatus}>
-    //                 {schedule.status && (
-    //                   <Text style={styles.activeStatus}>{schedule.status}</Text>
-    //                 )}
-    //                 <Ionicons
-    //                   name="chevron-forward"
-    //                   size={20}
-    //                   color="#8B9A99"
-    //                 />
-    //               </View>
-    //             </TouchableOpacity>
-    //           ))}
-    //     </View>
-    //   </ScrollView>
+        {/* Room List */}
+        <View style={styles.roomList}>
+          {activeTab === "Controls"
+            ? roomsData.map((room) => (
+                <View key={room.id} style={styles.roomItem}>
+                  <View style={styles.roomInfo}>
+                    <View
+                      style={[
+                        styles.emojiContainer,
+                        { backgroundColor: room.backgroundColor },
+                      ]}
+                    >
+                      <Text style={styles.emoji}>{room.emoji}</Text>
+                    </View>
+                    <View style={styles.roomDetails}>
+                      <Text style={styles.roomName}>{room.name}</Text>
+                      <Text style={styles.roomUsage}>{room.usage}</Text>
+                    </View>
+                  </View>
+                  <Switch
+                    value={toggles[room.id]}
+                    onValueChange={() => handleToggle(room.id)}
+                    trackColor={{ false: "#D1D1D6", true: "#34C759" }}
+                    thumbColor="#FFFFFF"
+                    ios_backgroundColor="#D1D1D6"
+                    style={styles.switch}
+                  />
+                </View>
+              ))
+            : schedulesData.map((schedule) => (
+                <TouchableOpacity
+                  onPress={() => handleSchedulePress(schedule.id)}
+                  key={schedule.id}
+                  style={styles.scheduleItem}
+                >
+                  <View style={styles.roomInfo}>
+                    <View
+                      style={[
+                        styles.emojiContainer,
+                        { backgroundColor: schedule.backgroundColor },
+                      ]}
+                    >
+                      <Text style={styles.emoji}>{schedule.emoji}</Text>
+                    </View>
+                    <View style={styles.roomDetails}>
+                      <Text style={styles.roomName}>{schedule.name}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.scheduleStatus}>
+                    {schedule.status && (
+                      <Text style={styles.activeStatus}>{schedule.status}</Text>
+                    )}
+                    <Ionicons
+                      name="chevron-forward"
+                      size={20}
+                      color="#8B9A99"
+                    />
+                  </View>
+                </TouchableOpacity>
+              ))}
+        </View>
+      </ScrollView>
 
-    //   {/* Schedule Modal */}
-    //   <ScheduleTypeModal
-    //     visible={modalVisible}
-    //     onClose={closeScheduleModal}
-    //     selectedScheduleType={selectedScheduleType}
-    //     onScheduleTypeSelect={handleScheduleTypeSelect}
-    //   />
+      {/* Schedule Modal */}
+      <ScheduleTypeModal
+        visible={modalVisible}
+        onClose={closeScheduleModal}
+        selectedScheduleType={selectedScheduleType}
+        onScheduleTypeSelect={handleScheduleTypeSelect}
+      />
 
-    //   {/* Room Selection Modal */}
-    //   <RoomSelectionModal
-    //     visible={roomSelectionModalVisible}
-    //     onClose={closeRoomSelectionModal}
-    //     onContinue={continueWithSelectedRooms}
-    //     rooms={roomsData}
-    //     selectedRooms={selectedRooms}
-    //     onRoomSelect={toggleRoomSelection}
-    //   />
+      {/* Room Selection Modal */}
+      <RoomSelectionModal
+        visible={roomSelectionModalVisible}
+        onClose={closeRoomSelectionModal}
+        onContinue={continueWithSelectedRooms}
+        rooms={roomsData}
+        selectedRooms={selectedRooms}
+        onRoomSelect={toggleRoomSelection}
+      />
 
-    //   {/* Custom Schedule Modal */}
-    //   <CustomScheduleModal
-    //     visible={customScheduleModalVisible}
-    //     onClose={closeCustomScheduleModal}
-    //     onSave={saveCustomSchedule}
-    //     rooms={roomsData}
-    //     selectedRooms={selectedRooms}
-    //     roomSettings={roomSettings}
-    //     expandedOptions={expandedOptions}
-    //     expandedRooms={expandedRooms}
-    //     onRoomExpansion={toggleRoomExpansion}
-    //     onOptionExpansion={toggleOptionExpansion}
-    //     isOptionExpanded={isOptionExpanded}
-    //     onRoomSettingChange={toggleRoomSetting}
-    //   />
+      {/* Custom Schedule Modal */}
+      <CustomScheduleModal
+        visible={customScheduleModalVisible}
+        onClose={closeCustomScheduleModal}
+        onSave={saveCustomSchedule}
+        rooms={roomsData}
+        selectedRooms={selectedRooms}
+        roomSettings={roomSettings}
+        expandedOptions={expandedOptions}
+        expandedRooms={expandedRooms}
+        onRoomExpansion={toggleRoomExpansion}
+        onOptionExpansion={toggleOptionExpansion}
+        isOptionExpanded={isOptionExpanded}
+        onRoomSettingChange={toggleRoomSetting}
+      />
 
-    //   {/* Baddies Condo Modal */}
-    //   <BaddiesCondoModal
-    //     visible={baddiesModalVisible}
-    //     onClose={closeBaddiesModal}
-    //     onSave={saveSchedule}
-    //     lightsSwitch={lightsSwitch}
-    //     setLightsSwitch={setLightsSwitch}
-    //   />
-    // </SafeAreaView>
+      {/* Baddies Condo Modal */}
+      <BaddiesCondoModal
+        visible={baddiesModalVisible}
+        onClose={closeBaddiesModal}
+        onSave={saveSchedule}
+        lightsSwitch={lightsSwitch}
+        setLightsSwitch={setLightsSwitch}
+      />
+    </SafeAreaView>
 
-    <View style={styles.container}>
-      <Text style={[styles.title, { marginLeft: 16 }]}>Automation</Text>
-      <Text className="text-gray-500 text-center my-auto font-[InterSemiBold] text-[16px]">Coming Soon...</Text>
-    </View>
+    // <View style={styles.container}>
+    //   <Text style={[styles.title, { marginLeft: 16 }]}>Automation</Text>
+    //   <Text className="text-gray-500 text-center my-auto font-[InterSemiBold] text-[16px]">Coming Soon...</Text>
+    // </View>
   );
 }
 

@@ -44,6 +44,11 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
 
+  const handleLogOut = async () => {
+    await logout();
+    router.replace("/(getstarted)/auth");
+  };
+
   const handleNavigation = (route: string) => {
     // Use the route as is without type checking
     router.push(route as any);
@@ -110,8 +115,8 @@ export default function ProfileScreen() {
             onPress={() => handleNavigation("/(profile)/support")}
           />
         </View>
-        <TouchableOpacity className="my-4 items-center" onPress={() => logout()
-        }>
+        <TouchableOpacity className="my-4 items-center" onPress={() => handleLogOut()}
+        >
           <Text className="text-black font-[InterSemiBold]">Logout</Text>
         </TouchableOpacity>
       </ScrollView>

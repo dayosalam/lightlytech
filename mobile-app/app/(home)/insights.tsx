@@ -28,6 +28,9 @@ export default function InsightsScreen() {
     useState("Most consuming");
   const { readings } = useReadings();
 
+  console.log(readings[0])
+
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -63,8 +66,8 @@ export default function InsightsScreen() {
           <View style={styles.powerUsageContainer}>
             <View style={styles.powerUsageHeader}>
               <View>
-                <Text style={styles.powerUsageValue}>₦{readings[0].bill}</Text>
-                <Text style={styles.powerUsageUnit}>{totalEnergy(readings[0].energy_kwh)}kWh</Text>
+                <Text style={styles.powerUsageValue}>₦{readings[0]?.bill || 0}</Text>
+                <Text style={styles.powerUsageUnit}>{readings[0]?.total_energy.toFixed(2) || 0}kWh</Text>
               </View>
             </View>
 
