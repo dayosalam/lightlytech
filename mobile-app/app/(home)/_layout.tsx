@@ -24,10 +24,10 @@ export default function TabsLayout() {
 
   const pathname = usePathname();
 
-  const isHomeIndex = pathname === "/";
-  const isInsights = pathname === "/insights";
-  const isAutomation = pathname === "/automation";
-  const isProfile = pathname === "/profile";
+  const isHomeIndex = pathname === "/" || pathname === "/index";
+  const isInsights = pathname.startsWith("/insights");
+  const isAutomation = pathname.startsWith("/automation");
+  const isProfile = pathname.startsWith("/profile");
 
   return (
     <Tabs

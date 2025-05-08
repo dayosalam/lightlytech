@@ -115,9 +115,9 @@ export default function ProfileScreen() {
             onPress={() => handleNavigation("/(profile)/support")}
           />
         </View>
-        <TouchableOpacity className="my-4 items-center" onPress={() => handleLogOut()}
+        <TouchableOpacity style={styles.logOutButton} className="my-4 items-center" onPress={() => handleLogOut()}
         >
-          <Text className="text-black font-[InterSemiBold]">Logout</Text>
+          <Text style={styles.logOuttext} className="text-black font-[InterSemiBold]">Logout</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -131,6 +131,16 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  logOutButton: {
+alignItems: "center",
+    borderRadius: 12,
+    marginTop: 20,
+  },
+  logOuttext: {
+    fontSize: 16,
+    fontFamily: "InterSemiBold",
+    color: "#022322",
   },
   scrollContent: {
     paddingBottom: 30,

@@ -6,6 +6,11 @@ import { TouchableOpacity, StyleSheet } from "react-native";
 export default function RoomLayout() {
   const router = useRouter();
 
+  const handleBack = () => {
+    // Explicitly navigate back to the home screen
+    router.push("/(home)");
+  };
+
   return (
     <Stack
       screenOptions={{
@@ -20,7 +25,7 @@ export default function RoomLayout() {
         headerTitleAlign: "center",
         headerShadowVisible: false,
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={handleBack}>
             <Ionicons name="chevron-back" size={28} color="#022322" />
           </TouchableOpacity>
         ),

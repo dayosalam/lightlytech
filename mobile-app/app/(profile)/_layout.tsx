@@ -7,14 +7,28 @@ const ProfileLayout = () => {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Log the actual pathname to see what we're getting
+  // Handle back navigation
+  const handleBack = () => {
+    // If we're in a profile sub-screen, go back to the main profile screen
+    if (pathname.includes("/account") || 
+        pathname.includes("/notifications") || 
+        pathname.includes("/security") || 
+        pathname.includes("/rewards") ||
+        pathname.includes("/change-password") ||
+        pathname.includes("/change-email") ||
+        pathname.includes("/lightly-box-settings") ||
+        pathname.includes("/support") ||
+        pathname.includes("/invite-friends")) {
+      router.push("/(home)/profile");
+    } else {
+      router.back();
+    }
+  };
 
   // Use includes instead of exact matching
   const isAccount =
     pathname.includes("/account") && !pathname.includes("/edit-account");
-  console.log("isAccount", isAccount);
   const isEditAccount = pathname.includes("/edit-account");
-  console.log("isEditAccount", isEditAccount);
 
   return (
     <View style={styles.container}>
@@ -31,7 +45,7 @@ const ProfileLayout = () => {
           headerTitleAlign: "center",
           headerShadowVisible: false,
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={handleBack}>
               <Ionicons name="chevron-back" size={24} color="#022322" />
             </TouchableOpacity>
           ),

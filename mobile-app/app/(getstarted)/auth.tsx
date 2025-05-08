@@ -45,7 +45,8 @@ export default function AuthScreen() {
       await login({ email, password });
 
 
-      isConnectedBox ? router.push("/(home)") : router.push("/setup");
+      // isConnectedBox ? router.push("/(home)") : router.push("/setup");
+      router.replace("/(home)");
     } catch (error: any) {
       console.error("Error logging in:", error.message || error);
       setError(error.message || "Failed to login. Please try again.");
