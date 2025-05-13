@@ -4,7 +4,8 @@ const {
   updateUserProfile,
   updateNotifications,
   changePassword,
-  saveCondoName
+  saveCondoName,
+  updateUserDetails,
 } = require("../controllers/profileController");
 
 const {
@@ -22,5 +23,5 @@ router.put("/notifications", authMiddleware, updateNotifications);
 router.post("/avatar", authMiddleware, avatarUploadMiddleware, uploadAvatar);
 router.put("/change-password", authMiddleware, changePassword);
 router.put("/condo-name", authMiddleware, saveCondoName);
-
+router.put("/user-details", authMiddleware, updateUserDetails);
 module.exports = router;

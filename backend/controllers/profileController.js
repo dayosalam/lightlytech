@@ -232,6 +232,23 @@ const saveCondoName = async (req, res) => {
   return res.status(200).json({ message: `Condo name set to ${condo_name}` });
 }
 
+// update user details
+const updateUserDetails = async (req, res) => {
+  const { full_name, phone, band, emoji } = req.body;
+  const user_id = req.user.id;
+
+  const { error } = await supabase
+    .from("users")
+    .update({ full_name, phone, band, emoji })
+    .eq("id", user_id);
+
+  if (error) {
+    return res.status(500).json({ error: "Failed to update user details" });
+  }
+
+  return res.status(200).json({ message: "User details updated successfully" });
+}
+
 module.exports = {
   getUserProfile,
   updateUserProfile,
@@ -241,4 +258,5 @@ module.exports = {
   updateUserBand,
   changePassword,
   saveCondoName,
+  updateUserDetails,
 };
