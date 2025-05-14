@@ -135,7 +135,7 @@ exports.changePassword = async (req, res) => {
   const user_id = req.user.id;
 
 
-  const {error} = await supabase.auth.updateUser({
+  const {error} = await supabaseServiceRole.auth.admin.updateUserById(user_id, {
     password
   })
 
@@ -153,7 +153,7 @@ exports.changeEmail = async (req, res) => {
   const user_id = req.user.id;
 
 
-  const {error} = await supabase.auth.updateUser({
+  const {error} = await supabaseServiceRole.auth.admin.updateUserById(user_id, {
     email
   })
 
