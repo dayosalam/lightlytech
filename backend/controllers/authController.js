@@ -123,20 +123,45 @@ exports.logout = async (req, res) => {
 exports.changePassword = async (req, res) => {
   const { password } = req.body;
 
+  const token = req.headers.authorization?.split(" ")[1];
+
   if (!password) {
     return res.status(400).json({ error: "Password is required" });
   }
 
-  const { error } = await supabase.auth.updateUser({
-    password,
-  });
-
-  if (error) {
-    console.error("❌ Supabase Auth Error:", error.message);
-    return res.status(400).json({ error: error.message });
+  if (!token) {
+    return res.status(401).json({ error: "Authentication token missing" });
   }
 
-  res.status(200).json({ message: "Password changed successfully" });
+  try {
+    // First, get the user from the session token
+    const { data: sessionData, error: sessionError } = await supabase.auth.getUser(token);
+    
+    if (sessionError) {
+      console.error("❌ Supabase Auth Session Error:", sessionError.message);
+      return res.status(401).json({ error: sessionError.message });
+    }
+    
+    if (!sessionData.user) {
+      return res.status(401).json({ error: "Invalid authentication token" });
+    }
+
+    // Now update the user's password using the admin API
+    const { error } = await supabase.auth.admin.updateUserById(
+      sessionData.user.id,
+      { password }
+    );
+
+    if (error) {
+      console.error("❌ Supabase Auth Error:", error.message);
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (err) {
+    console.error("❌ Server Error:", err);
+    return res.status(500).json({ error: "Server error occurred" });
+  }
 };
 
 // change email for authenticated user
