@@ -118,3 +118,43 @@ exports.logout = async (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
   console.log(`✅ user logged out`);
 };
+
+// change password for authenticated user
+exports.changePassword = async (req, res) => {
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ error: "Password is required" });
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password,
+  });
+
+  if (error) {
+    console.error("❌ Supabase Auth Error:", error.message);
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({ message: "Password changed successfully" });
+};
+
+// change email for authenticated user
+exports.changeEmail = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    email,
+  });
+
+  if (error) {
+    console.error("❌ Supabase Auth Error:", error.message);
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({ message: "Email changed successfully" });
+};
