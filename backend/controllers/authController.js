@@ -1,4 +1,4 @@
-const supabase = require("../config/supabaseConfig");
+const { supabase, supabaseServiceRole } = require("../config/supabaseConfig");
 
 exports.register = async (req, res) => {
   try {
@@ -147,7 +147,7 @@ exports.changePassword = async (req, res) => {
     }
 
     // Now update the user's password using the admin API
-    const { error } = await supabase.auth.admin.updateUserById(
+    const { error } = await supabaseServiceRole.auth.admin.updateUserById(
       sessionData.user.id,
       { password }
     );
@@ -172,9 +172,10 @@ exports.changeEmail = async (req, res) => {
     return res.status(400).json({ error: "Email is required" });
   }
 
-  const { error } = await supabase.auth.updateUser({
-    email,
-  });
+  const { error } = await supabaseServiceRole.auth.admin.updateUserById(
+    sessionData.user.id,
+    { email }
+  );
 
   if (error) {
     console.error("❌ Supabase Auth Error:", error.message);
