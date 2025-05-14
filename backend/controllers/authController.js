@@ -77,6 +77,16 @@ exports.signIn = async (req, res) => {
       return res.status(400).json({ error: signInError.message });
     }
 
+    const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+      access_token: signInData.session?.access_token,
+      refresh_token: signInData.session?.refresh_token
+    })
+
+    if (sessionError) {
+      console.error("❌ Supabase Auth Error:", sessionError.message);
+      return res.status(400).json({ error: sessionError.message });
+    }
+
     // fetch user details from db
     const { data: user, error } = await supabase
       .from("users")
@@ -122,101 +132,34 @@ exports.logout = async (req, res) => {
 // Change password for authenticated user
 exports.changePassword = async (req, res) => {
   const { password } = req.body;
-  const token = req.headers.authorization?.split(" ")[1];
+  const user_id = req.user.id;
 
-  if (!password) {
-    return res.status(400).json({ error: "Password is required" });
+
+  const {error} = await supabase.auth.updateUser({
+    password
+  })
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
   }
 
-  if (!token) {
-    return res.status(401).json({ error: "Authentication token missing" });
-  }
-
-  try {
-    // First, get the user from the session token
-    const { data: sessionData, error: sessionError } = await supabase.auth.getUser(token);
-    
-    if (sessionError) {
-      console.error("❌ Supabase Auth Session Error:", sessionError.message);
-      return res.status(401).json({ error: sessionError.message });
-    }
-    
-    if (!sessionData.user) {
-      return res.status(401).json({ error: "Invalid authentication token" });
-    }
-
-    // Now update the user's password using the service role client
-    const { error } = await supabaseServiceRole.auth.admin.updateUserById(
-      sessionData.user.id,
-      { password }
-    );
-
-    if (error) {
-      console.error("❌ Supabase Auth Error:", error.message);
-      return res.status(400).json({ error: error.message });
-    }
-
-    console.log(`✅ Password changed successfully for user: ${sessionData.user.id}`);
-    res.status(200).json({ message: "Password changed successfully" });
-  } catch (err) {
-    console.error("❌ Server Error:", err);
-    return res.status(500).json({ error: "Server error occurred" });
-  }
+  res.status(200).json({ message: "Password changed successfully" });
 };
+
 
 // Change email for authenticated user
 exports.changeEmail = async (req, res) => {
   const { email } = req.body;
-  const token = req.headers.authorization?.split(" ")[1];
+  const user_id = req.user.id;
 
-  if (!email) {
-    return res.status(400).json({ error: "Email is required" });
+
+  const {error} = await supabase.auth.updateUser({
+    email
+  })
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
   }
 
-  if (!token) {
-    return res.status(401).json({ error: "Authentication token missing" });
-  }
-
-  try {
-    // First, get the user from the session token
-    const { data: sessionData, error: sessionError } = await supabase.auth.getUser(token);
-    
-    if (sessionError) {
-      console.error("❌ Supabase Auth Session Error:", sessionError.message);
-      return res.status(401).json({ error: sessionError.message });
-    }
-    
-    if (!sessionData.user) {
-      return res.status(401).json({ error: "Invalid authentication token" });
-    }
-
-    // Now update the user's email using the service role client
-    const { error } = await supabaseServiceRole.auth.admin.updateUserById(
-      sessionData.user.id,
-      { email }
-    );
-
-    if (error) {
-      console.error("❌ Supabase Auth Error:", error.message);
-      return res.status(400).json({ error: error.message });
-    }
-
-    // Also update the email in the users table
-    const { error: dbError } = await supabase
-      .from("users")
-      .update({ email })
-      .eq("id", sessionData.user.id);
-
-    if (dbError) {
-      console.error("❌ Database Error:", dbError.message);
-      // Don't return error here, as the auth update was successful
-      // Just log the error for debugging
-    }
-
-    console.log(`✅ Email changed successfully for user: ${sessionData.user.id}`);
-    res.status(200).json({ message: "Email changed successfully" });
-  } catch (err) {
-    console.error("❌ Server Error:", err);
-    return res.status(500).json({ error: "Server error occurred" });
-  }
+  res.status(200).json({ message: "Email changed successfully" });
 };
