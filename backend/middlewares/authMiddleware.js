@@ -1,5 +1,5 @@
 
-const supabase = require("../config/supabaseConfig");
+const {supabase} = require("../config/supabaseConfig");
 
 const authMiddleware = async (req, res, next) => {
     const token = req.headers.authorization?.split(" ")[1];
