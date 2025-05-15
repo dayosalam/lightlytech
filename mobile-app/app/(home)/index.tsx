@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -16,18 +16,26 @@ import PowerUsage from "@/components/home/PowerUsage";
 import AlertCarousel from "@/components/home/AlertCarousel";
 import PowerUsageSection from "@/components/home/PowerUsageSection";
 import RewardSection from "@/components/home/RewardSection";
+import MoodModal from "@/components/modals/MoodModal";
 import { useReadings } from "@/context/ReadingsContext";
-import { totalEnergy } from "@/utils/helpers";
 
 export default function HomeScreen() {
+  const [showMood, setShowMood] = useState(false)
   const { readings } = useReadings();
+
+
+  const handleMoodModalClose = () => {
+    setShowMood(false);
+  };
+  
+  
   
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style="dark" />
       <ScrollView style={styles.scrollView}>
         {/* Header */}
-        <Header />
+        <Header setShowMood={setShowMood} />
 
         {/* Power Usage */}
         <PowerUsage bill={readings[0]?.bill || 0} totalEnergy={Number(readings[0]?.total_energy.toFixed(2)) || 0} />
@@ -39,7 +47,9 @@ export default function HomeScreen() {
         <PowerUsageSection />
 
         {/* Earn Rewards */}
-        <RewardSection />
+        {/* <RewardSection /> */}
+
+        <MoodModal visible={showMood} onClose={handleMoodModalClose} />
       </ScrollView>
     </SafeAreaView>
   );

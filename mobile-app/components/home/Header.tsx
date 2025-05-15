@@ -3,10 +3,16 @@ import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@/context/AuthContext";
 
-const Header = () => {
+const MOODS: Record<number, { label: string; emoji: string }> = {
+  1: { label: "Light Savings", emoji: "💡" },
+  2: { label: "Out to work", emoji: "🏢" },
+  3: { label: "Chilling", emoji: "😎" },
+  4: { label: "Party Mode", emoji: "🎉" },
+  // Add more moods as needed
+};
+
+const Header = ({ setShowMood }: { setShowMood: (value: boolean) => void }) => {
   const { user } = useAuth();
-
-
 
   const formatString = (str: string) => {
     if (str.length > 10) {
@@ -15,21 +21,27 @@ const Header = () => {
     return str;
   };
 
+  const moodInfo = user?.mood ? MOODS[user.mood] : MOODS[1];
+
   return (
     <View style={styles.header}>
       <View style={styles.profileSection}>
         <View style={styles.avatarContainer}>
-          <Ionicons name="person" size={24} color="#8b9a99" />
+          {user?.emoji ? (
+            <Text style={styles.emoji}>{user.emoji}</Text>
+          ) : (
+            <Ionicons name="person" size={24} color="#8b9a99" />
+          )}
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.greeting}>Hey there!</Text>
-          <Text style={styles.condoName}>{user?.condo_name || "User"} Condo</Text>
+          <Text style={styles.condoName}>{user?.condo_name || "User"}</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.lightSavingsButton}>
-        <Ionicons name="bulb-outline" size={18} color="#28a745" />
+      <TouchableOpacity style={styles.lightSavingsButton} onPress={() => setShowMood(true)}>
+        <Text style={styles.emoji}>{moodInfo.emoji}</Text>
         <Text style={styles.lightSavingsText}>
-          {formatString("Light savings")}
+          {formatString(moodInfo.label)}
         </Text>
         <Ionicons name="chevron-down" size={18} color="#8b9a99" />
       </TouchableOpacity>
@@ -57,6 +69,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#e4e4e4",
     justifyContent: "center",
     alignItems: "center",
+  },
+  emoji: {
+    fontSize: 15,
+    color: "#022322",
   },
   userInfo: {
     marginLeft: 10,

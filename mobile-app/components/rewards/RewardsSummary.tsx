@@ -3,7 +3,6 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Token from "@/assets/icons/points.svg";
-import { LinearGradient } from "expo-linear-gradient";
 
 interface RewardsSummaryProps {
   totalRewards: number;
@@ -27,12 +26,8 @@ const RewardsSummary = ({
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={["#556C6B", "#022322"]}
-        style={styles.contentContainer}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-      >
+      <View style={[styles.contentContainer, { backgroundColor: "#022322" }]}>
+
         <Text style={styles.rewardsAmount}>
           {totalRewards.toFixed(2)}
           <Token style={{ transform: [{ rotate: "70deg" }] }} />
@@ -46,7 +41,7 @@ const RewardsSummary = ({
           <Text style={styles.historyButtonText}>Reward history</Text>
           <Ionicons name="chevron-forward" size={16} color="#ffffff" />
         </TouchableOpacity>
-      </LinearGradient>
+      </View>
     </View>
   );
 };
@@ -63,6 +58,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingVertical: 18,
     alignItems: "center",
+    backgroundColor: "#022322", // Fallback solid color instead of gradient
   },
   rewardsAmount: {
     fontSize: 36,

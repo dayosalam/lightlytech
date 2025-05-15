@@ -11,6 +11,7 @@ import {
   Animated,
   Dimensions,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import Avatar from "@/components/profile/Avatar";
@@ -18,22 +19,26 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "@/context/AuthContext";
+import { updateUserDetails } from "@/api/profile";
+import { Storage } from "@/utils/storage";
 
 const { height } = Dimensions.get("window");
 
 const EditAccount = () => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEmojiModal, setShowEmojiModal] = useState(false);
   const uploadModalAnimation = useRef(new Animated.Value(height)).current;
   const emojiModalAnimation = useRef(new Animated.Value(height)).current;
   const [selectedEmoji, setSelectedEmoji] = useState<string | undefined>(
-    undefined
+    user?.emoji || undefined
   );
   const [selectedImageUri, setSelectedImageUri] = useState<string | undefined>(
     undefined
   );
+  const [loading, setLoading] = useState(false);
 
   // Initial user data - would typically come from context or API
   const [formData, setFormData] = useState({
@@ -54,14 +59,32 @@ const EditAccount = () => {
     }));
   };
 
-  const handleSave = () => {
-    // Here you would typically save the data to your API
-    console.log("Saving user data:", formData);
-    console.log("Selected emoji:", selectedEmoji);
-    console.log("Selected image URI:", selectedImageUri);
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      const updatedUser = {
+        name: formData.firstName,
+        condo_name: formData.homeName,
+        emoji: selectedEmoji || "",
+      };
 
-    // Navigate back to account screen
-    router.back();
+      // Save to backend
+      await updateUserDetails(updatedUser);
+
+      // Update user in auth context - this will update the UI immediately
+      await updateUser(updatedUser);
+
+      Alert.alert(
+        "Success", 
+        "User details updated successfully", 
+        [{ text: "OK", onPress: () => router.back() }]
+      );
+    } catch (error) {
+      console.error("Error updating user details:", error);
+      Alert.alert("Error", "Failed to update user details");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openUploadModal = () => {
@@ -132,7 +155,7 @@ const EditAccount = () => {
 
     if (!result.canceled) {
       setSelectedImageUri(result.assets[0].uri);
-      setSelectedEmoji(undefined); // Clear any selected emoji
+      setSelectedEmoji(null); // Clear any selected emoji
     }
   };
 
@@ -174,6 +197,7 @@ const EditAccount = () => {
     "🦁",
     "🐯",
     "🦊",
+    "⚡",
   ];
 
   return (
@@ -194,7 +218,7 @@ const EditAccount = () => {
         >
           <Avatar
             edit={true}
-            emoji={selectedEmoji}
+            emoji={selectedEmoji || ""}
             imageUri={selectedImageUri}
           />
         </TouchableOpacity>
@@ -248,7 +272,7 @@ const EditAccount = () => {
           style={styles.saveButton}
           onPress={handleSave}
         >
-          <Text style={styles.saveButtonText}>Update changes</Text>
+          <Text style={styles.saveButtonText}>{loading ? <ActivityIndicator /> : "Update changes"}</Text>
         </TouchableOpacity>
       </ScrollView>
 

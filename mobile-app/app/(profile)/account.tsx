@@ -20,6 +20,7 @@ const AccountInfoItem = ({
 
 const Account = () => {
   const { user } = useAuth();
+
   // This would typically come from your user context or API
   const userInfo = {
     name: user?.name || "",
@@ -31,7 +32,7 @@ const Account = () => {
       <Text style={styles.heading}>Account information</Text>
 
       <View style={styles.profileSection}>
-        <Avatar name={userInfo.name} email={userInfo.email} />
+        <Avatar emoji={user?.emoji || ""} name={userInfo.name} email={userInfo.email} />
       </View>
 
       <View style={styles.infoSection}>

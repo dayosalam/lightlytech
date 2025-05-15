@@ -61,7 +61,7 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.header}>
-          <Avatar name={user?.condo_name || ""} />
+          <Avatar emoji={user?.emoji || ""} name={user?.condo_name || ""} />
         </View>
 
         <View style={styles.menuContainer}>
@@ -72,7 +72,7 @@ export default function ProfileScreen() {
             onPress={() => handleNavigation("/(profile)/account")}
           />
 
-          <MenuItem
+          {/* <MenuItem
             icon={
               <Ionicons
                 name="notifications-outline"
@@ -83,7 +83,7 @@ export default function ProfileScreen() {
             title="Notifications"
             subtitle="Set up notifications"
             onPress={() => handleNavigation("/(profile)/notifications")}
-          />
+          /> */}
 
           <MenuItem
             icon={<Ionicons name="shield-outline" size={24} color="#022322" />}
@@ -92,12 +92,12 @@ export default function ProfileScreen() {
             onPress={() => handleNavigation("/(profile)/security")}
           />
 
-          <MenuItem
+          {/* <MenuItem
             icon={<Ionicons name="gift-outline" size={24} color="#022322" />}
             title="Rewards"
             subtitle="Manage earned rewards"
             onPress={() => handleNavigation("/(profile)/rewards")}
-          />
+          /> */}
 
           <MenuItem
             icon={<Ionicons name="cube-outline" size={24} color="#022322" />}

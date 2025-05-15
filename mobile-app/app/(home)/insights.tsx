@@ -9,7 +9,6 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import UsageBreakdownCard from "../../components/UsageBreakdownCard";
 import { Svg, Path, Circle, Line } from "react-native-svg";
 import AverageUsage from "@/components/AverageUsage";
@@ -28,7 +27,6 @@ export default function InsightsScreen() {
     useState("Most consuming");
   const { readings } = useReadings();
 
-  console.log(readings[0])
 
 
   return (

@@ -78,7 +78,7 @@ export default function PowerUsageChart({
       }
     }
     // Fallback to provided data or default
-    return data || [800, 1200, 500, 600, 800, 1700, 1400, 1100];
+    return data || [10, 100, 20, 30, 0, 0, 0, 0];
   }, [readings, dataType, timePeriod, data]);
 
   // Generate default labels if none provided, based on time period

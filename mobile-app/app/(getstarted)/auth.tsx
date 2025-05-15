@@ -18,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { Storage } from "@/utils/storage";
 import { useAuth } from "@/context/AuthContext";
+import { navigateBasedOnSetup } from "@/utils/setupCheck";
 
 export default function AuthScreen() {
   const [email, setEmail] = useState("");
@@ -30,7 +31,6 @@ export default function AuthScreen() {
   const { login } = useAuth();
 
   const handleContinue = async () => {
-    const isConnectedBox = await Storage.getHasConnectedBox();
     try {
       setError(null);
       setIsLoading(true);
@@ -42,11 +42,11 @@ export default function AuthScreen() {
         return;
       }
 
+      // Authenticate the user
       await login({ email, password });
-
-
-      // isConnectedBox ? router.push("/(home)") : router.push("/setup");
-      router.replace("/(home)");
+      
+      // Use the setupCheck utility to navigate based on box connection status
+      await navigateBasedOnSetup();
     } catch (error: any) {
       console.error("Error logging in:", error.message || error);
       setError(error.message || "Failed to login. Please try again.");
@@ -56,21 +56,18 @@ export default function AuthScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    // Handle Google sign in
-    console.log("Google Sign In");
+    try {
+      // Handle Google sign in
+      console.log("Google Sign In");
 
-    // For demo purposes, set as authenticated
-    await Storage.setIsAuthenticated(true);
+      // For demo purposes, set as authenticated
+      await Storage.setIsAuthenticated(true);
 
-    // Check if user has connected their box
-    const hasConnectedBox = await Storage.getHasConnectedBox();
-
-    if (hasConnectedBox) {
-      // If box is already connected, navigate to home
-      router.replace("/(home)");
-    } else {
-      // If box is not connected, navigate to setup
-      router.replace("/setup");
+      // Use the setupCheck utility to navigate based on box connection status
+      await navigateBasedOnSetup();
+    } catch (error) {
+      console.error("Error with Google sign in:", error);
+      setError("Failed to sign in with Google. Please try again.");
     }
   };
 
@@ -386,6 +383,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
     fontSize: 14,
+    fontFamily: "InterRegular",
   },
   inputError: {
     borderColor: "#ff3b30",

@@ -30,7 +30,7 @@ const Avatar = ({
         )}
         {edit && (
           <View style={styles.pencilContainer}>
-            <Ionicons name="pencil" size={16} color="#022322" />
+            <Ionicons name="pencil" size={20} color="#022322" />
           </View>
         )}
       </View>
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     color: "#8b9a99",
   },
   emoji: {
-    fontSize: 36,
+    fontSize: 26,
   },
   image: {
     width: "100%",

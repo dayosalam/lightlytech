@@ -12,6 +12,7 @@ import {
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { changePassword } from "@/api/auth";
 
 const ChangePassword = () => {
   const router = useRouter();
@@ -21,26 +22,43 @@ const ChangePassword = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChangePassword = () => {
+
+  const validatePassword = (password: string) => {
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const handleChangePassword = async () => {
     if (!currentPassword || !newPassword) {
       Alert.alert("Error", "Please fill in all fields");
       return;
     }
 
-    if (newPassword.length < 6) {
-      Alert.alert("Error", "New password must be at least 6 characters long");
+    if (!validatePassword(newPassword)) {
+      Alert.alert("Error", "New password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      Alert.alert("Error", "New password must be different from current password");
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await changePassword(newPassword);
+      console.log(response);
       Alert.alert("Success", "Your password has been updated successfully", [
         { text: "OK", onPress: () => router.back() },
       ]);
-    }, 1500);
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+      console.log(error);
+    } finally {
+      setIsLoading(false);
+    }
+
   };
 
   return (

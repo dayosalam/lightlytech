@@ -5,4 +5,7 @@ export interface User {
   password?: string;
   token?: string;
   condo_name?: string;
+  band?: string;
+  emoji?: string;
+  mood?: number;
 }

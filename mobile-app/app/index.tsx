@@ -12,23 +12,24 @@ export default function Index() {
       try {
         // Check user state
         const hasSeenOnboarding = await Storage.getHasSeenOnboarding();
-        // const isAuthenticated = await Storage.getIsAuthenticated();
         const isAuthenticated = await Storage.getIsAuthenticated();
-        const hasConnectedBox = await Storage.getHasConnectedBox();
 
         console.log("Root index - Has seen onboarding:", hasSeenOnboarding);
         console.log("Root index - Is authenticated:", isAuthenticated);
-        console.log("Root index - Has connected box:", hasConnectedBox);
 
-        let route = "/(home)";
+        // Start with a default route that requires authentication
+        let route = "/(getstarted)/auth";
 
+        // First check if user has seen onboarding
         if (!hasSeenOnboarding) {
           route = "/(onboarding)";
-        } else if (!isAuthenticated) {
-          route = "/(getstarted)/auth";
-        } else if (!hasConnectedBox && !isAuthenticated) {
-          route = "/setup";
         }
+        // Then check authentication status
+        else if (isAuthenticated) {
+          // User is authenticated, go directly to home
+          route = "/(home)";
+        }
+        // If not authenticated, default route is already set to auth
 
         console.log("Root index - Navigating to:", route);
         setInitialRoute(route);

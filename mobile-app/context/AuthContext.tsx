@@ -14,6 +14,7 @@ interface AuthContextType {
   user: User | null;
   login: (userData: User) => Promise<any>;
   logout: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,6 +61,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
         id: user?.id,
         name: user?.name,
         condo_name: user?.condo_name,
+        emoji: user?.emoji,
+        mood: user?.mood,
       });
     } catch (error) {
       console.error("Login error:", error);
@@ -75,8 +78,21 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = async (userData: Partial<User>) => {
+    if (!user) return;
+    
+    // Create updated user object
+    const updatedUser = { ...user, ...userData };
+    
+    // Update state
+    setUser(updatedUser);
+    
+    // Update local storage
+    await Storage.setItem("user", JSON.stringify(updatedUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

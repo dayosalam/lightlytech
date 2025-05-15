@@ -34,3 +34,33 @@ export const logOut = async () => {
     throw error;
   }
 };
+
+export const changePassword = async (password: string) => {
+  try {
+    console.log(" Attempting to change password");
+    // newRequest will automatically attach the token from storage
+    const { data } = await newRequest.post("/auth/change-password", {
+      password,
+    });
+    console.log(" Password changed successfully");
+    return data;
+  } catch (error) {
+    console.error(" Error changing password:", error);
+    throw error;
+  }
+};
+
+export const changeEmail = async (email: string) => {
+  try {
+    console.log(" Attempting to change email");
+    // newRequest will automatically attach the token from storage
+    const { data } = await newRequest.post("/auth/change-email", {
+      email,
+    });
+    console.log(" Email changed successfully");
+    return data;
+  } catch (error) {
+    console.error(" Error changing email:", error);
+    throw error;
+  }
+};

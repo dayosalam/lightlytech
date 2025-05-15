@@ -52,9 +52,26 @@ newRequest.interceptors.response.use(
   },
   (error) => {
     console.error("❌ Response error:", error.message);
+    
+    // Create a custom error object that preserves the backend error message
+    let customError: any = new Error();
+    customError.message = "An unexpected error occurred";
+    
     if (error.response) {
       console.error(`❌ Response status: ${error.response.status}`);
       console.error("❌ Response data:", error.response.data);
+      
+      // Extract the error message from the backend response
+      if (error.response.data && error.response.data.error) {
+        // Use the backend's error message
+        customError.message = error.response.data.error;
+        customError.status = error.response.status;
+        customError.data = error.response.data;
+      } else {
+        // Fallback to a generic message with the status code
+        customError.message = `Request failed with status ${error.response.status}`;
+        customError.status = error.response.status;
+      }
     } else if (error.request) {
       console.error("❌ No response received - network issue");
       console.error(
@@ -65,8 +82,14 @@ newRequest.interceptors.response.use(
           baseURL: error.config?.baseURL,
         })
       );
+      customError.message = "Network error - no response received";
+      customError.isNetworkError = true;
+    } else {
+      // Something else caused the error
+      customError.message = error.message || "Unknown error occurred";
     }
-    return Promise.reject(error);
+    
+    return Promise.reject(customError);
   }
 );
 

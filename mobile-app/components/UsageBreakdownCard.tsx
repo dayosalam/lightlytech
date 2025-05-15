@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 
 interface UsageBreakdownCardProps {
   socketUsage: string;
@@ -33,18 +32,29 @@ export default function UsageBreakdownCard({
 
       {/* Progress Bar */}
       <View style={styles.progressBarContainer}>
-        <LinearGradient
-          colors={["#6B2B0D", "#FF671F"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.progressBar, { width: `${socketPercentage}%` }]}
-        />
-        <LinearGradient
-          colors={["#022322", "#B1BBBA"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.progressBar, { width: `${lightPercentage}%` }]}
-        />
+        {/* First progress bar - socket usage (manual gradient) */}
+        <View style={[styles.progressBarWrapper, { width: `${socketPercentage}%` }]}>
+          <View style={styles.manualGradientContainer}>
+            {/* Create 5 segments with gradually changing colors from #6B2B0D to #FF671F */}
+            <View style={[styles.gradientSegment, { backgroundColor: "#6B2B0D" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#8B3F17" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#AB5321" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#CB671B" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#FF671F" }]} />
+          </View>
+        </View>
+        
+        {/* Second progress bar - light usage (manual gradient) */}
+        <View style={[styles.progressBarWrapper, { width: `${lightPercentage}%` }]}>
+          <View style={styles.manualGradientContainer}>
+            {/* Create 5 segments with gradually changing colors from #022322 to #B1BBBA */}
+            <View style={[styles.gradientSegment, { backgroundColor: "#022322" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#2D4847" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#586D6C" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#849493" }]} />
+            <View style={[styles.gradientSegment, { backgroundColor: "#B1BBBA" }]} />
+          </View>
+        </View>
       </View>
     </View>
   );
@@ -82,9 +92,19 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginTop: 8,
   },
-  progressBar: {
+  progressBarWrapper: {
     height: "100%",
-    borderRadius: 8,
     marginRight: 3,
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  manualGradientContainer: {
+    flexDirection: "row",
+    height: "100%",
+    flex: 1,
+  },
+  gradientSegment: {
+    flex: 1,
+    height: "100%",
   },
 });

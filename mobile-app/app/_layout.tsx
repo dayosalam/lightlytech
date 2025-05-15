@@ -13,12 +13,14 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import AuthProvider from "@/context/AuthContext";
 import ReadingsProvider from "@/context/ReadingsContext";
-
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+
+  const queryClient = new QueryClient();
 
   const [loaded] = useFonts({
     InterLight: require("../assets/fonts/Inter_24pt-Light.ttf"),
@@ -39,11 +41,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ReadingsProvider>
           <Slot />
         </ReadingsProvider>
       </AuthProvider>
+      </QueryClientProvider>
       <StatusBar style="dark" />
     </ThemeProvider>
   );
