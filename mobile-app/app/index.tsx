@@ -27,7 +27,7 @@ export default function Index() {
         // Then check authentication status
         else if (isAuthenticated) {
           // User is authenticated, go directly to home
-          route = "/(home)";
+          route = "/(onboarding)";
         }
         // If not authenticated, default route is already set to auth
 

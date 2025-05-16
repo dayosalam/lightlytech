@@ -31,27 +31,27 @@ const roomsData = [
     usage: "N12/9Kw/H · 52% usage",
     backgroundColor: "#E6F2FF",
   },
-  // {
-  //   id: "2",
-  //   name: "Room 1",
-  //   emoji: "😘",
-  //   usage: "N12/9Kw/H · 52% usage",
-  //   backgroundColor: "#FFEEE6",
-  // },
-  // {
-  //   id: "3",
-  //   name: "Restroom (Room 1)",
-  //   emoji: "♟️",
-  //   usage: "N12/9Kw/H · 52% usage",
-  //   backgroundColor: "#F5F5F5",
-  // },
-  // {
-  //   id: "4",
-  //   name: "Restroom (Room 1)",
-  //   emoji: "♟️",
-  //   usage: "N12/9Kw/H · 52% usage",
-  //   backgroundColor: "#F5F5F5",
-  // },
+  {
+    id: "2",
+    name: "Room 1",
+    emoji: "😘",
+    usage: "N12/9Kw/H · 52% usage",
+    backgroundColor: "#FFEEE6",
+  },
+  {
+    id: "3",
+    name: "Restroom (Room 1)",
+    emoji: "♟️",
+    usage: "N12/9Kw/H · 52% usage",
+    backgroundColor: "#F5F5F5",
+  },
+  {
+    id: "4",
+    name: "Restroom (Room 1)",
+    emoji: "♟️",
+    usage: "N12/9Kw/H · 52% usage",
+    backgroundColor: "#F5F5F5",
+  },
 ];
 
 // Schedule data
@@ -138,13 +138,22 @@ export default function AutomationScreen() {
     }));
     
     try {
-      // Send binary instruction to the ESP device
-      // 1 for ON, 0 for OFF
-      const binaryCode = newValue ? 1 : 0;
-      console.log(`Sending instruction: ${binaryCode} for device ${id}`);
+      // Create an array of relay states based on the current toggles state
+      // Each index represents a room/relay (0-3)
+      const relayStates = [
+        toggles["1"] ? 1 : 0,
+        toggles["2"] ? 1 : 0,
+        toggles["3"] ? 1 : 0,
+        toggles["4"] ? 1 : 0,
+      ];
       
-      // Call the API to send the instruction
-      const response = await sendInstruction(binaryCode);
+      // Update the specific relay that was toggled
+      relayStates[parseInt(id) - 1] = newValue ? 1 : 0;
+      
+      console.log(`Sending relay states: ${relayStates.join(', ')}`);
+      
+      // Call the API to send the instruction with all relay states
+      const response = await sendInstruction(relayStates);
       console.log('Instruction sent successfully:', response);
     } catch (error) {
       console.error('Failed to send instruction:', error);

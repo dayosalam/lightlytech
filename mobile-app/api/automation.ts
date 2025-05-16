@@ -1,18 +1,21 @@
 import newRequest from "./newRequest";
 
 /**
- * Sends a binary instruction to control ESP devices
- * @param code Binary code (0 or 1) to send to the device
+ * Sends relay instructions to control ESP devices
+ * @param relays Array of 4 binary values (0 or 1) representing the state of each relay
  * @returns Response data from the server
  */
-export const sendInstruction = async(code: number | string) => {
+export const sendInstruction = async(relays: number[]) => {
     try {
-        // Convert to string to ensure it's sent as a binary string
-        const binaryCode = code.toString();
-        console.log(`Sending binary instruction: ${binaryCode}`);
+        // Validate the relays array
+        if (!Array.isArray(relays) || relays.length !== 4 || !relays.every(r => r === 0 || r === 1)) {
+            throw new Error("relays must be an array of 4 binary values (0 or 1).");
+        }
         
-        // Send the instruction to the sensors endpoint
-        const response = await newRequest.post(`/sensors/${binaryCode}`);
+        console.log(`Sending relay instructions:`, relays);
+        
+        // Send the instruction to the sensors/relay endpoint
+        const response = await newRequest.post('/sensors/relay', { relays });
         return response.data;
     } catch (error) {
         if (error instanceof Error) {

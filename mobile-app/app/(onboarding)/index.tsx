@@ -8,9 +8,9 @@ import {
   Dimensions,
   Pressable,
   SafeAreaView,
+  Image as ExpoImage,
   StatusBar,
 } from "react-native";
-import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
 import { onboardingSteps } from "@/constants/data";
 import {
@@ -140,7 +140,6 @@ export default function OnboardingScreen() {
                 <ExpoImage
                   source={step.image}
                   style={styles.illustration}
-                  contentFit="contain"
                 />
                 <View style={styles.textContainer}>
                   <Text style={styles.title}>{step.title}</Text>
