@@ -21,8 +21,8 @@ supabase
   )
   .subscribe();
 
-const MQTT_BROKER = "mqtt://5.tcp.eu.ngrok.io:13087";
-const MQTT_TOPIC_SUBSCRIBE = "esp32/power";
+  const MQTT_BROKER = "tcp://4.tcp.eu.ngrok.io:14728"; // Replace with your MQTT broker URL
+  const MQTT_TOPIC_SUBSCRIBE = "esp32/power";
 const MQTT_TOPIC_PUBLISH = "esp32/control";
 
 const client = mqtt.connect(MQTT_BROKER);
@@ -42,6 +42,8 @@ client.on("connect", () => {
 
 client.on("message", async (topic, message) => {
   if (topic !== MQTT_TOPIC_SUBSCRIBE) return;
+
+  console.log("Received message:", message.toString());
 
   try {
     const data = JSON.parse(message.toString());
@@ -272,29 +274,48 @@ const getSensorData = async (req, res) => {
 };
 
 
-const INSTRUCTION_TOPIC = "esp/instructions"; 
+const INSTRUCTION_TOPIC = "esp32/relays"; 
 
 const sendInstruction = async (req, res) => {
   try {
-    const { code } = req.params;
+    const { relays } = req.body;
 
-    
-    // Validate that the code is a binary string
-    if (!/^[01]+$/.test(code)) {
-      return res.status(400).json({ error: "Code must be a binary string." });
+    // Validate input
+    if (
+      !Array.isArray(relays) ||
+      relays.length !== 4 ||
+      !relays.every(r => r === 0 || r === 1)
+    ) {
+      return res.status(400).json({
+        error: "relays must be an array of 4 binary values (0 or 1).",
+      });
     }
-    console.log("code", code)
 
-    // Publish the code to the MQTT topic
-    client.publish(INSTRUCTION_TOPIC, code, (err) => {
+    // Convert JS object to JSON string
+    const payload = JSON.stringify({ relays });
+
+    console.log("Publishing JSON:", payload);
+
+    // Publish to MQTT
+    client.publish(INSTRUCTION_TOPIC, payload, (err) => {
       if (err) {
-        return res.status(500).json({ error: "Failed to send instruction to ESP." });
+        return res
+          .status(500)
+          .json({ error: "Failed to send instruction to ESP." });
       }
-      return res.json({ success: true, message: "Instruction sent to ESP.", code });
+
+      return res.json({
+        success: true,
+        message: "Instruction sent to ESP.",
+        payload: JSON.parse(payload), // just to echo back the sent object
+      });
     });
   } catch (error) {
+    console.error("MQTT sendInstruction error:", error);
     return res.status(500).json({ error: "Internal server error." });
   }
 };
+
+
 
 module.exports = { storeSensorData, getSensorData, sendInstruction, client };

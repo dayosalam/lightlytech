@@ -29,9 +29,10 @@ app.use(express.static("public"));
 
 
 // MQTT Settings
-const MQTT_BROKER = "mqtt://localhost";
-const MQTT_TOPIC_SUBSCRIBE = "sensor/data";
-const MQTT_TOPIC_PUBLISH = "sensor/data2";
+const MQTT_BROKER = "tcp://4.tcp.eu.ngrok.io:14728"; // Replace with your MQTT broker URL
+// const MQTT_TOPIC_SUBSCRIBE = "sensor/data";
+const MQTT_TOPIC_SUBSCRIBE = "esp32/power";
+const MQTT_TOPIC_PUBLISH = "esp32/relays";
 
 // Initialize MQTT Client
 const mqttClient = mqtt.connect(MQTT_BROKER);
@@ -43,6 +44,16 @@ mqttClient.on("connect", () => {
       console.error("❌ MQTT Subscription Error:", err.message);
     }
   });
+});
+
+
+// publish a message
+mqttClient.publish(MQTT_TOPIC_PUBLISH, "Hello from MQTT!", (err) => {
+  if (err) {
+    console.error("❌ MQTT Publish Error:", err.message);
+  } else {
+    console.log("✅ Message published to MQTT Broker");
+  }
 });
 
 // ** WebSocket Initialization **
@@ -67,7 +78,7 @@ io.on("connection", (socket) => {
   });
 });
 
-console.log("✅ WebSocket Server Initialized");
+// console.log("✅ WebSocket Server Initialized");
 
 // Routes
 app.use("/api/sensors", sensorRoutes);

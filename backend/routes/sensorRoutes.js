@@ -7,6 +7,6 @@ const router = express.Router();
 // Define sensor routes
 router.post("/store", authMiddleware, storeSensorData);
 router.get("/readings", authMiddleware, getSensorData);
-router.post("/:code", sendInstruction);
+router.post("/relay", sendInstruction);
 
 module.exports = router;
