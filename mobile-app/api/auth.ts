@@ -1,6 +1,23 @@
 import { Storage } from "@/utils/storage";
 import newRequest from "./newRequest";
 
+export const signUp = async (email: string, password: string, name: string) => {
+  try {
+
+    const { data } = await newRequest.post("/auth/signup", {
+      email,
+      password,
+      name,
+    });
+
+    console.log(" User signed up successfully");
+    return data;
+  } catch (error) {
+    console.error(" Error signing up:", error);
+    throw error;
+  }
+}
+
 export const signIn = async (email: string, password: string) => {
   try {
     console.log(" Attempting to sign in with email:", email);

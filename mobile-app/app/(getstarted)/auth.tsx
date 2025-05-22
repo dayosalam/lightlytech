@@ -13,6 +13,8 @@ import {
   KeyboardAvoidingView,
   Image,
   Platform,
+  Animated,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -21,9 +23,13 @@ import { useAuth } from "@/context/AuthContext";
 import { navigateBasedOnSetup } from "@/utils/setupCheck";
 
 export default function AuthScreen() {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isFocused, setIsFocused] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,22 +40,71 @@ export default function AuthScreen() {
     try {
       setError(null);
       setIsLoading(true);
-      console.log("Attempting to login with:", email);
-
-      if (!email || !password) {
-        setError("Email and password are required");
-        setIsLoading(false);
-        return;
-      }
-
-      // Authenticate the user
-      await login({ email, password });
       
-      // Use the setupCheck utility to navigate based on box connection status
-      await navigateBasedOnSetup();
+      if (isSignUp) {
+        // Sign up validation
+        if (!name) {
+          setError("Name is required");
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!email) {
+          setError("Email is required");
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!password) {
+          setError("Password is required");
+          setIsLoading(false);
+          return;
+        }
+        
+        if (password !== confirmPassword) {
+          setError("Passwords do not match");
+          setIsLoading(false);
+          return;
+        }
+        
+        if (password.length < 6) {
+          setError("Password must be at least 6 characters");
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Attempting to sign up with:", email);
+        
+        // Call sign up API
+        try {
+          // This is a placeholder for your actual signup API call
+          // Replace with your actual signup implementation
+          // For now, we'll just set as authenticated for demo purposes
+          await Storage.setIsAuthenticated(true);
+          await navigateBasedOnSetup();
+        } catch (signupError: any) {
+          console.error("Error signing up:", signupError);
+          setError(signupError.message || "Failed to sign up. Please try again.");
+        }
+      } else {
+        // Sign in validation
+        console.log("Attempting to login with:", email);
+
+        if (!email || !password) {
+          setError("Email and password are required");
+          setIsLoading(false);
+          return;
+        }
+
+        // Authenticate the user
+        await login({ email, password });
+        
+        // Use the setupCheck utility to navigate based on box connection status
+        await navigateBasedOnSetup();
+      }
     } catch (error: any) {
-      console.error("Error logging in:", error.message || error);
-      setError(error.message || "Failed to login. Please try again.");
+      console.error(isSignUp ? "Error signing up:" : "Error logging in:", error.message || error);
+      setError(error.message || (isSignUp ? "Failed to sign up" : "Failed to login") + ". Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -85,10 +140,15 @@ export default function AuthScreen() {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <SafeAreaView style={styles.container}>
-          <View style={styles.innerContainer}>
+      <SafeAreaView style={styles.container}>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            contentContainerStyle={styles.scrollViewContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.innerContainer}>
             {/* Header */}
             <View style={styles.header}>
               <Image
@@ -108,13 +168,57 @@ export default function AuthScreen() {
 
             {/* Main Content */}
             <View style={styles.content}>
-              <Text style={styles.title}>Let's get you started</Text>
+              <Text style={styles.title}>{isSignUp ? "Create an account" : "Welcome back"}</Text>
               <Text style={styles.subtitle}>
-                Create an account to get started with your Lightly app.
+                {isSignUp ? "Sign up to get started with your Lightly app." : "Sign in to continue with your Lightly app."}
               </Text>
+              
+              {/* Toggle between Sign In and Sign Up */}
+              <View style={styles.toggleContainer}>
+                <TouchableOpacity
+                  style={[styles.toggleButton, !isSignUp && styles.activeToggle]}
+                  onPress={() => {
+                    setIsSignUp(false);
+                    setError(null);
+                  }}
+                >
+                  <Text style={[styles.toggleText, !isSignUp && styles.activeToggleText]}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.toggleButton, isSignUp && styles.activeToggle]}
+                  onPress={() => {
+                    setIsSignUp(true);
+                    setError(null);
+                  }}
+                >
+                  <Text style={[styles.toggleText, isSignUp && styles.activeToggleText]}>Sign Up</Text>
+                </TouchableOpacity>
+              </View>
 
               {/* Form */}
               <View style={styles.form}>
+                {isSignUp && (
+                  <>
+                    <Text style={styles.label}>Full Name</Text>
+                    <TextInput
+                      style={[
+                        styles.input,
+                        isFocused === "name" && styles.onFocus,
+                        error && styles.inputError,
+                      ]}
+                      placeholder="e.g John Doe"
+                      value={name}
+                      onChangeText={(text) => {
+                        setName(text);
+                        if (error) setError(null);
+                      }}
+                      autoCapitalize="words"
+                      onFocus={() => setIsFocused("name")}
+                      onBlur={() => setIsFocused(null)}
+                    />
+                  </>
+                )}
+
                 <Text style={styles.label}>Email</Text>
                 <TextInput
                   style={[
@@ -165,6 +269,41 @@ export default function AuthScreen() {
                   </TouchableOpacity>
                 </View>
 
+                {isSignUp && (
+                  <>
+                    <Text style={styles.label}>Confirm Password</Text>
+                    <View style={styles.passwordContainer}>
+                      <TextInput
+                        style={[
+                          styles.passwordInput,
+                          isFocused === "confirmPassword" && styles.onFocus,
+                          error && styles.inputError,
+                        ]}
+                        placeholder="Confirm your password"
+                        value={confirmPassword}
+                        onChangeText={(text) => {
+                          setConfirmPassword(text);
+                          if (error) setError(null);
+                        }}
+                        secureTextEntry={!showConfirmPassword}
+                        autoCapitalize="none"
+                        onFocus={() => setIsFocused("confirmPassword")}
+                        onBlur={() => setIsFocused(null)}
+                      />
+                      <TouchableOpacity
+                        style={styles.eyeIcon}
+                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        <Ionicons
+                          name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
+                          size={24}
+                          color="#878787"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </>
+                )}
+
                 {error && <Text style={styles.errorText}>{error}</Text>}
 
                 <TouchableOpacity
@@ -176,20 +315,20 @@ export default function AuthScreen() {
                   disabled={isLoading}
                 >
                   <Text style={styles.continueText}>
-                    Continue
+                    {isSignUp ? "Sign Up" : "Sign In"}
                   </Text>
                 </TouchableOpacity>
               </View>
 
               {/* Divider */}
-              <View style={styles.dividerContainer}>
+              {/* <View style={styles.dividerContainer}>
                 <View style={styles.divider} />
                 <Text style={styles.dividerText}>Or get started with</Text>
                 <View style={styles.divider} />
-              </View>
+              </View> */}
 
               {/* Social Sign In */}
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={styles.googleButton}
                 onPress={handleGoogleSignIn}
               >
@@ -200,7 +339,7 @@ export default function AuthScreen() {
                   style={styles.googleIcon}
                 />
                 <Text style={styles.googleText}>Google</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
 
             {/* Footer */}
@@ -212,8 +351,9 @@ export default function AuthScreen() {
               </Text>
             </View>
           </View>
-        </SafeAreaView>
-      </TouchableWithoutFeedback>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   );
 }
@@ -222,6 +362,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  scrollViewContent: {
+    flexGrow: 1,
   },
   innerContainer: {
     flex: 1,
@@ -268,7 +411,38 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "InterRegular",
     color: "#878787",
+    marginBottom: 20,
+  },
+  // Toggle styles
+  toggleContainer: {
+    flexDirection: "row",
+    backgroundColor: "#e6e9e9",
+    borderRadius: 8,
     marginBottom: 30,
+    padding: 4,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    borderRadius: 6,
+  },
+  activeToggle: {
+    backgroundColor: "#ffffff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    elevation: 1,
+  },
+  toggleText: {
+    fontSize: 16,
+    fontFamily: "InterRegular",
+    color: "#878787",
+  },
+  activeToggleText: {
+    color: "#022322",
+    fontFamily: "InterSemiBold",
   },
   form: {
     marginBottom: 30,
