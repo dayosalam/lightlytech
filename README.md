@@ -1,6 +1,6 @@
 # LightlyTechnology
 
-![LightlyTechnology!](/assets/images/Lightly.png "LightlyTechnology")
+![LightlyTechnology!](/assets/images/Lightly.png "Lightly")
 
 ### Links
 - [LightlyTech Twitter](https://x.com/lightlytec)
