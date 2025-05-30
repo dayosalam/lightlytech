@@ -96,10 +96,3 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
 
-// ✅ Fix: Export `getIo` function instead of `io`
-module.exports = {
-  app,
-  server,
-  getIo, // Use a function to access `io`
-  mqttClient,
-};
