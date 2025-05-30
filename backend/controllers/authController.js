@@ -61,7 +61,6 @@ exports.signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-
     if (!email || !password) {
       console.log("❌ Missing email or password");
       return res.status(400).json({ error: "Email and password are required" });
@@ -77,36 +76,22 @@ exports.signIn = async (req, res) => {
       return res.status(400).json({ error: signInError.message });
     }
 
-    const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-      access_token: signInData.session?.access_token,
-      refresh_token: signInData.session?.refresh_token
-    })
+    // Optionally, set session if needed for your auth flow
+    // const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+    //   access_token: signInData.session?.access_token,
+    //   refresh_token: signInData.session?.refresh_token
+    // });
 
-    if (sessionError) {
-      console.error("❌ Supabase Auth Error:", sessionError.message);
-      return res.status(400).json({ error: sessionError.message });
-    }
-
-    // fetch user details from db
-    const { data: user, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", signInData.user.id)
-      .single();
-
-    if (error) {
-      console.error("❌ Database Error:", error.message);
-      return res.status(500).json({
-        error: "Database error fetching user details",
-        details: error.message,
-      });
-    }
+    // if (sessionError) {
+    //   console.error("❌ Supabase Auth Error:", sessionError.message);
+    //   return res.status(400).json({ error: sessionError.message });
+    // }
 
     return res.status(200).json({
       message: "User logged in successfully",
       access_token: signInData.session?.access_token,
       refresh_token: signInData.session?.refresh_token,
-      user: user,
+      user: signInData.user,
     });
   } catch (err) {
     console.error("❌ Unexpected error during sign in:", err);
