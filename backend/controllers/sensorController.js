@@ -263,15 +263,7 @@ const getSensorData = async (req, res) => {
 
     if (error) throw error;
 
-    const sensor_readings = data.map((reading) => ({
-      id: reading.id,
-      currents: reading.currents,
-      power_watts: reading.power_watts,
-      energy_kwh: reading.energy_kwh,
-      bill: reading.bill,
-      total_energy: reading.total_energy,
-      created_at: reading.created_at,
-    }));
+    const sensor_readings = Array.isArray(data) ? data[0] : data;
 
     return res.status(200).json({
       user_id,
