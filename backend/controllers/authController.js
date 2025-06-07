@@ -1,4 +1,5 @@
 const { supabase, supabaseServiceRole } = require("../config/supabaseConfig");
+const {getUser} = require("../utils/helpers");
 
 exports.register = async (req, res) => {
   try {
@@ -76,22 +77,14 @@ exports.signIn = async (req, res) => {
       return res.status(400).json({ error: signInError.message });
     }
 
-    // Optionally, set session if needed for your auth flow
-    // const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-    //   access_token: signInData.session?.access_token,
-    //   refresh_token: signInData.session?.refresh_token
-    // });
+    const user = await getUser(signInData.user.id);
 
-    // if (sessionError) {
-    //   console.error("❌ Supabase Auth Error:", sessionError.message);
-    //   return res.status(400).json({ error: sessionError.message });
-    // }
 
     return res.status(200).json({
       message: "User logged in successfully",
       access_token: signInData.session?.access_token,
       refresh_token: signInData.session?.refresh_token,
-      user: signInData.user,
+      user,
     });
   } catch (err) {
     console.error("❌ Unexpected error during sign in:", err);
