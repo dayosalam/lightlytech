@@ -234,12 +234,12 @@ const saveCondoName = async (req, res) => {
 
 // update user details
 const updateUserDetails = async (req, res) => {
-  const { full_name, phone, band, emoji, mood, condo_name } = req.body;
+  const { name, condo_name, emoji } = req.body;
   const user_id = req.user.id;
 
   const { error } = await supabase
     .from("users")
-    .update({ full_name, phone, band, emoji, mood, condo_name })
+    .update({ name, condo_name, emoji })
     .eq("id", user_id);
 
   if (error) {
