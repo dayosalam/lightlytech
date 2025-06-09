@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const storage = multer.memoryStorage();
 const avatarUploadMiddleware = multer({ storage }).single("avatar");
-const supabase = require("../config/supabaseConfig");
+const {supabase} = require("../config/supabaseConfig");
 // configure multer storage (in memory)
 const upload = multer({ storage });
 
@@ -234,15 +234,20 @@ const saveCondoName = async (req, res) => {
 
 // update user details
 const updateUserDetails = async (req, res) => {
-  const { name, condo_name, emoji } = req.body;
+  const { updateData } = req.body;
   const user_id = req.user.id;
+
+  console.log(updateData)
 
   const { error } = await supabase
     .from("users")
-    .update({ name, condo_name, emoji })
+    .update(updateData)
     .eq("id", user_id);
 
+
+
   if (error) {
+    console.error(error)
     return res.status(500).json({ error: "Failed to update user details" });
   }
 

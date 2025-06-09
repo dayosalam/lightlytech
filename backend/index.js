@@ -9,6 +9,7 @@ const authRoutes = require("./routes/authRoutes");
 const mqtt = require("mqtt");
 const http = require("http");
 const { Server } = require("socket.io");
+const morgan = require("morgan");
 
 // Initialize Express & HTTP Server
 const app = express();
@@ -27,6 +28,7 @@ app.use(
 app.use(bodyParser.json());
 app.use(express.static("public"));
 
+app.use(morgan("dev"));
 
 // MQTT Settings
 const MQTT_BROKER = "tcp://4.tcp.eu.ngrok.io:14728"; // Replace with your MQTT broker URL
