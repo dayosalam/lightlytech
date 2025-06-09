@@ -2,6 +2,7 @@
 const mqtt = require("mqtt");
 const { createClient } = require("@supabase/supabase-js");
 const dotenv = require("dotenv");
+const { generateUserAlerts } = require("../utils/helpers");
 dotenv.config();
 
 const supabase = createClient(
@@ -318,6 +319,18 @@ const sendInstruction = async (req, res) => {
   }
 };
 
+// get user energy alerts 
+const getUserAlerts = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const alerts = await generateUserAlerts(userId);
+        return res.status(200).json(alerts);
+    } catch (error) {
+        console.error("Error generating user alerts:", error);
+        return res.status(500).json({ error: "Internal server error" });
+    }
+};
 
 
-module.exports = { storeSensorData, getSensorData, sendInstruction, client };
+
+module.exports = { storeSensorData, getSensorData, sendInstruction, client, getUserAlerts };
