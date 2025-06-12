@@ -34,7 +34,7 @@ const RoomSelectionModal: React.FC<RoomSelectionModalProps> = ({
 }) => {
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}

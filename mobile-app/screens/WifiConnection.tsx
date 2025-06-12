@@ -13,6 +13,7 @@ import {
   FlatList,
   TextInput,
   PermissionsAndroid,
+  Platform,
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import Wifi from "@/assets/icons/wifi-complete.svg";
@@ -456,7 +457,8 @@ const styles = StyleSheet.create({
   header: {
     gap: 8,
     marginBottom: 24,
-    alignItems: 'center',
+    paddingLeft: Platform.OS === "ios" ? 20 : 0,
+    // alignItems: 'center',
     width: '100%',
   },
   title: {

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 
 const STORAGE_KEYS = {
   HAS_SEEN_ONBOARDING: 'hasSeenOnboarding',
@@ -54,4 +55,34 @@ const Storage = {
   }
 };
 
-export { Storage };
+
+const SecureStorage = {
+    async setItem(key: string, value: any) {
+        const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+        await SecureStore.setItemAsync(key, stringValue);
+    },
+
+    async getItem(key: string): Promise<string | null> {
+        return await SecureStore.getItemAsync(key);
+    },
+
+    async removeItem(key: string) {
+        await SecureStore.deleteItemAsync(key);
+    },
+
+    async setIsAuthenticated(value: boolean) {
+        await SecureStore.setItemAsync(STORAGE_KEYS.IS_AUTHENTICATED, JSON.stringify(value));
+    },
+
+    async getIsAuthenticated(): Promise<boolean> {
+        const value = await SecureStore.getItemAsync(STORAGE_KEYS.IS_AUTHENTICATED);
+        return value ? JSON.parse(value) : false;
+    },
+
+    async clearAll() {
+        await SecureStore.deleteItemAsync(STORAGE_KEYS.USER_TOKEN);
+    }
+};
+
+
+export { Storage, SecureStorage };

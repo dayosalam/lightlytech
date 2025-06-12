@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   Modal,
   Pressable,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AlertCarousel from "@/components/home/AlertCarousel";
@@ -434,7 +435,7 @@ export default function AutomationScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 40,
+    paddingTop: Platform.OS === "ios" ? 40 : 20,
     flex: 1,
     backgroundColor: "#F5F5F5",
   },
@@ -455,7 +456,7 @@ const styles = StyleSheet.create({
   },
   createScheduleButton: {
     fontSize: 16,
-    fontFamily: "InterMedium",
+    fontFamily: "InterSemiBold",
     color: "#FF671F",
   },
   alertCarouselContainer: {

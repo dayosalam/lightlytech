@@ -1,8 +1,7 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Tabs, usePathname } from "expo-router";
 import { useEffect } from "react";
 import { Storage } from "@/utils/storage";
-import { usePathname } from "expo-router";
+import { Platform } from "react-native"
 
 import Home from "@/assets/icons/home-2.svg";
 import HomeActive from "@/assets/icons/home-active.svg";
@@ -34,7 +33,8 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          height: 60,
+          height: Platform.OS === "ios" ? 70 : 80,
+          
           paddingBottom: 10,
           paddingTop: 5,
           backgroundColor: "#fff",

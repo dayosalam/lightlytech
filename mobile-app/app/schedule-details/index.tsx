@@ -262,6 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
     paddingBottom: 16,
+    borderRadius: 12,
   },
   deviceRow: {
     flexDirection: "row",

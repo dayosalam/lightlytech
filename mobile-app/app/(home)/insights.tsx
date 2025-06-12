@@ -64,8 +64,8 @@ export default function InsightsScreen() {
           <View style={styles.powerUsageContainer}>
             <View style={styles.powerUsageHeader}>
               <View>
-                <Text style={styles.powerUsageValue}>₦{readings[0]?.bill || 0}</Text>
-                <Text style={styles.powerUsageUnit}>{readings[0]?.total_energy.toFixed(2) || 0}kWh</Text>
+                <Text style={styles.powerUsageValue}>₦{readings?.bill || 0}</Text>
+                <Text style={styles.powerUsageUnit}>{readings?.total_energy.toFixed(2) || 0}kWh</Text>
               </View>
             </View>
 
@@ -76,7 +76,7 @@ export default function InsightsScreen() {
 
             {/* Power Usage Graph */}
             <PowerUsageChart 
-              readings={readings.length > 0 ? [readings[0]] : []}
+              readings={readings ? [readings] : []}
               dataType="energy"
               timePeriod={selectedTimeOption}
               lineColor="#ff671f"

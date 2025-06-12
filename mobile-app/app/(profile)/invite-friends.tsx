@@ -12,7 +12,7 @@ import {
   Share as RNShare,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
-import { Link, Copy } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import Share from "@/assets/icons/share.svg";
 
 export default function InviteScreen() {
@@ -58,7 +58,7 @@ export default function InviteScreen() {
         {/* Referral Code */}
         <View style={styles.codeWrapper}>
           <View style={styles.codeContainer}>
-            <Link size={20} color="#000" style={styles.linkIcon} />
+            <Ionicons name="link" size={20} color="#000" style={styles.linkIcon} />
             <Text style={styles.code}>{referralCode}</Text>
           </View>
         </View>
@@ -70,14 +70,14 @@ export default function InviteScreen() {
             onPress={handleCopyCode}
           >
             <View style={styles.iconCircle}>
-              <Copy size={16} color="#000" />
+              <Ionicons name="copy" size={16} color="#000" />
             </View>
             <Text style={styles.actionText}>Copy code</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.actionButton} onPress={handleShare}>
             <View style={styles.iconCircle}>
-              <Share color="#000" />
+              <Ionicons name="share" size={16} color="#000" />
             </View>
             <Text style={styles.actionText}>Share</Text>
           </TouchableOpacity>

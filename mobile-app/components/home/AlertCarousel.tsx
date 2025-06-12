@@ -10,30 +10,16 @@ import {
   Text,
 } from "react-native";
 import AlertCard from "./AlertCard";
+import { useAlerts } from "@/hooks/useAlerts";
+import { IEnergyAlert } from "@/interfaces";
 
 const { width } = Dimensions.get("window");
 
-// Sample alert data
-const alertData = [
-  {
-    id: "1",
-    message: "Living room is using more energy than usual, save energy now",
-    emoji: "😣",
-  },
-  {
-    id: "2",
-    message:
-      "Kitchen lights have been on for 5 hours, consider turning them off",
-    emoji: "💡",
-  },
-  {
-    id: "3",
-    message: "You could save ₦5,000 this month by optimizing your energy usage",
-    emoji: "💰",
-  },
-];
 
 const AlertCarousel = () => {
+  const { data: alerts } = useAlerts();
+
+  
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -65,7 +51,7 @@ const AlertCarousel = () => {
         scrollEventThrottle={16}
         style={styles.scrollView}
       >
-        {alertData.map((alert) => (
+        {alerts?.map((alert: IEnergyAlert) => (
           <View key={alert.id} style={styles.slide}>
             <AlertCard message={alert.message} emoji={alert.emoji} />
           </View>
@@ -74,7 +60,7 @@ const AlertCarousel = () => {
 
       {/* Paginator */}
       <View style={styles.paginatorContainer}>
-        {alertData.map((_, index) => (
+        {alerts?.map((_: IEnergyAlert, index: number) => (
           <TouchableOpacity
             key={index}
             style={[

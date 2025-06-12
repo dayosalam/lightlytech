@@ -4,10 +4,10 @@
     "slug": "lightly",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/splash-icon.png",
     "scheme": "lightlyapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "splash": {
@@ -15,6 +15,10 @@
         "resizeMode": "contain",
         "backgroundColor": "#022322"
       },
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "We need your location to provide location-based services."
+      },
+      "entitlements": {"com.apple.developer.networking.wifi-info" : true},
       "runtimeVersion": {
         "policy": "appVersion"
       }
@@ -59,6 +63,7 @@
         }
       ],
       "react-native-wifi-reborn",
+      
       [
         "react-native-permissions",
         {

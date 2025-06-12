@@ -155,7 +155,7 @@ const EditAccount = () => {
 
     if (!result.canceled) {
       setSelectedImageUri(result.assets[0].uri);
-      setSelectedEmoji(null); // Clear any selected emoji
+      setSelectedEmoji(""); // Clear any selected emoji
     }
   };
 

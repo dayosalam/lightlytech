@@ -11,8 +11,12 @@ export const saveCondoName = async (condo_name: string) => {
 };
 
 export const updateUserDetails = async (userDetails: User) => {
+
+  console.log(userDetails);
   try {
-    const response = await newRequest.put("/user-details", userDetails);
+    const response = await newRequest.put("/user-details", {updateData: userDetails});
+
+
     return response.data;
   } catch (error) {
     throw error;

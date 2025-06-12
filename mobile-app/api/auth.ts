@@ -42,10 +42,8 @@ export const signIn = async (email: string, password: string) => {
 
 export const logOut = async () => {
   try {
-    console.log(" Attempting to log out");
     const { data } = await newRequest.post("/auth/logout");
-    console.log(" Logout successful");
-    return data;
+    return data;  
   } catch (error) {
     console.error(" Error logging out:", error);
     throw error;

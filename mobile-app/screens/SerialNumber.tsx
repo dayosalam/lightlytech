@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Platform,
   SafeAreaView,
   Dimensions,
   ScrollView,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -42,7 +44,15 @@ export default function SerialNumberScreen({ next }: { next: () => void }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 130 : 0}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         <Text style={styles.title}>
           Let's be sure you {"\n"}found the right {"\n"} distribution box
         </Text>
@@ -58,51 +68,43 @@ export default function SerialNumberScreen({ next }: { next: () => void }) {
         <Text style={styles.subtitle}>How to find your serial number</Text>
 
         <View style={styles.stepsContainer}>
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <View
             style={styles.stepRow}
-            onPress={() => toggleStep("step1")}
           >
             <Ionicons
-              name={checkedSteps.step1 ? "checkbox" : "square-outline"}
+              name="checkmark"
               size={24}
-              color={checkedSteps.step1 ? "#002020" : "#878787"}
+              color="#002020"
             />
             <Text style={styles.stepText}>
               Find your distribution box package
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            activeOpacity={0.7}
+          <View
             style={styles.stepRow}
-            onPress={() => toggleStep("step2")}
           >
             <Ionicons
-              name={checkedSteps.step2 ? "checkbox" : "square-outline"}
+              name="checkmark"
               size={24}
-              color={checkedSteps.step2 ? "#002020" : "#878787"}
+              color="#002020"
             />
             <Text style={styles.stepText}>
               Look at the back of your box package for the serial number
             </Text>
-          </TouchableOpacity>
+          </View>
 
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.stepRow}
-            onPress={() => toggleStep("step3")}
-          >
+          <View style={styles.stepRow}>
             <Ionicons
-              name={checkedSteps.step3 ? "checkbox" : "square-outline"}
+              name="checkmark"
               size={24}
-              color={checkedSteps.step3 ? "#002020" : "#878787"}
+              color="#002020"
             />
             <Text style={styles.stepText}>
               Enter the "5 digit code" with serial number as heading in the
               below input field
             </Text>
-          </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.inputContainer}>
@@ -131,7 +133,8 @@ export default function SerialNumberScreen({ next }: { next: () => void }) {
         >
           <Text style={styles.continueButtonText}>Continue</Text>
         </TouchableOpacity>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -140,25 +143,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
+    backgroundColor: "#ffffff",
   },
   scrollContent: {
-    padding: 10,
+    padding: Platform.OS === "ios" ? 20 : 10,
+    paddingTop: Platform.OS === "ios" ? 10 : 10,
+    paddingBottom: Platform.OS === "ios" ? 10 : 60,
   },
   title: {
-    fontSize: 28,
+    fontSize: Platform.OS === "ios" ? 30 : 28,
     fontFamily: "InterBold",
     color: "#022322",
     marginBottom: 24,
+    marginLeft: Platform.OS === "ios" ? 5 : 0,
   },
   imageContainer: {
-    width: width - 80,
+    width: Platform.OS === "ios" ? width - 30 : width - 70,
     height: width - 200,
     borderRadius: 10,
     overflow: "hidden",
+    marginHorizontal: "auto",
+    marginBottom: 20
   },
   image: {
     width: "100%",
-    height: 150,
+    height: 200,
     marginBottom: 24,
     borderRadius: 8,
   },
@@ -167,10 +176,14 @@ const styles = StyleSheet.create({
     fontFamily: "InterRegular",
     color: "#022322",
     marginBottom: 16,
+    marginLeft: Platform.OS === "ios" ? 16 : 0,
   },
   stepsContainer: {
     gap: 16,
     marginBottom: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: Platform.OS === "ios" ? 16 : 0,
   },
   stepRow: {
     flexDirection: "row",
@@ -186,6 +199,8 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     marginBottom: 24,
+    width: Platform.OS === "ios" ? width - 50 : width - 70,
+    marginHorizontal: "auto",
   },
   inputLabel: {
     fontSize: 16,
@@ -194,7 +209,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    height: 48,
+    height: Platform.OS === "ios" ? 50 : 48,
     fontFamily: "InterRegular",
     borderWidth: 1,
     borderColor: "#d6d6d6",
@@ -202,18 +217,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: "#022322",
+    backgroundColor: "#ffffff",
   },
   continueButton: {
     backgroundColor: "#e6e9e9",
-    paddingVertical: 16,
+    paddingVertical: Platform.OS === "ios" ? 18 : 16,
     borderRadius: 8,
     alignItems: "center",
+    width: Platform.OS === "ios" ? width - 50 : width - 70,
+    marginHorizontal: "auto",
+    marginBottom: Platform.OS === "ios" ? 30 : 0,
   },
   continueButtonActive: {
     backgroundColor: "#022322",
   },
   continueButtonText: {
-    fontSize: 16,
+    fontSize: Platform.OS === "ios" ? 18 : 16,
     fontFamily: "InterSemiBold",
     color: "#FFFFFF",
   },

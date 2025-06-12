@@ -20,7 +20,7 @@ export default function ScheduleLayout() {
         headerTitleAlign: "center",
         headerShadowVisible: false,
         headerLeft: () => (
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.replace("/automation")}>
             <Ionicons name="chevron-back" size={28} color="#022322" />
           </TouchableOpacity>
         ),

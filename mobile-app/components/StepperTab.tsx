@@ -1,5 +1,5 @@
 import type React from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Platform, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface StepperProps {
@@ -16,6 +16,8 @@ interface StepperProps {
   lineActiveColor?: string;
   iconSize?: number;
 }
+
+const { width } = Dimensions.get("window");
 
 const Stepper: React.FC<StepperProps> = ({
   steps,
@@ -79,13 +81,14 @@ const Stepper: React.FC<StepperProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    height: 60,
+    width: width - 40,
+    height: Platform.OS === "ios" ? 70 : 60,
     justifyContent: "center",
+    marginHorizontal: "auto"
   },
   lineContainer: {
     position: "absolute",
-    top: 30,
+    top: Platform.OS === "ios" ? 35 : 30,
     left: 0,
     right: 0,
     height: 2,
@@ -110,11 +113,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   stepIconContainer: {
-    width: 40,
-    height: 40,
+    width: Platform.OS === "ios" ? 44 : 40,
+    height: Platform.OS === "ios" ? 44 : 40,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
+    borderRadius: Platform.OS === "ios" ? 22 : 0,
   },
 });
 

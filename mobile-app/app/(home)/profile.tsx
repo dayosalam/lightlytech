@@ -45,8 +45,8 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
 
   const handleLogOut = async () => {
-    await logout();
     router.replace("/(getstarted)/auth");
+    await logout();
   };
 
   const handleNavigation = (route: string) => {

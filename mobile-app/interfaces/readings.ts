@@ -8,3 +8,10 @@ export interface sensor_readings {
   recorded_at: string;
   total_energy: number;
 }
+
+
+export interface IEnergyAlert {
+    id: string;
+    message: string;
+    emoji: string;
+}

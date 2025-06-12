@@ -28,8 +28,6 @@ export default function HomeScreen() {
     setShowMood(false);
   };
   
-  
-  
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style="dark" />
@@ -38,7 +36,7 @@ export default function HomeScreen() {
         <Header setShowMood={setShowMood} />
 
         {/* Power Usage */}
-        <PowerUsage bill={readings[0]?.bill || 0} totalEnergy={Number(readings[0]?.total_energy.toFixed(2)) || 0} />
+        <PowerUsage bill={readings?.bill || 0} totalEnergy={Number(readings?.total_energy.toFixed(2)) || 0} />
 
         {/* Alert Carousel */}
         <AlertCarousel />

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";  
 
 const Index = () => {
   const [email, setEmail] = useState("");
@@ -39,7 +39,7 @@ const Index = () => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Email</Text>
         <View style={styles.inputWrapper}>
-          <Mail size={20} color="#888" style={styles.icon} />
+          <Ionicons name="mail" size={20} color="#888" style={styles.icon} />
           <TextInput
             placeholder="Enter your email address"
             value={email}
@@ -54,7 +54,7 @@ const Index = () => {
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Password</Text>
         <View style={styles.inputWrapper}>
-          <Lock size={20} color="#888" style={styles.icon} />
+          <Ionicons name="lock" size={20} color="#888" style={styles.icon} />
           <TextInput
             placeholder="At least 8 Characters"
             value={password}
@@ -64,9 +64,9 @@ const Index = () => {
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             {showPassword ? (
-              <EyeOff size={20} color="#888" style={styles.icon} />
+              <Ionicons name="eye-off" size={20} color="#888" style={styles.icon} />
             ) : (
-              <Eye size={20} color="#888" style={styles.icon} />
+              <Ionicons name="eye" size={20} color="#888" style={styles.icon} />
             )}
           </TouchableOpacity>
         </View>

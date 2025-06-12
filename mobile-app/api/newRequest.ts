@@ -1,8 +1,8 @@
 import axios from "axios";
-import { Storage } from "@/utils/storage";
+import { SecureStorage as Storage } from "@/utils/storage";
 
 // Try different base URLs for development
-const API_URL = "https://lightlytech.onrender.com/api"; // For Android emulator
+const API_URL = "https://lightlytech-backend.vercel.app/api"; // For Android emulator
 
 const newRequest = axios.create({
   baseURL: API_URL,
@@ -50,8 +50,48 @@ newRequest.interceptors.response.use(
     );
     return response;
   },
-  (error) => {
+  async (error) => {
     console.error("❌ Response error:", error.message);
+    
+    const originalRequest = error.config;
+    
+    // Handle token refresh when receiving 401 Unauthorized
+    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+      console.log("🔄 Attempting to refresh token...");
+      originalRequest._retry = true;
+      
+      try {
+        // Get the refresh token
+        const refreshToken = await Storage.getItem("refreshToken");
+        
+        if (!refreshToken) {
+          console.error("❌ No refresh token available");
+          throw new Error("Authentication required");
+        }
+        
+        // Call the refresh token endpoint
+        const response = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+        
+        if (response.status === 200) {
+          console.log("✅ Token refreshed successfully");
+          
+          // Store the new access token
+          await Storage.setItem("userToken", response.data.accessToken);
+          if (response.data.refreshToken) {
+            await Storage.setItem("refreshToken", response.data.refreshToken);
+          }
+          
+          // Update the Authorization header with the new token
+          originalRequest.headers["Authorization"] = `Bearer ${response.data.accessToken}`;
+          
+          // Retry the original request with the new token
+          return newRequest(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error("❌ Token refresh failed:", refreshError);
+        // Handle failed refresh - could redirect to login or clear tokens
+      }
+    }
     
     // Create a custom error object that preserves the backend error message
     let customError: any = new Error();

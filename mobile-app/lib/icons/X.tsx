@@ -1,4 +1,4 @@
-import { X } from 'lucide-react-native';
+import { Ionicons } from "@expo/vector-icons";
 import { iconWithClassName } from './iconWithClassName';
-iconWithClassName(X);
-export { X };
+iconWithClassName(Ionicons);
+export { Ionicons };

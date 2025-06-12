@@ -47,9 +47,9 @@ export default function DeviceSetup() {
       id: "2",
       icon: (
         <View style={styles.customIcon}>
-          {currentStep === 1 ? (
+          {currentStep === 2 ? (
             <DocumentActive />
-          ) : currentStep > 1 ? (
+          ) : currentStep > 2 ? (
             <DocumentComplete />
           ) : (
             <Document />
@@ -58,7 +58,7 @@ export default function DeviceSetup() {
       ),
     },
     {
-      id: "3",
+      id: "4",
       icon: (
         <View style={styles.customIcon}>
           {currentStep === 2 ? (
@@ -72,7 +72,7 @@ export default function DeviceSetup() {
       ),
     },
     {
-      id: "4",
+      id: "3",
       icon: (
         <View style={styles.customIcon}>
           <Ionicons
@@ -113,7 +113,7 @@ export default function DeviceSetup() {
         return <SerialNumber next={handleNext} />;
       case 2:
         return <WifiConnection next={handleNext} />;
-      case 3:
+        case 3:
         return <PersonalizHome />;
       default:
         return null;

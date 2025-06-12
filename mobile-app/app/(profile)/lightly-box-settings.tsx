@@ -6,31 +6,97 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  Alert,
+  PermissionsAndroid,
   Modal,
 } from "react-native";
-import { ChevronRight, WifiOff, AlertTriangleIcon } from "lucide-react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
+import { Alert, Platform } from "react-native";
+// Additional states for robust wifi handling
+
 import Triangle from "@/assets/icons/alert.svg";
 import WifiModal from "@/components/modals/WifiModal";
+import { useReadings } from "@/context/ReadingsContext";
+import WifiManager from "react-native-wifi-reborn";
 
 export default function DeviceDetailsScreen() {
   const [isConnected, setIsConnected] = useState(true);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isWifiModalVisible, setIsWifiModalVisible] = useState(false);
-  const [selectedWifi, setSelectedWifi] = useState<string | null>(null);
+  const [selectedWifi, setSelectedWifi] = useState<string>("");
   const [password, setPassword] = useState("");
-  const [wifiNetworks, setWifiNetworks] = useState<string[]>([
-    "Home WiFi",
-    "Office Network",
-    "Guest WiFi",
-    "Cafe Spot",
-    "Library WiFi",
-    "Airport WiFi",
-    "Park WiFi",
-    "Community Center WiFi",
-    "Gym WiFi",
-  ]);
+  const [wifiNetworks, setWifiNetworks] = useState<string[]>([]);
+  const [scanning, setScanning] = useState<boolean>(false);
+  const [connectionError, setConnectionError] = useState<string>("");
+  const [isHiddenNetwork, setIsHiddenNetwork] = useState<boolean>(false);
+  const [ssid, setSsid] = useState<string>("");
+
+  const { readings } = useReadings();
+
+
+    useEffect(() => {
+      scanForWifiNetworks();
+    }, []);
+
+    // Robust scan and connect logic from WifiConnection.tsx
+    const checkLocationEnabled = async () => {
+      try {
+        await WifiManager.getCurrentWifiSSID();
+        return true;
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("Location service is turned off")) {
+          return false;
+        }
+        return true;
+      }
+    };
+
+    const scanForWifiNetworks = async () => {
+      try {
+        setScanning(true);
+        setConnectionError("");
+        // Check if location services are enabled
+        const locationEnabled = await checkLocationEnabled();
+        if (!locationEnabled) {
+          setConnectionError("Please enable Location Services in your device settings to scan for WiFi networks");
+          return;
+        }
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: "Location Permission",
+            message: "We need your location to scan for WiFi networks",
+            buttonNegative: "Cancel",
+            buttonPositive: "OK",
+          }
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          try {
+            const currentSSID = await WifiManager.getCurrentWifiSSID();
+            setSsid(currentSSID);
+          } catch (error) {
+            // ignore
+          }
+          try {
+            const networks = await WifiManager.loadWifiList();
+            const uniqueNetworks = [...new Set(networks.map((network: any) => network.SSID))];
+            setWifiNetworks(uniqueNetworks.filter((ssid: string) => ssid.length > 0));
+          } catch (error) {
+            setConnectionError("Error scanning for WiFi networks");
+          }
+        } else {
+          setConnectionError("Location permission is required to scan for WiFi networks");
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.includes("Location service is turned off")) {
+          setConnectionError("Please enable Location Services in your device settings");
+        } else {
+          setConnectionError("Error scanning for WiFi networks");
+        }
+      } finally {
+        setScanning(false);
+      }
+    };
 
   const handleWifi = () => {
     // Handle connect logic here
@@ -44,6 +110,32 @@ export default function DeviceDetailsScreen() {
     setIsModalVisible(false);
     setIsConnected(false);
   };
+
+  const handleConnect = async () => {
+    if (!selectedWifi || !password) {
+      Alert.alert("Missing Info", "Please select a WiFi network and enter the password.");
+      return;
+    }
+    try {
+      setConnectionError("");
+      // @ts-ignore: The type definitions may not match the actual library signature
+      const connected = await WifiManager.connectToProtectedSSID(
+        selectedWifi,
+        password,
+        false, // isWEP
+        isHiddenNetwork // isHidden
+      );
+      if (connected) {
+        setIsWifiModalVisible(false);
+        setIsConnected(true);
+        Alert.alert("Success", `Connected to ${selectedWifi}`);
+      } else {
+        setConnectionError("Failed to connect to the network. Please check your password and try again.");
+      }
+    } catch (error) {
+      setConnectionError("Error connecting to the network");
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -62,8 +154,8 @@ export default function DeviceDetailsScreen() {
       <View style={styles.card}>
         <Text style={styles.cardTitle}>All time power usage</Text>
         <View style={styles.powerUsageContainer}>
-          <Text style={styles.powerUsageAmount}>₦8,008.04</Text>
-          <Text style={styles.powerUsageUnit}>/ 11.89Kw/H</Text>
+          <Text style={styles.powerUsageAmount}>₦{readings?.bill}</Text>
+          <Text style={styles.powerUsageUnit}>/ {readings?.total_energy.toFixed(2)}Kw/H</Text>
         </View>
       </View>
 
@@ -93,14 +185,14 @@ export default function DeviceDetailsScreen() {
             onPress={handleWifi}
           >
             <Text style={styles.infoValue}>Wifi name</Text>
-            <ChevronRight size={20} color="#000" />
+            <Ionicons name="chevron-forward" size={20} color="#000" />
           </TouchableOpacity>
         </TouchableOpacity>
       </View>
 
       {/* Disconnect Button */}
       <TouchableOpacity style={styles.connectButton} onPress={handleDisconnect}>
-        <WifiOff size={20} color={isConnected ? "#E53935" : "green"} />
+        <Ionicons name="wifi-outline" size={20} color={isConnected ? "#E53935" : "green"} />
         <Text
           style={[
             styles.disconnectText,
@@ -112,7 +204,7 @@ export default function DeviceDetailsScreen() {
       </TouchableOpacity>
       <Modal
         visible={isModalVisible}
-        animationType="slide"
+        animationType="none"
         transparent={true}
         statusBarTranslucent
         onRequestClose={() => setIsModalVisible(false)}
@@ -156,7 +248,11 @@ export default function DeviceDetailsScreen() {
         password={password}
         setPassword={setPassword}
         wifiNetworks={wifiNetworks}
-        handleConnect={() => {}}
+        handleConnect={handleConnect}
+        connectionError={connectionError}
+        scanning={scanning}
+        isHiddenNetwork={isHiddenNetwork}
+        setIsHiddenNetwork={setIsHiddenNetwork}
       />
     </SafeAreaView>
   );

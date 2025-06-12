@@ -48,13 +48,13 @@ export default function OnboardingScreen() {
       translateX.value = withTiming(-newPage * width, { duration: 300 });
     } else {
       await Storage.setHasSeenOnboarding(true);
-      router.push("/(getstarted)/distributionbox");
+      router.replace("/(getstarted)/distributionbox");
     }
   }, [currentPage, totalPages, translateX, router]);
 
   const handleSkip = useCallback(async () => {
     await Storage.setHasSeenOnboarding(true);
-    router.push("/(getstarted)/distributionbox");
+    router.replace("/(getstarted)/distributionbox");
   }, [router]);
 
   const onGestureEvent = useAnimatedGestureHandler({

@@ -5,7 +5,7 @@ import React, {
   useContext,
   ReactNode,
 } from "react";
-import { Storage } from "@/utils/storage";
+import { SecureStorage } from "@/utils/storage";
 import { signIn, logOut } from "@/api";
 import { User } from "@/interfaces";
 
@@ -15,6 +15,7 @@ interface AuthContextType {
   login: (userData: User) => Promise<any>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,20 +23,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export default function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     checkAuthStatus();
   }, []);
 
   const checkAuthStatus = async () => {
-    const token = await Storage.getItem("userToken");
+    setLoading(true);
+    try {
+      const token = await SecureStorage.getItem("userToken");
+      const isAuthenticatedFlag = await SecureStorage.getIsAuthenticated();
 
-    if (token) {
-      setIsAuthenticated(true);
-      // Fetch user data here if needed
-
-      const user = await Storage.getItem("user");
-      setUser(user ? JSON.parse(user) : null);
+      if (token && isAuthenticatedFlag) {
+        setIsAuthenticated(true);
+        
+        const userData = await SecureStorage.getItem("user");
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -50,10 +66,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       const { user, access_token } = await signIn(email, password);
 
 
-      // Store the access token from the response
-      await Storage.setItem("userToken", access_token);
-      await Storage.setItem("user", JSON.stringify(user));
-      await Storage.setIsAuthenticated(true);
+      await SecureStorage.setItem("userToken", access_token);
+      await SecureStorage.setItem("user", JSON.stringify(user));
+      await SecureStorage.setIsAuthenticated(true);
       setIsAuthenticated(true);
       setUser({
         email,
@@ -71,8 +86,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await Storage.removeItem("userToken");
-    await Storage.removeItem("user");
+    await SecureStorage.removeItem("userToken");
+    await SecureStorage.removeItem("user");
+    await SecureStorage.setIsAuthenticated(false);
     await logOut();
     setIsAuthenticated(false);
     setUser(null);
@@ -81,18 +97,15 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const updateUser = async (userData: Partial<User>) => {
     if (!user) return;
     
-    // Create updated user object
     const updatedUser = { ...user, ...userData };
     
-    // Update state
     setUser(updatedUser);
     
-    // Update local storage
-    await Storage.setItem("user", JSON.stringify(updatedUser));
+    await SecureStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

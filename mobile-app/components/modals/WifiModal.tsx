@@ -34,10 +34,11 @@ const WifiModal = ({
 }: WifiModalProps) => {
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
+      statusBarTranslucent
     >
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>

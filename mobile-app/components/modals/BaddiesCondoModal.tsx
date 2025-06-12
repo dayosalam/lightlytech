@@ -27,7 +27,7 @@ const BaddiesCondoModal: React.FC<BaddiesCondoModalProps> = ({
 }) => {
   return (
     <Modal
-      animationType="slide"
+      animationType="none"
       transparent={true}
       visible={visible}
       onRequestClose={onClose}

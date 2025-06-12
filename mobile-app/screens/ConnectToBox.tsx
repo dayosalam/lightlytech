@@ -2,9 +2,11 @@
 
 import DistributionBox from "@/components/DistributionBox";
 import { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Easing, Image } from "react-native";
+import { View, Text, StyleSheet, Animated, Easing, Image, Platform, TouchableOpacity } from "react-native";
+import { useWifi } from "@/context/WifiContext";
 
 export default function ConnectBoxScreen({ next }: { next: () => void }) {
+  const { scanNetworks, networks, isScanning, error, connectToNetwork } = useWifi();
   const rippleAnimations = useRef(
     Array.from({ length: 4 }, () => new Animated.Value(0))
   ).current;
@@ -19,6 +21,7 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
   const MARGIN = 20;
 
   useEffect(() => {
+    scanNetworks();
     // Start ripple animations
     const animations = rippleAnimations.map((anim, index) => {
       return Animated.loop(
@@ -113,6 +116,12 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
           <Text style={styles.title}>
             Great! Let's connect{"\n"}your device with the{"\n"}lightly box
           </Text>
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          {isScanning ? (
+            <Text style={styles.scanningText}>Scanning for networks...</Text>
+          ) : networks.length > 0 ? (
+            <Text style={styles.networksFoundText}>{networks.length} WiFi networks found</Text>
+          ) : null}
         </View>
 
         <View style={styles.rippleContainer}>
@@ -180,6 +189,16 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
             "Looking for lightly distribution box, keeping your device close will assist the connection process."
           )}
         </Text>
+        
+        <TouchableOpacity 
+          style={styles.rescanButton} 
+          onPress={scanNetworks}
+          disabled={isScanning}
+        >
+          <Text style={styles.rescanButtonText}>
+            {isScanning ? "Scanning..." : "Scan Again"}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -197,14 +216,47 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingVertical: 40,
   },
+  errorText: {
+    color: "#FF0000",
+    fontFamily: "InterRegular",
+    fontSize: 14,
+    marginTop: 8,
+    paddingLeft: Platform.OS === "ios" ? 20 : 0,
+  },
+  scanningText: {
+    color: "#878787",
+    fontFamily: "InterRegular",
+    fontSize: 14,
+    marginTop: 8,
+    paddingLeft: Platform.OS === "ios" ? 20 : 0,
+  },
+  networksFoundText: {
+    color: "#22A45D",
+    fontFamily: "InterMedium",
+    fontSize: 14,
+    marginTop: 8,
+    paddingLeft: Platform.OS === "ios" ? 20 : 0,
+  },
+  rescanButton: {
+    backgroundColor: "#FF5722",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  rescanButtonText: {
+    color: "#FFFFFF",
+    fontFamily: "InterSemiBold",
+    fontSize: 16,
+  },
   orangeText: {
     color: "#FF671F",
     fontFamily: "InterBold",
   },
   titleContainer: {
-    justifyContent: "flex-start",
     backgroundColor: "transparent",
     alignSelf: "flex-start",
+    paddingLeft: Platform.OS === "ios" ? 20 : 0,
   },
   title: {
     fontSize: 28,
@@ -235,14 +287,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    zIndex: 2,
+
   },
   distributionBox: {
     position: "absolute",

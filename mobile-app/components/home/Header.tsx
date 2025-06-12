@@ -14,6 +14,7 @@ const MOODS: Record<number, { label: string; emoji: string }> = {
 const Header = ({ setShowMood }: { setShowMood: (value: boolean) => void }) => {
   const { user } = useAuth();
 
+
   const formatString = (str: string) => {
     if (str.length > 10) {
       return str.substring(0, 8) + "...";

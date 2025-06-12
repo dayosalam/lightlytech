@@ -27,12 +27,12 @@ export const navigateBasedOnSetup = async (): Promise<void> => {
   try {
     const hasConnectedBox = await checkBoxSetup();
     
-    if (true) {
+    if (hasConnectedBox) {
       // If box is already connected, navigate to home
-      router.replace('/(home)');
+      router.replace('/setup');
     } else {
       // If box is not connected, navigate to setup
-      router.replace('/setup');
+      router.replace('/(home)');
     }
   } catch (error) {
     console.error('Error navigating based on setup:', error);
