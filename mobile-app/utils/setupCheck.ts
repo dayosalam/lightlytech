@@ -30,6 +30,7 @@ export const navigateBasedOnSetup = async (): Promise<void> => {
     if (hasConnectedBox) {
       // If box is already connected, navigate to home
       router.replace('/setup');
+      // router.replace('/(home)');
     } else {
       // If box is not connected, navigate to setup
       router.replace('/(home)');

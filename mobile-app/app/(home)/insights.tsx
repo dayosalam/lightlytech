@@ -16,7 +16,6 @@ import RoomUsageItem from "@/components/RoomUsageItem";
 import RoomUsageSection from "@/components/RoomUsageSection";
 import PowerUsageChart from "@/components/PowerUsageChart";
 import { useReadings } from "@/context/ReadingsContext";
-import { totalEnergy } from "@/utils/helpers";
 
 // Tab options for time period selection
 const timeOptions = ["Today", "1 M", "1 Y", "All time"];

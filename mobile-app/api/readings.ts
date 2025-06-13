@@ -1,8 +1,12 @@
 import newRequest from "./newRequest";
 
-export const getReadings = async () => {
+export const getReadings = async (timePeriod: string) => {
   try {
-    const { status, data } = await newRequest.get("/sensors/readings");
+    const { status, data } = await newRequest.get("/sensors/readings", {
+      params: {
+        period: timePeriod,
+      },
+    });
     if (status !== 200) {
       throw new Error("Failed to fetch readings");
     }

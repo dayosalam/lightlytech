@@ -50,27 +50,27 @@ const WifiProvider = ({ children }: { children: ReactNode }) => {
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
   // Check for location permissions (required for WiFi scanning on Android)
-  const requestLocationPermission = async (): Promise<boolean> => {
-    if (Platform.OS === 'ios') {
-      return true; // iOS doesn't need this permission for WiFi
-    }
+  // const requestLocationPermission = async (): Promise<boolean> => {
+  //   if (Platform.OS === 'ios') {
+  //     return true; // iOS doesn't need this permission for WiFi
+  //   }
 
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Location Permission',
-          message: 'We need your location to scan for WiFi networks',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        }
-      );
-      return granted === PermissionsAndroid.RESULTS.GRANTED;
-    } catch (err) {
-      console.error('Failed to request location permission:', err);
-      return false;
-    }
-  };
+  //   try {
+  //     const granted = await PermissionsAndroid.request(
+  //       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+  //       {
+  //         title: 'Location Permission',
+  //         message: 'We need your location to scan for WiFi networks',
+  //         buttonNegative: 'Cancel',
+  //         buttonPositive: 'OK',
+  //       }
+  //     );
+  //     return granted === PermissionsAndroid.RESULTS.GRANTED;
+  //   } catch (err) {
+  //     console.error('Failed to request location permission:', err);
+  //     return false;
+  //   }
+  // };
 
   // Check if location services are enabled
   const checkLocationEnabled = async (): Promise<boolean> => {

@@ -6,14 +6,16 @@ import { View, Text, StyleSheet, Animated, Easing, Image, Platform, TouchableOpa
 import { useWifi } from "@/context/WifiContext";
 
 export default function ConnectBoxScreen({ next }: { next: () => void }) {
-  const { scanNetworks, networks, isScanning, error, connectToNetwork } = useWifi();
+  const { scanNetworks, networks, isScanning, error, connectToNetwork, isConnecting } = useWifi();
   const rippleAnimations = useRef(
     Array.from({ length: 4 }, () => new Animated.Value(0))
   ).current;
 
   const [numBoxesFound, setNumBoxesFound] = useState(0);
-  const [boxPositions, setBoxPositions] = useState([]);
+  type BoxPosition = { top: number; left: number; ssid: string };
+  const [boxPositions, setBoxPositions] = useState<BoxPosition[]>([]);
   const boxAnimation = useRef(new Animated.Value(0)).current;
+  const [connectionStatus, setConnectionStatus] = useState<string>("");
 
   // Constants for positioning
   const CONTAINER_SIZE = 400;
@@ -21,7 +23,6 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
   const MARGIN = 20;
 
   useEffect(() => {
-    scanNetworks();
     // Start ripple animations
     const animations = rippleAnimations.map((anim, index) => {
       return Animated.loop(
@@ -35,43 +36,65 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
       ).start();
     });
 
-    // Simulate finding distribution boxes
-    const findTimeout = setTimeout(() => {
-      const foundBoxes = Math.floor(Math.random() * 3) + 1; // Randomly find 1 to 3 boxes
-      let positions = [];
-
+    // Initial network scan
+    scanNetworks();
+    
+    // No need for timeout - this will be handled by network scan result
+    
+    return () => {
+      rippleAnimations.forEach((anim) => {
+        // Properly handle animation cleanup
+        const animatedLoop = anim as any;
+        if (animatedLoop.stop) animatedLoop.stop();
+      });
+    };
+  }, []);  
+  
+  useEffect(() => {
+    // Process networks when they change
+    const lightlyBoxNetworks = networks.filter(net => net.SSID.includes("Lightly Box"));
+    const foundBoxes = lightlyBoxNetworks.length;
+    
+    if (foundBoxes > 0) {
+      // Generate positions based on actual found networks
+      let positions: BoxPosition[] = [];
+      
       for (let i = 0; i < foundBoxes; i++) {
         const side = getRandomSide();
         const position = getRandomPositionOnSide(side, positions);
+        // Store the SSID with the position so we know which network to connect to when clicked
+        position.ssid = lightlyBoxNetworks[i].SSID;
         positions.push(position);
       }
-
+      
       setBoxPositions(positions);
       setNumBoxesFound(foundBoxes);
-
+      
       Animated.timing(boxAnimation, {
         toValue: 1,
         duration: 800,
         easing: Easing.out(Easing.back(1.5)),
         useNativeDriver: true,
       }).start();
-    }, Math.random() * 3000 + 3000);
-
-    return () => {
-      clearTimeout(findTimeout);
-      rippleAnimations.forEach((anim) => anim.stop && anim.stop()); // Ensure stop() exists
-    };
-  }, []);
+    } else {
+      // Reset if no Lightly Box networks found
+      setBoxPositions([]);
+      setNumBoxesFound(0);
+    }
+    // No cleanup needed in this effect
+  }, [networks]);
 
   const getRandomSide = () => {
     const sides = ["top", "right", "bottom", "left"];
     return sides[Math.floor(Math.random() * sides.length)];
   };
 
-  const getRandomPositionOnSide = (side, existingPositions) => {
+  const getRandomPositionOnSide = (side: string, existingPositions: BoxPosition[]): BoxPosition => {
     const availableRange = CONTAINER_SIZE - DISTRIBUTION_BOX_SIZE - MARGIN * 2;
-    let top, left;
+    let top: number = 0;
+    let left: number = 0;
     let attempts = 0;
+    let ssid: string = "";
 
     do {
       switch (side) {
@@ -100,13 +123,35 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
       if (attempts > 10) break; // Avoid infinite loops
     } while (
       existingPositions.some(
-        (pos) =>
+        (pos: BoxPosition) =>
           Math.abs(pos.top - top) < DISTRIBUTION_BOX_SIZE &&
           Math.abs(pos.left - left) < DISTRIBUTION_BOX_SIZE
       )
     );
 
-    return { top, left };
+    return { top, left, ssid };
+  };
+
+  // Handle clicking on a distribution box
+  const handleBoxClick = async (ssid: string) => {
+    setConnectionStatus(`Connecting to ${ssid}...`);
+    try {
+      // Connect to the network with an empty password since there's no password
+      const connected = await connectToNetwork(ssid, "", false);
+      
+      if (connected) {
+        setConnectionStatus(`Connected to ${ssid} successfully!`);
+        // Wait a moment before proceeding to the next screen
+        setTimeout(() => {
+          next();
+        }, 1500);
+      } else {
+        setConnectionStatus(`Failed to connect to ${ssid}. Please try again.`);
+      }
+    } catch (err) {
+      console.error('Error connecting to network:', err);
+      setConnectionStatus(`Error connecting to ${ssid}. Please try again.`);
+    }
   };
 
   return (
@@ -117,11 +162,8 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
             Great! Let's connect{"\n"}your device with the{"\n"}lightly box
           </Text>
           {error && <Text style={styles.errorText}>{error}</Text>}
-          {isScanning ? (
-            <Text style={styles.scanningText}>Scanning for networks...</Text>
-          ) : networks.length > 0 ? (
-            <Text style={styles.networksFoundText}>{networks.length} WiFi networks found</Text>
-          ) : null}
+          {connectionStatus && <Text style={styles.connectionStatusText}>{connectionStatus}</Text>}
+          {/* {isConnecting && <Text style={styles.scanningText}>Connecting to Lightly Box...</Text>} */}
         </View>
 
         <View style={styles.rippleContainer}>
@@ -172,7 +214,7 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
                 },
               ]}
             >
-              <DistributionBox onClick={() => next()} />
+              <DistributionBox onClick={() => handleBoxClick(position.ssid)} />
             </Animated.View>
           ))}
         </View>
@@ -189,16 +231,6 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
             "Looking for lightly distribution box, keeping your device close will assist the connection process."
           )}
         </Text>
-        
-        <TouchableOpacity 
-          style={styles.rescanButton} 
-          onPress={scanNetworks}
-          disabled={isScanning}
-        >
-          <Text style={styles.rescanButtonText}>
-            {isScanning ? "Scanning..." : "Scan Again"}
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -225,6 +257,13 @@ const styles = StyleSheet.create({
   },
   scanningText: {
     color: "#878787",
+    fontFamily: "InterRegular",
+    fontSize: 14,
+    marginTop: 8,
+    paddingLeft: Platform.OS === "ios" ? 20 : 0,
+  },
+  connectionStatusText: {
+    color: "#22A45D",
     fontFamily: "InterRegular",
     fontSize: 14,
     marginTop: 8,

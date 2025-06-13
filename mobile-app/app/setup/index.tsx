@@ -19,20 +19,7 @@ import { Storage } from "@/utils/storage";
 
 export default function DeviceSetup() {
   const [currentStep, setCurrentStep] = useState(0);
-  const router = useRouter();
 
-  // useEffect(() => {
-  //   // Check if the user has already connected their box
-  //   const checkBoxConnection = async () => {
-  //     const hasConnectedBox = await Storage.getHasConnectedBox();
-  //     if (hasConnectedBox) {
-  //       // If box is already connected, navigate to home
-  //       router.replace("/(home)");
-  //     }
-  //   };
-
-  //   checkBoxConnection();
-  // }, [router]);
 
   const steps = [
     {
