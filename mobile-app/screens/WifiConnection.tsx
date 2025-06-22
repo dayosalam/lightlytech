@@ -12,13 +12,13 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
-  PermissionsAndroid,
   Platform,
 } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import Wifi from "@/assets/icons/wifi-complete.svg";
 import { Ionicons } from "@expo/vector-icons";
-import WifiManager from "react-native-wifi-reborn";
+import { useWifi } from "@/context/WifiContext";
+import { sendWifiCredentials } from "@/api/wifi";
 
 const { width } = Dimensions.get("window");
 
@@ -75,140 +75,70 @@ const CustomSpinner = () => {
 };
 
 export default function WifiConnection({ next }: { next: () => void }) {
+  const { networks, isScanning, error, connectToNetwork, scanNetworks, currentSSID } = useWifi();
   const [wifiNetworks, setWifiNetworks] = useState<string[]>([]);
-  const [scanning, setScanning] = useState<boolean>(false);
   const [connectionError, setConnectionError] = useState<string>("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedWifi, setSelectedWifi] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [networks, setNetworks] = useState<string[] | undefined>([]);
-  const [ssid, setSsid] = useState<string>("");
   const [isHiddenNetwork, setIsHiddenNetwork] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
+  // Convert networks from WifiContext to just SSIDs for the UI
   useEffect(() => {
-    PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: "Location Permission",
-        message: "We need your location to scan for WiFi networks",
-        buttonNegative: "Cancel",
-        buttonPositive: "OK",
+    if (networks && networks.length > 0) {
+      // Filter out the "Lightly Box" WiFi and extract SSIDs
+      const filteredNetworks = networks
+        .filter(network => network.SSID !== "Lightly Box")
+        .map(network => network.SSID);
+      
+      setWifiNetworks(filteredNetworks);
+      
+      if (filteredNetworks.length > 0 && !modalVisible) {
+        setModalVisible(true);
+      } else if (filteredNetworks.length === 0 && currentSSID === "Lightly Box" && !modalVisible) {
+        // If we're connected to Lightly Box but can't see other networks, still show the modal
+        setModalVisible(true);
       }
-    );
-  }, []);
-
-
-  const checkLocationEnabled = async () => {
-    try {
-      // This is a workaround to check if location is enabled
-      await WifiManager.getCurrentWifiSSID();
-      return true;
-    } catch (error) {
-      // If error contains "Location service is turned off", then location is not enabled
-      if (error instanceof Error && error.message.includes("Location service is turned off")) {
-        return false;
-      }
-      // For other errors, assume location might be enabled
-      return true;
+    } else if (currentSSID === "Lightly Box" && !modalVisible) {
+      // If we're connected to Lightly Box but have no networks, still show the modal
+      setModalVisible(true);
     }
-  };
+  }, [networks, currentSSID]);
 
+
+  // Use the scanNetworks function from the WiFi context
   const scanForWifiNetworks = async () => {
-    try {
-      setScanning(true);
-      setConnectionError("");
-      
-      // First check if location services are enabled
-      const locationEnabled = await checkLocationEnabled();
-      if (!locationEnabled) {
-        setConnectionError("Please enable Location Services in your device settings to scan for WiFi networks");
-        console.log("Location services are turned off");
-        return;
-      }
-      
-      // Request location permission (required for WiFi scanning)
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: "Location Permission",
-          message: "We need your location to scan for WiFi networks",
-          buttonNegative: "Cancel",
-          buttonPositive: "OK",
-        }
-      );
-      
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        // Get current SSID
-        try {
-          const currentSSID = await WifiManager.getCurrentWifiSSID();
-          setSsid(currentSSID);
-        } catch (error) {
-          console.log("Error getting current SSID:", error);
-          // Handle specific errors
-          if (error instanceof Error && error.message.includes("Location service is turned off")) {
-            setConnectionError("Please enable Location Services in your device settings");
-            return;
-          }
-        }
-        
-        try {
-          // Scan for networks
-          const networks = await WifiManager.loadWifiList();
-          const uniqueNetworks = [...new Set(networks.map(network => network.SSID))];
-          setWifiNetworks(uniqueNetworks.filter(ssid => ssid.length > 0));
-          setModalVisible(true);
-        } catch (error) {
-          console.log("Error loading WiFi list:", error);
-          if (error instanceof Error && error.message.includes("Location service is turned off")) {
-            setConnectionError("Please enable Location Services in your device settings");
-          } else {
-            setConnectionError("Error scanning for WiFi networks");
-          }
-        }
-      } else {
-        console.log("Location permission denied");
-        setConnectionError("Location permission is required to scan for WiFi networks");
-      }
-    } catch (error) {
-      console.log("Error scanning WiFi:", error);
-      // Better error handling with specific messages
-      if (error instanceof Error) {
-        if (error.message.includes("Location service is turned off")) {
-          setConnectionError("Please enable Location Services in your device settings");
-        } else {
-          setConnectionError("Error scanning for WiFi networks: " + error.message);
-        }
-      } else {
-        setConnectionError("Error scanning for WiFi networks");
-      }
-    } finally {
-      setScanning(false);
+    setConnectionError("");
+    await scanNetworks();
+    
+    // Update connection error from context if needed
+    if (error) {
+      setConnectionError(error);
     }
   };
   
+  // Use the connectToNetwork function from the WiFi context
   const connectToWifi = async (ssid: string, password: string) => {
     try {
       setConnectionError("");
-
-      // Connect to the selected network
-      const connected = await WifiManager.connectToProtectedSSID(
-        ssid,
-        password,
-        false, // isWEP - we assume modern networks use WPA/WPA2, not WEP
-        isHiddenNetwork // isHidden - whether this is a hidden network
-      );
-
-      console.log("Connected to WiFi:", connected);
+      
+      // Use the context function to connect
+      const connected = await connectToNetwork(ssid, password, isHiddenNetwork);
       
       if (connected) {
         console.log(`Successfully connected to ${ssid}`);
         next();
       } else {
-        console.log(`Failed to connect to ${ssid}`);
-        setConnectionError("Failed to connect to the network. Please check your password and try again.");
+        // Error will be set in the context, but we can also set it locally
+        if (error) {
+          setConnectionError(error);
+        } else {
+          setConnectionError("Failed to connect to the network. Please check your password and try again.");
+        }
       }
-    } catch (error) {
-      console.log("Error connecting to WiFi:", error);
+    } catch (err) {
+      console.log("Error connecting to WiFi:", err);
       setConnectionError("Error connecting to the network");
     }
   };
@@ -219,14 +149,36 @@ export default function WifiConnection({ next }: { next: () => void }) {
     scanForWifiNetworks();
   }, []);
 
-  console.log(ssid);
+  // Update connection error from context when it changes
+  useEffect(() => {
+    if (error) {
+      setConnectionError(error);
+    }
+  }, [error]);
+  
+  console.log("Current SSID:", currentSSID);
 
-  const handleConnect = () => {
-    if (selectedWifi && password) {
+  const handleConnect = async () => {
+    // Validate that we have a valid SSID (not "manual") and password
+    if (selectedWifi && selectedWifi !== "manual" && password) {
       console.log("Selected WiFi:", selectedWifi);
       console.log("Password:", password);
       console.log("Hidden network:", isHiddenNetwork);
-      connectToWifi(selectedWifi, password);
+      
+      try {
+        await sendWifiCredentials(selectedWifi, password);
+        // Show success message
+        setConnectionError("");
+        alert("WiFi credentials sent to Lightly Box. It will now attempt to connect.");
+        next();
+      } catch (error) {
+        console.error("Failed to send WiFi credentials:", error);
+        setConnectionError("Failed to send WiFi credentials to the Lightly Box. Please try again.");
+      }
+    } else if (selectedWifi === "manual" && password.length < 6) {
+      setConnectionError("Please enter a valid password (at least 6 characters).");
+    } else {
+      setConnectionError("Please enter both WiFi name and password.");
     }
   };
 
@@ -251,7 +203,7 @@ export default function WifiConnection({ next }: { next: () => void }) {
         <View style={styles.spinnerWrapper}>
           <CustomSpinner />
           <Text style={styles.searchingText}>
-            {scanning ? "Scanning for WiFi networks..." : "Ready to connect"}
+            {isScanning ? "Scanning for WiFi networks..." : "Ready to connect"}
           </Text>
           {connectionError ? (
             <Text style={styles.errorText}>{connectionError}</Text>
@@ -281,7 +233,7 @@ export default function WifiConnection({ next }: { next: () => void }) {
 
       {/* Modal for WiFi List */}
       <Modal
-        animationType="slide"
+        animationType="none"
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
@@ -301,19 +253,55 @@ export default function WifiConnection({ next }: { next: () => void }) {
                 onPress={() => setModalVisible(false)}
               />
             </View>
+            {/* Add a button to manually enter WiFi details */}
+            <TouchableOpacity
+              style={styles.manualEntryButton}
+              onPress={() => setSelectedWifi("manual")}
+            >
+              <Text style={styles.manualEntryText}>Can't see your network? Enter details manually</Text>
+            </TouchableOpacity>
+            
             {selectedWifi ? (
               <View>
                 <Text style={styles.selectedWifiText}>
-                  Enter password for {selectedWifi}:
+                  {selectedWifi === "manual" 
+                    ? "Enter your WiFi details:" 
+                    : `Enter password for ${selectedWifi}:`}
                 </Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="WiFi Password"
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                  autoCapitalize="none"
-                />
+                
+                {selectedWifi === "manual" && (
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="WiFi Network Name (SSID)"
+                      value={selectedWifi === "manual" ? "" : selectedWifi}
+                      onChangeText={(text) => setSelectedWifi(text !== "manual" ? text : "manual")}
+                      autoCapitalize="none"
+                      placeholderTextColor="#878787"
+                    />
+                  </View>
+                )}
+                <View style={styles.passwordContainer}>
+                  <TextInput
+                    style={styles.passwordInput}
+                    placeholder="WiFi Password"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                    autoCapitalize="none"
+                    placeholderTextColor="#878787"
+                  />
+                  <TouchableOpacity
+                    style={styles.eyeIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off-outline" : "eye-outline"}
+                      size={24}
+                      color="#878787"
+                    />
+                  </TouchableOpacity>
+                </View>
                 
                 <View style={styles.checkboxContainer}>
                   <TouchableOpacity
@@ -366,6 +354,17 @@ export default function WifiConnection({ next }: { next: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  manualEntryButton: {
+    paddingVertical: 12,
+    marginBottom: 15,
+    alignItems: "center",
+  },
+  manualEntryText: {
+    color: "#FF5722",
+    fontFamily: "InterSemiBold",
+    fontSize: 14,
+    textDecorationLine: "underline",
+  },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -432,7 +431,7 @@ const styles = StyleSheet.create({
   continueButtonText: {
     fontSize: 16,
     fontFamily: "InterSemiBold",
-    color: "#FFFFFF",
+    color: "#022322",
   },
   modalHeader: {
     flexDirection: "row",
@@ -482,15 +481,38 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16,
     fontFamily: "InterSemiBold",
+    color: "#022322",
   },
-  input: {
+  inputContainer: {
     borderWidth: 1,
     borderColor: "#ccc",
+    borderRadius: 5,
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  input: {
     fontFamily: "InterRegular",
     padding: 10,
-    marginTop: 10,
+    color: "#000000",
+  },
+  passwordContainer: {
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 5,
+    marginTop: 10,
     marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 10,
+    fontFamily: "InterRegular",
+    color: "#000000",
+  },
+  eyeIcon: {
+    padding: 10,
+    justifyContent: "center",
+    alignItems: "center",
   },
   imageContainer: {
     width: width - 80,
@@ -524,6 +546,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     marginVertical: 7,
     fontFamily: "InterBold",
+    color: "#022322",
     marginBottom: 10,
   },
   wifiItem: {
@@ -532,6 +555,7 @@ const styles = StyleSheet.create({
   wifiText: {
     fontSize: 16,
     fontFamily: "InterRegular",
+    color: "#022322",
   },
   closeButton: {
     marginTop: 10,

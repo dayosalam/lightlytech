@@ -207,6 +207,7 @@ export default function AuthScreen() {
                         error && styles.inputError,
                       ]}
                       placeholder="e.g John Doe"
+                      placeholderTextColor="#878787"
                       value={name}
                       onChangeText={(text) => {
                         setName(text);
@@ -227,6 +228,7 @@ export default function AuthScreen() {
                     error && styles.inputError,
                   ]}
                   placeholder="e.g johndoe@gmail.com"
+                  placeholderTextColor="#878787"
                   value={email}
                   onChangeText={(text) => {
                     setEmail(text);
@@ -247,6 +249,7 @@ export default function AuthScreen() {
                       error && styles.inputError,
                     ]}
                     placeholder="Enter password"
+                    placeholderTextColor="#878787"
                     value={password}
                     onChangeText={(text) => {
                       setPassword(text);
@@ -280,6 +283,7 @@ export default function AuthScreen() {
                           error && styles.inputError,
                         ]}
                         placeholder="Confirm your password"
+                        placeholderTextColor="#878787"
                         value={confirmPassword}
                         onChangeText={(text) => {
                           setConfirmPassword(text);
@@ -466,6 +470,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1,
     borderColor: "#e6e9e9",
+    color: "#022322", // Ensure input text is visible
   },
   passwordContainer: {
     flexDirection: "row",
@@ -481,6 +486,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderRadius: 8,
     fontFamily: "InterRegular",
+    color: "#022322", // Ensure password text is visible
   },
   eyeIcon: {
     padding: 16,
