@@ -33,70 +33,85 @@ export default function DeviceDetailsScreen() {
 
   const { readings } = useReadings();
 
+  useEffect(() => {
+    scanForWifiNetworks();
+  }, []);
 
-    useEffect(() => {
-      scanForWifiNetworks();
-    }, []);
-
-    // Robust scan and connect logic from WifiConnection.tsx
-    const checkLocationEnabled = async () => {
-      try {
-        await WifiManager.getCurrentWifiSSID();
-        return true;
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("Location service is turned off")) {
-          return false;
-        }
-        return true;
+  // Robust scan and connect logic from WifiConnection.tsx
+  const checkLocationEnabled = async () => {
+    try {
+      await WifiManager.getCurrentWifiSSID();
+      return true;
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Location service is turned off")
+      ) {
+        return false;
       }
-    };
+      return true;
+    }
+  };
 
-    const scanForWifiNetworks = async () => {
-      try {
-        setScanning(true);
-        setConnectionError("");
-        // Check if location services are enabled
-        const locationEnabled = await checkLocationEnabled();
-        if (!locationEnabled) {
-          setConnectionError("Please enable Location Services in your device settings to scan for WiFi networks");
-          return;
-        }
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: "Location Permission",
-            message: "We need your location to scan for WiFi networks",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK",
-          }
+  const scanForWifiNetworks = async () => {
+    try {
+      setScanning(true);
+      setConnectionError("");
+      // Check if location services are enabled
+      const locationEnabled = await checkLocationEnabled();
+      if (!locationEnabled) {
+        setConnectionError(
+          "Please enable Location Services in your device settings to scan for WiFi networks"
         );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          try {
-            const currentSSID = await WifiManager.getCurrentWifiSSID();
-            setSsid(currentSSID);
-          } catch (error) {
-            // ignore
-          }
-          try {
-            const networks = await WifiManager.loadWifiList();
-            const uniqueNetworks = [...new Set(networks.map((network: any) => network.SSID))];
-            setWifiNetworks(uniqueNetworks.filter((ssid: string) => ssid.length > 0));
-          } catch (error) {
-            setConnectionError("Error scanning for WiFi networks");
-          }
-        } else {
-          setConnectionError("Location permission is required to scan for WiFi networks");
+        return;
+      }
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+        {
+          title: "Location Permission",
+          message: "We need your location to scan for WiFi networks",
+          buttonNegative: "Cancel",
+          buttonPositive: "OK",
         }
-      } catch (error) {
-        if (error instanceof Error && error.message.includes("Location service is turned off")) {
-          setConnectionError("Please enable Location Services in your device settings");
-        } else {
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        try {
+          const currentSSID = await WifiManager.getCurrentWifiSSID();
+          setSsid(currentSSID);
+        } catch (error) {
+          // ignore
+        }
+        try {
+          const networks = await WifiManager.loadWifiList();
+          const uniqueNetworks = [
+            ...new Set(networks.map((network: any) => network.SSID)),
+          ];
+          setWifiNetworks(
+            uniqueNetworks.filter((ssid: string) => ssid.length > 0)
+          );
+        } catch (error) {
           setConnectionError("Error scanning for WiFi networks");
         }
-      } finally {
-        setScanning(false);
+      } else {
+        setConnectionError(
+          "Location permission is required to scan for WiFi networks"
+        );
       }
-    };
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Location service is turned off")
+      ) {
+        setConnectionError(
+          "Please enable Location Services in your device settings"
+        );
+      } else {
+        setConnectionError("Error scanning for WiFi networks");
+      }
+    } finally {
+      setScanning(false);
+    }
+  };
 
   const handleWifi = () => {
     // Handle connect logic here
@@ -113,7 +128,10 @@ export default function DeviceDetailsScreen() {
 
   const handleConnect = async () => {
     if (!selectedWifi || !password) {
-      Alert.alert("Missing Info", "Please select a WiFi network and enter the password.");
+      Alert.alert(
+        "Missing Info",
+        "Please select a WiFi network and enter the password."
+      );
       return;
     }
     try {
@@ -130,12 +148,14 @@ export default function DeviceDetailsScreen() {
         setIsConnected(true);
         Alert.alert("Success", `Connected to ${selectedWifi}`);
       } else {
-        setConnectionError("Failed to connect to the network. Please check your password and try again.");
+        setConnectionError(
+          "Failed to connect to the network. Please check your password and try again."
+        );
       }
     } catch (error) {
       setConnectionError("Error connecting to the network");
     }
-  }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -155,7 +175,9 @@ export default function DeviceDetailsScreen() {
         <Text style={styles.cardTitle}>All time power usage</Text>
         <View style={styles.powerUsageContainer}>
           <Text style={styles.powerUsageAmount}>₦{readings?.bill}</Text>
-          <Text style={styles.powerUsageUnit}>/ {readings?.total_energy.toFixed(2)}Kw/H</Text>
+          <Text style={styles.powerUsageUnit}>
+            / {readings?.total_energy?.toFixed(2) || "0.00"}Kw/H
+          </Text>
         </View>
       </View>
 
@@ -192,7 +214,11 @@ export default function DeviceDetailsScreen() {
 
       {/* Disconnect Button */}
       <TouchableOpacity style={styles.connectButton} onPress={handleDisconnect}>
-        <Ionicons name="wifi-outline" size={20} color={isConnected ? "#E53935" : "green"} />
+        <Ionicons
+          name="wifi-outline"
+          size={20}
+          color={isConnected ? "#E53935" : "green"}
+        />
         <Text
           style={[
             styles.disconnectText,

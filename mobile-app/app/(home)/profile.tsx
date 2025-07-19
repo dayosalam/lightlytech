@@ -99,7 +99,7 @@ export default function ProfileScreen() {
             onPress={() => handleNavigation("/(profile)/rewards")}
           /> */}
 
-          <MenuItem
+          {/* <MenuItem
             icon={<Ionicons name="cube-outline" size={24} color="#022322" />}
             title="My Lightly Box"
             subtitle="Manage your Lightly Box"
@@ -113,11 +113,19 @@ export default function ProfileScreen() {
             title="Support"
             subtitle="Reach out to us"
             onPress={() => handleNavigation("/(profile)/support")}
-          />
+          /> */}
         </View>
-        <TouchableOpacity style={styles.logOutButton} className="my-4 items-center" onPress={() => handleLogOut()}
+        <TouchableOpacity
+          style={styles.logOutButton}
+          className="my-4 items-center"
+          onPress={() => handleLogOut()}
         >
-          <Text style={styles.logOuttext} className="text-black font-[InterSemiBold]">Logout</Text>
+          <Text
+            style={styles.logOuttext}
+            className="text-black font-[InterSemiBold]"
+          >
+            Logout
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -133,7 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logOutButton: {
-alignItems: "center",
+    alignItems: "center",
     borderRadius: 12,
     marginTop: 20,
   },

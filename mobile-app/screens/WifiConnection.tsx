@@ -75,7 +75,14 @@ const CustomSpinner = () => {
 };
 
 export default function WifiConnection({ next }: { next: () => void }) {
-  const { networks, isScanning, error, connectToNetwork, scanNetworks, currentSSID } = useWifi();
+  const {
+    networks,
+    isScanning,
+    error,
+    connectToNetwork,
+    scanNetworks,
+    currentSSID,
+  } = useWifi();
   const [wifiNetworks, setWifiNetworks] = useState<string[]>([]);
   const [connectionError, setConnectionError] = useState<string>("");
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -89,14 +96,18 @@ export default function WifiConnection({ next }: { next: () => void }) {
     if (networks && networks.length > 0) {
       // Filter out the "Lightly Box" WiFi and extract SSIDs
       const filteredNetworks = networks
-        .filter(network => network.SSID !== "Lightly Box")
-        .map(network => network.SSID);
-      
+        .filter((network) => network.SSID !== "Lightly Box")
+        .map((network) => network.SSID);
+
       setWifiNetworks(filteredNetworks);
-      
+
       if (filteredNetworks.length > 0 && !modalVisible) {
         setModalVisible(true);
-      } else if (filteredNetworks.length === 0 && currentSSID === "Lightly Box" && !modalVisible) {
+      } else if (
+        filteredNetworks.length === 0 &&
+        currentSSID === "Lightly Box" &&
+        !modalVisible
+      ) {
         // If we're connected to Lightly Box but can't see other networks, still show the modal
         setModalVisible(true);
       }
@@ -106,26 +117,25 @@ export default function WifiConnection({ next }: { next: () => void }) {
     }
   }, [networks, currentSSID]);
 
-
   // Use the scanNetworks function from the WiFi context
   const scanForWifiNetworks = async () => {
     setConnectionError("");
     await scanNetworks();
-    
+
     // Update connection error from context if needed
     if (error) {
       setConnectionError(error);
     }
   };
-  
+
   // Use the connectToNetwork function from the WiFi context
   const connectToWifi = async (ssid: string, password: string) => {
     try {
       setConnectionError("");
-      
+
       // Use the context function to connect
       const connected = await connectToNetwork(ssid, password, isHiddenNetwork);
-      
+
       if (connected) {
         console.log(`Successfully connected to ${ssid}`);
         next();
@@ -134,7 +144,9 @@ export default function WifiConnection({ next }: { next: () => void }) {
         if (error) {
           setConnectionError(error);
         } else {
-          setConnectionError("Failed to connect to the network. Please check your password and try again.");
+          setConnectionError(
+            "Failed to connect to the network. Please check your password and try again."
+          );
         }
       }
     } catch (err) {
@@ -142,7 +154,6 @@ export default function WifiConnection({ next }: { next: () => void }) {
       setConnectionError("Error connecting to the network");
     }
   };
-
 
   useEffect(() => {
     // Start scanning for WiFi networks when component mounts
@@ -155,7 +166,7 @@ export default function WifiConnection({ next }: { next: () => void }) {
       setConnectionError(error);
     }
   }, [error]);
-  
+
   console.log("Current SSID:", currentSSID);
 
   const handleConnect = async () => {
@@ -164,19 +175,25 @@ export default function WifiConnection({ next }: { next: () => void }) {
       console.log("Selected WiFi:", selectedWifi);
       console.log("Password:", password);
       console.log("Hidden network:", isHiddenNetwork);
-      
+
       try {
         await sendWifiCredentials(selectedWifi, password);
         // Show success message
         setConnectionError("");
-        alert("WiFi credentials sent to Lightly Box. It will now attempt to connect.");
+        alert(
+          "WiFi credentials sent to Lightly Box. It will now attempt to connect."
+        );
         next();
       } catch (error) {
         console.error("Failed to send WiFi credentials:", error);
-        setConnectionError("Failed to send WiFi credentials to the Lightly Box. Please try again.");
+        setConnectionError(
+          "Failed to send WiFi credentials to the Lightly Box. Please try again."
+        );
       }
     } else if (selectedWifi === "manual" && password.length < 6) {
-      setConnectionError("Please enter a valid password (at least 6 characters).");
+      setConnectionError(
+        "Please enter a valid password (at least 6 characters)."
+      );
     } else {
       setConnectionError("Please enter both WiFi name and password.");
     }
@@ -214,15 +231,20 @@ export default function WifiConnection({ next }: { next: () => void }) {
           >
             <Text style={styles.scanButtonText}>Scan for Networks</Text>
           </TouchableOpacity>
-          
+
           {connectionError && connectionError.includes("Location Services") && (
             <TouchableOpacity
-              style={[styles.scanButton, { backgroundColor: '#4285F4', marginTop: 8 }]}
+              style={[
+                styles.scanButton,
+                { backgroundColor: "#4285F4", marginTop: 8 },
+              ]}
               onPress={() => {
                 // Open device location settings
                 // This requires the react-native-android-settings-library package
                 // but for now we'll just alert the user
-                alert("Please enable Location Services in your device settings, then come back and tap 'Scan for Networks'");
+                alert(
+                  "Please enable Location Services in your device settings, then come back and tap 'Scan for Networks'"
+                );
               }}
             >
               <Text style={styles.scanButtonText}>Open Location Settings</Text>
@@ -234,6 +256,7 @@ export default function WifiConnection({ next }: { next: () => void }) {
       {/* Modal for WiFi List */}
       <Modal
         animationType="none"
+        statusBarTranslucent={true}
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
@@ -258,24 +281,28 @@ export default function WifiConnection({ next }: { next: () => void }) {
               style={styles.manualEntryButton}
               onPress={() => setSelectedWifi("manual")}
             >
-              <Text style={styles.manualEntryText}>Can't see your network? Enter details manually</Text>
+              <Text style={styles.manualEntryText}>
+                Can't see your network? Enter details manually
+              </Text>
             </TouchableOpacity>
-            
+
             {selectedWifi ? (
               <View>
                 <Text style={styles.selectedWifiText}>
-                  {selectedWifi === "manual" 
-                    ? "Enter your WiFi details:" 
+                  {selectedWifi === "manual"
+                    ? "Enter your WiFi details:"
                     : `Enter password for ${selectedWifi}:`}
                 </Text>
-                
+
                 {selectedWifi === "manual" && (
                   <View style={styles.inputContainer}>
                     <TextInput
                       style={styles.input}
                       placeholder="WiFi Network Name (SSID)"
                       value={selectedWifi === "manual" ? "" : selectedWifi}
-                      onChangeText={(text) => setSelectedWifi(text !== "manual" ? text : "manual")}
+                      onChangeText={(text) =>
+                        setSelectedWifi(text !== "manual" ? text : "manual")
+                      }
                       autoCapitalize="none"
                       placeholderTextColor="#878787"
                     />
@@ -302,17 +329,21 @@ export default function WifiConnection({ next }: { next: () => void }) {
                     />
                   </TouchableOpacity>
                 </View>
-                
+
                 <View style={styles.checkboxContainer}>
                   <TouchableOpacity
                     style={styles.checkbox}
                     onPress={() => setIsHiddenNetwork(!isHiddenNetwork)}
                   >
-                    {isHiddenNetwork && <View style={styles.checkboxSelected} />}
+                    {isHiddenNetwork && (
+                      <View style={styles.checkboxSelected} />
+                    )}
                   </TouchableOpacity>
-                  <Text style={styles.checkboxLabel}>This is a hidden network</Text>
+                  <Text style={styles.checkboxLabel}>
+                    This is a hidden network
+                  </Text>
                 </View>
-                
+
                 {connectionError ? (
                   <Text style={styles.errorText}>{connectionError}</Text>
                 ) : null}
@@ -366,34 +397,34 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 10,
   },
   checkbox: {
     width: 20,
     height: 20,
     borderWidth: 1,
-    borderColor: '#022322',
+    borderColor: "#022322",
     borderRadius: 4,
     marginRight: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxSelected: {
     width: 12,
     height: 12,
-    backgroundColor: '#022322',
+    backgroundColor: "#022322",
     borderRadius: 2,
   },
   checkboxLabel: {
     fontSize: 14,
-    fontFamily: 'InterRegular',
-    color: '#022322',
+    fontFamily: "InterRegular",
+    color: "#022322",
   },
   spinnerContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorText: {
     color: "#FF0000",
@@ -408,7 +439,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 8,
     marginTop: 16,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   scanButtonText: {
     color: "#FFFFFF",
@@ -451,14 +482,13 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 10,
-    alignItems: 'center',
   },
   header: {
     gap: 8,
     marginBottom: 24,
     paddingLeft: Platform.OS === "ios" ? 20 : 0,
     // alignItems: 'center',
-    width: '100%',
+    width: "100%",
   },
   title: {
     fontSize: 30,
@@ -519,7 +549,7 @@ const styles = StyleSheet.create({
     height: width - 80,
     borderRadius: 10,
     overflow: "hidden",
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   spinnerWrapper: {
     alignItems: "center",
@@ -540,7 +570,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    alignItems: 'stretch',
+    alignItems: "stretch",
   },
   modalTitle: {
     fontSize: 20,

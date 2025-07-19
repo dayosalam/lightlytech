@@ -20,14 +20,13 @@ import MoodModal from "@/components/modals/MoodModal";
 import { useReadings } from "@/context/ReadingsContext";
 
 export default function HomeScreen() {
-  const [showMood, setShowMood] = useState(false)
+  const [showMood, setShowMood] = useState(false);
   const { readings } = useReadings();
-
 
   const handleMoodModalClose = () => {
     setShowMood(false);
   };
-  
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style="dark" />
@@ -36,7 +35,10 @@ export default function HomeScreen() {
         <Header setShowMood={setShowMood} />
 
         {/* Power Usage */}
-        <PowerUsage bill={readings?.bill || 0} totalEnergy={Number(readings?.total_energy.toFixed(2)) || 0} />
+        <PowerUsage
+          bill={readings?.bill || 0}
+          totalEnergy={Number(readings?.total_energy?.toFixed(2)) || 0}
+        />
 
         {/* Alert Carousel */}
         <AlertCarousel />

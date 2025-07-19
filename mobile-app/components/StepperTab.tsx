@@ -1,5 +1,11 @@
 import type React from "react";
-import { View, StyleSheet, TouchableOpacity, Platform, Dimensions } from "react-native";
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Dimensions,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 interface StepperProps {
@@ -18,6 +24,17 @@ interface StepperProps {
 }
 
 const { width } = Dimensions.get("window");
+
+// Calculate responsive width with minimum and maximum constraints
+const getStepperWidth = () => {
+  const minWidth = 280; // Minimum width for very small screens
+  const maxWidth = 400; // Maximum width for very large screens
+  const calculatedWidth = width - 40;
+
+  if (calculatedWidth < minWidth) return minWidth;
+  if (calculatedWidth > maxWidth) return maxWidth;
+  return calculatedWidth;
+};
 
 const Stepper: React.FC<StepperProps> = ({
   steps,
@@ -81,10 +98,12 @@ const Stepper: React.FC<StepperProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    width: width - 40,
+    width: getStepperWidth(),
     height: Platform.OS === "ios" ? 70 : 60,
     justifyContent: "center",
-    marginHorizontal: "auto"
+    marginHorizontal: "auto",
+    // marginTop: Platform.OS === "ios" ? 15 : 20,
+    // marginBottom: Platform.OS === "ios" ? 20 : 15,
   },
   lineContainer: {
     position: "absolute",
@@ -110,7 +129,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 10,
+    paddingHorizontal: width < 350 ? 5 : 10, // Less padding on smaller screens
   },
   stepIconContainer: {
     width: Platform.OS === "ios" ? 44 : 40,
@@ -118,7 +137,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "white",
-    borderRadius: Platform.OS === "ios" ? 22 : 0,
+    borderRadius: Platform.OS === "ios" ? 22 : 20,
+    // Add shadow for better visibility on different backgrounds
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
 });
 

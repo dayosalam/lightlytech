@@ -62,8 +62,6 @@ export default RoomUsageSection;
 const styles = StyleSheet.create({
   roomsContainer: {
     marginTop: 20,
-    // paddingHorizontal: 30,
-
     marginBottom: 10,
   },
   roomsHeader: {

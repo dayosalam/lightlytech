@@ -137,7 +137,7 @@ export default function AutomationScreen() {
       ...prev,
       [id]: newValue,
     }));
-    
+
     try {
       // Create an array of relay states based on the current toggles state
       // Each index represents a room/relay (0-3)
@@ -147,17 +147,17 @@ export default function AutomationScreen() {
         toggles["3"] ? 1 : 0,
         toggles["4"] ? 1 : 0,
       ];
-      
+
       // Update the specific relay that was toggled
       relayStates[parseInt(id) - 1] = newValue ? 1 : 0;
-      
-      console.log(`Sending relay states: ${relayStates.join(', ')}`);
-      
+
+      console.log(`Sending relay states: ${relayStates.join(", ")}`);
+
       // Call the API to send the instruction with all relay states
       const response = await sendInstruction(relayStates);
-      console.log('Instruction sent successfully:', response);
+      console.log("Instruction sent successfully:", response);
     } catch (error) {
-      console.error('Failed to send instruction:', error);
+      console.error("Failed to send instruction:", error);
       // Optionally revert the toggle if the instruction fails
       // setToggles((prev) => ({ ...prev, [id]: !newValue }));
     }
@@ -313,11 +313,13 @@ export default function AutomationScreen() {
         </View>
 
         {/* Tab Navigation */}
-        <TimePeriodSelector
-          selectedTimeOption={activeTab}
-          setSelectedTimeOption={setActiveTab}
-          options={["Controls", "Schedules"]}
-        />
+        <View style={styles.tabSelectorWrapper}>
+          <TimePeriodSelector
+            selectedTimeOption={activeTab}
+            setSelectedTimeOption={setActiveTab}
+            options={["Controls", "Schedules"]}
+          />
+        </View>
 
         {/* Room List */}
         <View style={styles.roomList}>
@@ -441,13 +443,14 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    padding: 16,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    marginTop: 16,
+    paddingHorizontal: 16,
   },
   title: {
     fontSize: 24,
@@ -463,8 +466,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     alignItems: "center",
     justifyContent: "center",
-    height: 180,
-    overflow: "hidden",
+    minHeight: 120,
+    maxHeight: 250,
+  },
+  tabSelectorWrapper: {
+    paddingHorizontal: 16,
   },
   alertCard: {
     backgroundColor: "#FFFFFF",
@@ -536,6 +542,7 @@ const styles = StyleSheet.create({
   },
   roomList: {
     marginTop: 16,
+    paddingHorizontal: 16,
   },
   roomItem: {
     flexDirection: "row",
@@ -976,56 +983,5 @@ const styles = StyleSheet.create({
     marginHorizontal: 12,
     marginVertical: 4,
     borderRadius: 8,
-  },
-  timeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  timeLabel: {
-    fontSize: 16,
-    fontFamily: "InterRegular",
-    color: "#022322",
-  },
-  timeValue: {
-    fontSize: 16,
-    fontFamily: "InterSemiBold",
-    color: "#022322",
-  },
-  timePickerContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-  },
-  timePickerValue: {
-    backgroundColor: "#FFF2EB",
-    color: "#FF6B00",
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  timePickerSeparator: {
-    fontSize: 18,
-    fontFamily: "InterSemiBold",
-    paddingHorizontal: 8,
-    color: "#8B9A99",
-  },
-  switchRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  switchLabel: {
-    fontSize: 16,
-    fontFamily: "InterRegular",
-    color: "#022322",
   },
 });

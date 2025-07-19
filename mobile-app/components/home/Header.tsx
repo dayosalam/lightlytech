@@ -14,7 +14,6 @@ const MOODS: Record<number, { label: string; emoji: string }> = {
 const Header = ({ setShowMood }: { setShowMood: (value: boolean) => void }) => {
   const { user } = useAuth();
 
-
   const formatString = (str: string) => {
     if (str.length > 10) {
       return str.substring(0, 8) + "...";
@@ -39,7 +38,10 @@ const Header = ({ setShowMood }: { setShowMood: (value: boolean) => void }) => {
           <Text style={styles.condoName}>{user?.condo_name || "User"}</Text>
         </View>
       </View>
-      <TouchableOpacity style={styles.lightSavingsButton} onPress={() => setShowMood(true)}>
+      <TouchableOpacity
+        style={styles.lightSavingsButton}
+        onPress={() => setShowMood(true)}
+      >
         <Text style={styles.emoji}>{moodInfo.emoji}</Text>
         <Text style={styles.lightSavingsText}>
           {formatString(moodInfo.label)}
@@ -72,7 +74,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emoji: {
-    fontSize: 15,
+    fontSize: 16,
     color: "#022322",
   },
   userInfo: {
@@ -91,19 +93,30 @@ const styles = StyleSheet.create({
   lightSavingsButton: {
     flexDirection: "row",
     alignItems: "center",
-    boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+    shadowColor: "#000",
+    backgroundColor: "#f5f5f5",
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3,
     borderWidth: 1,
-    borderColor: "#D6D6D6",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    borderColor: "#E8E8E8",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 25,
+    minWidth: 120,
   },
   lightSavingsText: {
     fontSize: 14,
     color: "#022322",
-
-    marginHorizontal: 5,
+    marginLeft: 6,
+    marginRight: 4,
     fontFamily: "InterRegular",
+    fontWeight: "500",
   },
 });
 

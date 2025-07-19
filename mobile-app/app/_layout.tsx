@@ -15,8 +15,11 @@ import AuthProvider from "@/context/AuthContext";
 import ReadingsProvider from "@/context/ReadingsContext";
 import WifiProvider from "@/context/WifiContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { LogBox } from "react-native";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+LogBox.ignoreAllLogs();
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -43,13 +46,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ReadingsProvider>
-          <WifiProvider>
-            <Slot />
-          </WifiProvider>
-        </ReadingsProvider>
-      </AuthProvider>
+        <AuthProvider>
+          <ReadingsProvider>
+            <WifiProvider>
+              <Slot />
+            </WifiProvider>
+          </ReadingsProvider>
+        </AuthProvider>
       </QueryClientProvider>
       <StatusBar style="dark" />
     </ThemeProvider>

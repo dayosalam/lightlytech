@@ -18,7 +18,7 @@ interface PowerUsageChartProps {
     recorded_at: string;
     total_energy: number;
   }[];
-  dataType?: 'power' | 'energy' | 'current';
+  dataType?: "power" | "energy" | "current";
   timePeriod?: string; // 'Today', '1 M', '1 Y', 'All time'
   labels?: string[];
   height?: number;
@@ -32,8 +32,8 @@ interface PowerUsageChartProps {
 export default function PowerUsageChart({
   data,
   readings = [],
-  dataType = 'power',
-  timePeriod = 'Today',
+  dataType = "power",
+  timePeriod = "Today",
   labels,
   height = 220,
   lineColor = "#ff671f",
@@ -46,33 +46,33 @@ export default function PowerUsageChart({
     if (readings && readings.length > 0) {
       // Extract the base data based on dataType
       let baseData: number[] = [];
-      if (dataType === 'power') {
+      if (dataType === "power") {
         // Use the first reading's power_watts array
         baseData = readings[0].power_watts || [];
-      } else if (dataType === 'energy') {
+      } else if (dataType === "energy") {
         // Use the first reading's energy_kwh array
         baseData = readings[0].energy_kwh || [];
-      } else if (dataType === 'current') {
+      } else if (dataType === "current") {
         // Use the first reading's currents array
         baseData = readings[0].currents || [];
       }
-      
+
       // Apply time period filtering (simulated for now)
       // In a real app, you would filter the readings based on the time period
       // and aggregate the data accordingly
       switch (timePeriod) {
-        case 'Today':
+        case "Today":
           // Use the data as is for today
           return baseData;
-        case '1 M':
+        case "1 M":
           // Simulate monthly data by scaling the values
-          return baseData.map(value => value * 30);
-        case '1 Y':
+          return baseData.map((value) => value * 30);
+        case "1 Y":
           // Simulate yearly data by scaling the values
-          return baseData.map(value => value * 365);
-        case 'All time':
+          return baseData.map((value) => value * 365);
+        case "All time":
           // Simulate all-time data by scaling the values even more
-          return baseData.map(value => value * 500);
+          return baseData.map((value) => value * 500);
         default:
           return baseData;
       }
@@ -84,15 +84,15 @@ export default function PowerUsageChart({
   // Generate default labels if none provided, based on time period
   const chartLabels = React.useMemo(() => {
     if (labels) return labels;
-    
+
     // If we have exactly 2 values, these are likely phase 1 and phase 2
     if (chartValues.length === 2) {
-      return ['Phase 1', 'Phase 2'];
+      return ["Phase 1", "Phase 2"];
     }
-    
+
     // Generate time-appropriate labels based on the selected time period
     switch (timePeriod) {
-      case 'Today':
+      case "Today":
         return [
           "06:00",
           "07:00",
@@ -103,14 +103,9 @@ export default function PowerUsageChart({
           "12:00",
           "13:00",
         ];
-      case '1 M':
-        return [
-          "Week 1",
-          "Week 2",
-          "Week 3",
-          "Week 4",
-        ];
-      case '1 Y':
+      case "1 M":
+        return ["Week 1", "Week 2", "Week 3", "Week 4"];
+      case "1 Y":
         return [
           "Jan",
           "Feb",
@@ -125,13 +120,8 @@ export default function PowerUsageChart({
           "Nov",
           "Dec",
         ];
-      case 'All time':
-        return [
-          "2022",
-          "2023",
-          "2024",
-          "2025",
-        ];
+      case "All time":
+        return ["2022", "2023", "2024", "2025"];
       default:
         return [
           "06:00",
@@ -156,11 +146,15 @@ export default function PowerUsageChart({
 
   // Format energy
   const formatEnergy = (value: number) => {
-    if (dataType === 'energy') {
+    if (value === undefined || value === null || isNaN(value)) {
+      return "0.00";
+    }
+
+    if (dataType === "energy") {
       return `${value.toFixed(2)}kWh`;
-    } else if (dataType === 'power') {
+    } else if (dataType === "power") {
       return `${value.toFixed(2)}W`;
-    } else if (dataType === 'current') {
+    } else if (dataType === "current") {
       return `${value.toFixed(2)}A`;
     }
     return `${(value / 100).toFixed(2)}kWh`;
@@ -229,7 +223,10 @@ export default function PowerUsageChart({
           width={chartWidth}
           hideDataPoints
           showDataPointOnPress
-          spacing={(chartWidth - 40) / (chartValues.length > 1 ? chartValues.length - 1 : 1)}
+          spacing={
+            (chartWidth - 40) /
+            (chartValues.length > 1 ? chartValues.length - 1 : 1)
+          }
           color={lineColor}
           thickness={2}
           startFillColor={lineColor}
@@ -278,10 +275,13 @@ export default function PowerUsageChart({
               {
                 left:
                   20 +
-                  selectedDataPoint * ((chartWidth - 40) / (chartValues.length > 1 ? chartValues.length - 1 : 1)),
+                  selectedDataPoint *
+                    ((chartWidth - 40) /
+                      (chartValues.length > 1 ? chartValues.length - 1 : 1)),
                 bottom:
                   selectedDataPoint !== null
-                    ? (chartValues[selectedDataPoint] / Math.max(...chartValues)) *
+                    ? (chartValues[selectedDataPoint] /
+                        Math.max(...chartValues)) *
                         (responsiveHeight * 0.7) +
                       50
                     : 0,

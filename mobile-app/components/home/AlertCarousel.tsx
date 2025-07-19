@@ -17,7 +17,6 @@ import { IEnergyAlert } from "@/interfaces";
 
 const { width } = Dimensions.get("window");
 
-
 // Skeleton loading component
 const AlertCardSkeleton = () => {
   // Animation value for the shimmer effect
@@ -51,15 +50,24 @@ const AlertCardSkeleton = () => {
       <View style={styles.skeletonTextContainer}>
         <View style={styles.skeletonTitle} />
         <View style={styles.skeletonText} />
-        <View style={[styles.skeletonText, { width: '70%' }]} />
+        <View style={[styles.skeletonText, { width: "70%" }]} />
       </View>
-      
+
       {/* Shimmer overlay */}
-      <Animated.View style={[styles.shimmerOverlay, {
-        transform: [{ translateX: shimmerTranslate }],
-      }]}>
+      <Animated.View
+        style={[
+          styles.shimmerOverlay,
+          {
+            transform: [{ translateX: shimmerTranslate }],
+          },
+        ]}
+      >
         <LinearGradient
-          colors={['rgba(255,255,255,0)', 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0)']} 
+          colors={[
+            "rgba(255,255,255,0)",
+            "rgba(255,255,255,0.3)",
+            "rgba(255,255,255,0)",
+          ]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.shimmerGradient}
@@ -175,9 +183,10 @@ const AlertCarousel = () => {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
+    width: "100%",
   },
   scrollView: {
-    width: width,
+    width: "100%",
   },
   slide: {
     width: width,
@@ -207,7 +216,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     marginVertical: 8,
-    height: 100,
+    minHeight: 100,
     overflow: "hidden",
     position: "relative",
   },
@@ -249,7 +258,7 @@ const styles = StyleSheet.create({
   },
   noAlertsContainer: {
     width: width - 40,
-    height: 100,
+    minHeight: 100,
     backgroundColor: "#f8f8f8",
     borderRadius: 12,
     justifyContent: "center",

@@ -1,25 +1,35 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 import React, { useState } from "react";
 
 interface TimePeriodSelectorProps {
   selectedTimeOption: string;
   setSelectedTimeOption: (option: string) => void;
   options: string[];
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 const TimePeriodSelector = ({
   selectedTimeOption,
   setSelectedTimeOption,
   options,
+  containerStyle,
 }: TimePeriodSelectorProps) => {
   return (
-    <View style={styles.timeSelector}>
-      {options.map((option) => (
+    <View style={[styles.timeSelector, containerStyle]}>
+      {options.map((option, index) => (
         <TouchableOpacity
           key={option}
           style={[
             styles.timeOption,
             selectedTimeOption === option && styles.selectedTimeOption,
+            index === options.length - 1 && { borderRightWidth: 0 },
           ]}
           onPress={() => setSelectedTimeOption(option)}
         >
@@ -40,7 +50,7 @@ const TimePeriodSelector = ({
 const styles = StyleSheet.create({
   timeSelector: {
     flexDirection: "row",
-    marginHorizontal: 20,
+    // marginHorizontal: 20,
     borderWidth: 1,
     borderColor: "#e4e4e4",
     borderRadius: 12,
@@ -55,6 +65,8 @@ const styles = StyleSheet.create({
   timeOption: {
     flex: 1,
     paddingVertical: 12,
+    borderRightWidth: 1,
+    borderRightColor: "#e4e4e4",
     alignItems: "center",
     justifyContent: "center",
   },

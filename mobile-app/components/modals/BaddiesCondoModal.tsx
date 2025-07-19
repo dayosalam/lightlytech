@@ -1,14 +1,7 @@
-import React from "react";
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  StyleSheet,
-  Switch,
-  Pressable,
-} from "react-native";
+import React, { useRef, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Switch } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import RBSheet from "react-native-raw-bottom-sheet";
 
 interface BaddiesCondoModalProps {
   visible: boolean;
@@ -25,160 +18,142 @@ const BaddiesCondoModal: React.FC<BaddiesCondoModalProps> = ({
   lightsSwitch,
   setLightsSwitch,
 }) => {
+  const rbSheetRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (visible) {
+      rbSheetRef.current?.open();
+    } else {
+      rbSheetRef.current?.close();
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    rbSheetRef.current?.close();
+    // onClose();
+  };
+
   return (
-    <Modal
-      animationType="none"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
-      statusBarTranslucent
+    <RBSheet
+      ref={rbSheetRef}
+      height={600}
+      openDuration={250}
+      closeDuration={200}
+      closeOnPressMask={true}
+      onClose={onClose}
+      customStyles={{
+        wrapper: {
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        },
+        draggableIcon: {
+          backgroundColor: "#E0E0E0",
+          width: 40,
+          height: 4,
+        },
+        container: {
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: "white",
+        },
+      }}
     >
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <View style={styles.modalContainerWrapper}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHandle} />
-              <TouchableOpacity
-                style={[styles.closeButton, styles.baddiesCloseButton]}
-                onPress={onClose}
-              >
-                <Ionicons name="close" size={24} color="#878787" />
-              </TouchableOpacity>
+      <View style={styles.modalContent}>
+        <TouchableOpacity
+          style={[styles.closeButton, styles.baddiesCloseButton]}
+          onPress={handleClose}
+        >
+          <Ionicons name="close" size={24} color="#878787" />
+        </TouchableOpacity>
 
-              {/* Baddie's Condo Header */}
-              <View style={styles.baddiesHeader}>
-                <View style={styles.baddiesIconContainer}>
-                  <Ionicons name="leaf-outline" size={24} color="#34C759" />
-                  <View style={styles.editIconContainer}>
-                    <Ionicons name="pencil" size={12} color="#000000" />
-                  </View>
-                </View>
-                <Text style={styles.baddiesTitle}>Baddie's Condo</Text>
+        {/* Baddie's Condo Header */}
+        <View style={styles.baddiesHeader}>
+          <View style={styles.baddiesIconContainer}>
+            <Ionicons name="leaf-outline" size={24} color="#34C759" />
+            <View style={styles.editIconContainer}>
+              <Ionicons name="pencil" size={12} color="#000000" />
+            </View>
+          </View>
+          <Text style={styles.baddiesTitle}>Baddie's Condo</Text>
+        </View>
+
+        <View style={styles.baddiesDivider} />
+
+        {/* Lights Section */}
+        <View style={styles.timeSection}>
+          <View style={styles.scheduleSection}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionIconContainer}>
+                <Ionicons name="bulb-outline" size={20} color="#022322" />
+                <Text style={styles.sectionTitle}>Lights</Text>
               </View>
+              <Ionicons name="chevron-down" size={20} color="#022322" />
+            </View>
 
-              <View style={styles.baddiesDivider} />
+            <View style={styles.baddiesDivider} />
 
-              {/* Lights Section */}
-              <View style={styles.timeSection}>
-                <View style={styles.scheduleSection}>
-                  <View style={styles.sectionHeader}>
-                    <View style={styles.sectionIconContainer}>
-                      <Ionicons
-                        name="bulb-outline"
-                        size={20}
-                        color="#022322"
-                      />
-                      <Text style={styles.sectionTitle}>Lights</Text>
-                    </View>
-                    <Ionicons name="chevron-down" size={20} color="#022322" />
-                  </View>
+            <View style={styles.timeRow}>
+              <Text style={styles.timeLabel}>Start time</Text>
+              <Text style={styles.timeValue}>12:00</Text>
+            </View>
 
-                  <View style={styles.baddiesDivider} />
+            <View style={styles.timePickerContainer}>
+              <Text style={styles.timePickerValue}>12</Text>
+              <Text style={styles.timePickerSeparator}>:</Text>
+              <Text style={styles.timePickerValue}>00</Text>
+            </View>
 
-                  <View style={styles.timeRow}>
-                    <Text style={styles.timeLabel}>Start time</Text>
-                    <Text style={styles.timeValue}>12:00</Text>
-                  </View>
+            <View style={styles.timeRow}>
+              <Text style={styles.timeLabel}>End time</Text>
+              <Text style={styles.timeValue}>18:00</Text>
+            </View>
 
-                  <View style={styles.timePickerContainer}>
-                    <Text style={styles.timePickerValue}>12</Text>
-                    <Text style={styles.timePickerSeparator}>:</Text>
-                    <Text style={styles.timePickerValue}>00</Text>
-                  </View>
+            <View style={styles.timePickerContainer}>
+              <Text style={styles.timePickerValue}>18</Text>
+              <Text style={styles.timePickerSeparator}>:</Text>
+              <Text style={styles.timePickerValue}>00</Text>
+            </View>
 
-                  <View style={styles.timeRow}>
-                    <Text style={styles.timeLabel}>End time</Text>
-                    <Text style={styles.timeValue}>18:00</Text>
-                  </View>
+            <View style={styles.baddiesDivider} />
 
-                  <View style={styles.timePickerContainer}>
-                    <Text style={styles.timePickerValue}>18</Text>
-                    <Text style={styles.timePickerSeparator}>:</Text>
-                    <Text style={styles.timePickerValue}>00</Text>
-                  </View>
-
-                  <View style={styles.baddiesDivider} />
-
-                  <View style={styles.switchRow}>
-                    <Text style={styles.switchLabel}>Switch</Text>
-                    <Switch
-                      value={lightsSwitch}
-                      onValueChange={() => setLightsSwitch(!lightsSwitch)}
-                      trackColor={{ false: "#D1D1D6", true: "#34C759" }}
-                      thumbColor="#FFFFFF"
-                      ios_backgroundColor="#D1D1D6"
-                    />
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.baddiesDivider} />
-
-              {/* Sockets Section */}
-              <View style={styles.scheduleSection}>
-                <View style={styles.sectionHeader}>
-                  <View style={styles.sectionIconContainer}>
-                    <Ionicons
-                      name="power-outline"
-                      size={20}
-                      color="#022322"
-                    />
-                    <Text style={styles.sectionTitle}>Sockets</Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#022322"
-                  />
-                </View>
-              </View>
-
-              {/* Save Button */}
-              <TouchableOpacity
-                style={styles.baddiesSaveButton}
-                onPress={onSave}
-              >
-                <Text style={styles.baddiesSaveButtonText}>
-                  Save schedule
-                </Text>
-              </TouchableOpacity>
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>Switch</Text>
+              <Switch
+                value={lightsSwitch}
+                onValueChange={() => setLightsSwitch(!lightsSwitch)}
+                trackColor={{ false: "#D1D1D6", true: "#34C759" }}
+                thumbColor="#FFFFFF"
+                ios_backgroundColor="#D1D1D6"
+              />
             </View>
           </View>
         </View>
-      </Pressable>
-    </Modal>
+
+        <View style={styles.baddiesDivider} />
+
+        {/* Sockets Section */}
+        <View style={styles.scheduleSection}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Ionicons name="power-outline" size={20} color="#022322" />
+              <Text style={styles.sectionTitle}>Sockets</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#022322" />
+          </View>
+        </View>
+
+        {/* Save Button */}
+        <TouchableOpacity style={styles.baddiesSaveButton} onPress={onSave}>
+          <Text style={styles.baddiesSaveButtonText}>Save schedule</Text>
+        </TouchableOpacity>
+      </View>
+    </RBSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContainerWrapper: {
-    width: "100%",
-    height: "90%",
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
-    width: "100%",
-    backgroundColor: "white",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: "hidden",
-  },
   modalContent: {
     padding: 24,
     position: "relative",
-  },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: "#E0E0E0",
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 24,
   },
   closeButton: {
     padding: 2,

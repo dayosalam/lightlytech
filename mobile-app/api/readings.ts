@@ -1,6 +1,6 @@
 import newRequest from "./newRequest";
 
-export const getReadings = async (timePeriod: string) => {
+export const getReadings = async (timePeriod?: string) => {
   try {
     const { status, data } = await newRequest.get("/sensors/readings", {
       params: {

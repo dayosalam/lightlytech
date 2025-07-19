@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Storage } from "@/utils/storage";
-import { saveCondoName } from "@/api/profile";
+import { saveCondoName, getUserDetails } from "@/api/profile";
 
 const MAX_LENGTH = 10;
 
@@ -21,6 +21,46 @@ export default function PersonalizeHome() {
   const router = useRouter();
   const [homeName, setHomeName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true; // Flag to prevent state updates if component unmounts
+
+    const fetchUserDetails = async () => {
+      try {
+        setInitialLoading(true);
+        setFetchError(null);
+
+        const userDetails = await getUserDetails();
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setHomeName(userDetails.condo_name || "");
+        }
+      } catch (error) {
+        console.error("Error fetching user details:", error);
+
+        if (isMounted) {
+          setFetchError("Failed to load home details. Please try again.");
+          // Optionally set a default empty string if fetch fails
+          setHomeName("");
+        }
+      } finally {
+        if (isMounted) {
+          setInitialLoading(false);
+        }
+      }
+    };
+
+    fetchUserDetails();
+
+    // Cleanup function to prevent memory leaks
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleSaveSetup = async () => {
     if (homeName.trim()) {
       // Handle save logic here
@@ -32,12 +72,37 @@ export default function PersonalizeHome() {
         // navigation.navigate('NextScreen');
       } catch (error) {
         console.error("Error saving condo name:", error);
-      }finally{
+        // You might want to show an error message to the user here
+      } finally {
         setLoading(false);
       }
     }
   };
 
+  const handleRetryFetch = async () => {
+    let isMounted = true;
+
+    try {
+      setInitialLoading(true);
+      setFetchError(null);
+
+      const userDetails = await getUserDetails();
+
+      if (isMounted) {
+        setHomeName(userDetails.condo_name || "");
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+
+      if (isMounted) {
+        setFetchError("Failed to load home details. Please try again.");
+      }
+    } finally {
+      if (isMounted) {
+        setInitialLoading(false);
+      }
+    }
+  };
 
   const handleChangeText = (text: string) => {
     if (text.length <= MAX_LENGTH) {
@@ -64,32 +129,56 @@ export default function PersonalizeHome() {
             <Text style={styles.inputLabel}>Enter name</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g Ben's Condo"
+              placeholder={initialLoading ? "Loading..." : "e.g Ben's Condo"}
               placeholderTextColor="#878787"
               value={homeName}
               onChangeText={handleChangeText}
               maxLength={MAX_LENGTH}
+              editable={!initialLoading}
             />
             <Text style={styles.characterCount}>
               {homeName.length}/{MAX_LENGTH}
             </Text>
+
+            {fetchError && (
+              <View style={styles.errorContainer}>
+                <Text style={styles.errorText}>{fetchError}</Text>
+                <TouchableOpacity
+                  style={styles.retryButton}
+                  onPress={handleRetryFetch}
+                  disabled={initialLoading}
+                >
+                  <Text style={styles.retryButtonText}>
+                    {initialLoading ? "Loading..." : "Retry"}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
 
           <TouchableOpacity
             style={[
               styles.saveButton,
-              homeName.trim() ? styles.saveButtonActive : null,
+              homeName.trim() && !initialLoading
+                ? styles.saveButtonActive
+                : null,
             ]}
             onPress={handleSaveSetup}
-            disabled={!homeName.trim()}
+            disabled={!homeName.trim() || loading || initialLoading}
           >
             <Text
               style={[
                 styles.saveButtonText,
-                homeName.trim() ? styles.saveButtonTextActive : null,
+                homeName.trim() && !initialLoading
+                  ? styles.saveButtonTextActive
+                  : null,
               ]}
             >
-              {loading ? "Saving..." : "Save setup"}
+              {loading
+                ? "Saving..."
+                : initialLoading
+                ? "Loading..."
+                : "Save setup"}
             </Text>
           </TouchableOpacity>
         </View>
@@ -166,6 +255,32 @@ const styles = StyleSheet.create({
     color: "#878787",
   },
   saveButtonTextActive: {
+    color: "#FFFFFF",
+  },
+  errorContainer: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: "#FFF5F5",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FED7D7",
+  },
+  errorText: {
+    fontSize: 14,
+    fontFamily: "InterRegular",
+    color: "#E53E3E",
+    marginBottom: 8,
+  },
+  retryButton: {
+    backgroundColor: "#E53E3E",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  retryButtonText: {
+    fontSize: 14,
+    fontFamily: "InterSemiBold",
     color: "#FFFFFF",
   },
 });

@@ -1,13 +1,8 @@
-import React from "react";
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import React, { useRef, useEffect } from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Home from "@/assets/icons/home.svg";
+import RBSheet from "react-native-raw-bottom-sheet";
 
 interface ScheduleTypeModalProps {
   visible: boolean;
@@ -22,128 +17,143 @@ const ScheduleTypeModal: React.FC<ScheduleTypeModalProps> = ({
   selectedScheduleType,
   onScheduleTypeSelect,
 }) => {
+  const rbSheetRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (visible) {
+      // Use setTimeout to avoid the useInsertionEffect warning
+      const timer = setTimeout(() => {
+        rbSheetRef.current?.open();
+      }, 0);
+      return () => clearTimeout(timer);
+    } else {
+      // Close when visible becomes false
+      rbSheetRef.current?.close();
+    }
+  }, [visible]);
+
+  const handleClose = () => {
+    rbSheetRef.current?.close();
+    // onClose();
+  };
+
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={onClose}
+    <RBSheet
+      ref={rbSheetRef}
+      height={300}
+      openDuration={250}
+      closeDuration={200}
+      closeOnPressMask={true}
+      onClose={onClose}
+      customStyles={{
+        wrapper: {
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        },
+        draggableIcon: {
+          backgroundColor: "#E0E0E0",
+          width: 40,
+          height: 4,
+        },
+        container: {
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          backgroundColor: "white",
+        },
+      }}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Schedule Type</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <Ionicons name="close" size={20} color="#878787" />
-              </TouchableOpacity>
-            </View>
+      <View style={styles.modalContent}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Schedule Type</Text>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+            <Ionicons name="close" size={20} color="#878787" />
+          </TouchableOpacity>
+        </View>
 
-            <View style={styles.scheduleOptions}>
-              {/* Baddie's Condo Option */}
-              <TouchableOpacity
-                style={[
-                  styles.scheduleOption,
-                  selectedScheduleType === "baddies" &&
-                    styles.selectedOption,
-                ]}
-                onPress={() => onScheduleTypeSelect("baddies")}
-              >
-                <View style={styles.scheduleOptionContent}>
-                  <View style={styles.scheduleOptionIconContainer}>
-                    <View style={styles.homeIconContainer}>
-                      <Home />
-                    </View>
-                    {selectedScheduleType === "baddies" && (
-                      <View style={styles.checkIconContainer}>
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color="#FF671F"
-                        />
-                      </View>
-                    )}
-                  </View>
-                  <View>
-                    <Text style={styles.scheduleOptionTitle}>
-                      Baddie's Condo
-                    </Text>
-                    <Text style={styles.scheduleOptionDescription}>
-                      Automatically control your home based on your preferences
-                    </Text>
-                  </View>
+        <View style={styles.scheduleOptions}>
+          {/* Baddie's Condo Option */}
+          <TouchableOpacity
+            style={[
+              styles.scheduleOption,
+              selectedScheduleType === "baddies" && styles.selectedOption,
+            ]}
+            onPress={() => onScheduleTypeSelect("baddies")}
+          >
+            <View style={styles.scheduleOptionContent}>
+              <View style={styles.scheduleOptionIconContainer}>
+                <View style={styles.homeIconContainer}>
+                  <Home />
                 </View>
-              </TouchableOpacity>
-
-              {/* Custom Option */}
-              <TouchableOpacity
-                style={[
-                  styles.scheduleOption,
-                  selectedScheduleType === "custom" &&
-                    styles.selectedOption,
-                ]}
-                onPress={() => onScheduleTypeSelect("custom")}
-              >
-                <View style={styles.scheduleOptionContent}>
-                  <View style={styles.scheduleOptionIconContainer}>
-                    <View
-                      style={[
-                        styles.addIconContainer,
-                        selectedScheduleType === "custom" && {
-                          backgroundColor: "#FF671F",
-                          borderWidth: 0,
-                        },
-                      ]}
-                    >
-                      <Ionicons
-                        name={"add"}
-                        size={24}
-                        color={
-                          selectedScheduleType === "custom"
-                            ? "white"
-                            : "#878787"
-                        }
-                      />
-                    </View>
-                    {selectedScheduleType === "custom" && (
-                      <View style={styles.checkIconContainer}>
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color="#FF671F"
-                        />
-                      </View>
-                    )}
+                {selectedScheduleType === "baddies" && (
+                  <View style={styles.checkIconContainer}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={24}
+                      color="#FF671F"
+                    />
                   </View>
-                  <View>
-                    <Text style={styles.scheduleOptionTitle}>Custom</Text>
-                    <Text style={styles.scheduleOptionDescription}>
-                      Create your own schedule for specific rooms and devices
-                    </Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
+                )}
+              </View>
+              <View>
+                <Text style={styles.scheduleOptionTitle}>Baddie's Condo</Text>
+                <Text style={styles.scheduleOptionDescription}>
+                  Automatically control your home based on your preferences
+                </Text>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
+
+          {/* Custom Option */}
+          <TouchableOpacity
+            style={[
+              styles.scheduleOption,
+              selectedScheduleType === "custom" && styles.selectedOption,
+            ]}
+            onPress={() => onScheduleTypeSelect("custom")}
+          >
+            <View style={styles.scheduleOptionContent}>
+              <View style={styles.scheduleOptionIconContainer}>
+                <View
+                  style={[
+                    styles.addIconContainer,
+                    selectedScheduleType === "custom" && {
+                      backgroundColor: "#FF671F",
+                      borderWidth: 0,
+                    },
+                  ]}
+                >
+                  <Ionicons
+                    name={"add"}
+                    size={24}
+                    color={
+                      selectedScheduleType === "custom" ? "white" : "#878787"
+                    }
+                  />
+                </View>
+                {selectedScheduleType === "custom" && (
+                  <View style={styles.checkIconContainer}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={24}
+                      color="#FF671F"
+                    />
+                  </View>
+                )}
+              </View>
+              <View>
+                <Text style={styles.scheduleOptionTitle}>Custom</Text>
+                <Text style={styles.scheduleOptionDescription}>
+                  Create your own schedule for specific rooms and devices
+                </Text>
+              </View>
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
-    </Modal>
+    </RBSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContainer: {
-    width: "100%",
-    backgroundColor: "white",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: "hidden",
-  },
   modalContent: {
     padding: 24,
   },

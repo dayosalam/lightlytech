@@ -53,9 +53,9 @@ const PowerUsageSection = () => {
     <View style={styles.usagesSection}>
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Power usages</Text>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Text style={styles.viewAllText}>View all</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {usages.map(({ id, name, icon, iconBgColor, usage }) => (

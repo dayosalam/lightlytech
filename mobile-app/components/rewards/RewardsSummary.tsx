@@ -27,9 +27,8 @@ const RewardsSummary = ({
   return (
     <View style={styles.container}>
       <View style={[styles.contentContainer, { backgroundColor: "#022322" }]}>
-
         <Text style={styles.rewardsAmount}>
-          {totalRewards.toFixed(2)}
+          {(totalRewards || 0).toFixed(2)}
           <Token style={{ transform: [{ rotate: "70deg" }] }} />
         </Text>
         <Text style={styles.rewardsLabel}>Total rewards earned</Text>

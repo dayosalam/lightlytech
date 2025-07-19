@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import ConnectToBox from "@/screens/ConnectToBox";
@@ -19,7 +19,6 @@ import { Storage } from "@/utils/storage";
 
 export default function DeviceSetup() {
   const [currentStep, setCurrentStep] = useState(0);
-
 
   const steps = [
     {
@@ -100,7 +99,7 @@ export default function DeviceSetup() {
         return <SerialNumber next={handleNext} />;
       case 2:
         return <WifiConnection next={handleNext} />;
-        case 3:
+      case 3:
         return <PersonalizHome />;
       default:
         return null;
@@ -127,13 +126,13 @@ export default function DeviceSetup() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    // padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === "ios" ? 20 : 30,
     backgroundColor: "#fff",
   },
   content: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
   stepContent: {
     alignItems: "center",

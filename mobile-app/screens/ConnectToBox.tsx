@@ -2,11 +2,27 @@
 
 import DistributionBox from "@/components/DistributionBox";
 import { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, Animated, Easing, Image, Platform, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Animated,
+  Easing,
+  Image,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
 import { useWifi } from "@/context/WifiContext";
 
 export default function ConnectBoxScreen({ next }: { next: () => void }) {
-  const { scanNetworks, networks, isScanning, error, connectToNetwork, isConnecting } = useWifi();
+  const {
+    scanNetworks,
+    networks,
+    isScanning,
+    error,
+    connectToNetwork,
+    isConnecting,
+  } = useWifi();
   const rippleAnimations = useRef(
     Array.from({ length: 4 }, () => new Animated.Value(0))
   ).current;
@@ -38,9 +54,9 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
 
     // Initial network scan
     scanNetworks();
-    
+
     // No need for timeout - this will be handled by network scan result
-    
+
     return () => {
       rippleAnimations.forEach((anim) => {
         // Properly handle animation cleanup
@@ -48,17 +64,19 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
         if (animatedLoop.stop) animatedLoop.stop();
       });
     };
-  }, []);  
-  
+  }, []);
+
   useEffect(() => {
     // Process networks when they change
-    const lightlyBoxNetworks = networks.filter(net => net.SSID.includes("Lightly Box"));
+    const lightlyBoxNetworks = networks.filter((net) =>
+      net.SSID.includes("Lightly Box")
+    );
     const foundBoxes = lightlyBoxNetworks.length;
-    
+
     if (foundBoxes > 0) {
       // Generate positions based on actual found networks
       let positions: BoxPosition[] = [];
-      
+
       for (let i = 0; i < foundBoxes; i++) {
         const side = getRandomSide();
         const position = getRandomPositionOnSide(side, positions);
@@ -66,10 +84,10 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
         position.ssid = lightlyBoxNetworks[i].SSID;
         positions.push(position);
       }
-      
+
       setBoxPositions(positions);
       setNumBoxesFound(foundBoxes);
-      
+
       Animated.timing(boxAnimation, {
         toValue: 1,
         duration: 800,
@@ -89,7 +107,10 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
     return sides[Math.floor(Math.random() * sides.length)];
   };
 
-  const getRandomPositionOnSide = (side: string, existingPositions: BoxPosition[]): BoxPosition => {
+  const getRandomPositionOnSide = (
+    side: string,
+    existingPositions: BoxPosition[]
+  ): BoxPosition => {
     const availableRange = CONTAINER_SIZE - DISTRIBUTION_BOX_SIZE - MARGIN * 2;
     let top: number = 0;
     let left: number = 0;
@@ -138,7 +159,7 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
     try {
       // Connect to the network with an empty password since there's no password
       const connected = await connectToNetwork(ssid, "", false);
-      
+
       if (connected) {
         setConnectionStatus(`Connected to ${ssid} successfully!`);
         // Wait a moment before proceeding to the next screen
@@ -149,7 +170,7 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
         setConnectionStatus(`Failed to connect to ${ssid}. Please try again.`);
       }
     } catch (err) {
-      console.error('Error connecting to network:', err);
+      console.error("Error connecting to network:", err);
       setConnectionStatus(`Error connecting to ${ssid}. Please try again.`);
     }
   };
@@ -162,7 +183,9 @@ export default function ConnectBoxScreen({ next }: { next: () => void }) {
             Great! Let's connect{"\n"}your device with the{"\n"}lightly box
           </Text>
           {error && <Text style={styles.errorText}>{error}</Text>}
-          {connectionStatus && <Text style={styles.connectionStatusText}>{connectionStatus}</Text>}
+          {connectionStatus && (
+            <Text style={styles.connectionStatusText}>{connectionStatus}</Text>
+          )}
           {/* {isConnecting && <Text style={styles.scanningText}>Connecting to Lightly Box...</Text>} */}
         </View>
 
@@ -304,8 +327,8 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   rippleContainer: {
-    width: 400,
-    height: 400,
+    width: 500,
+    height: 500,
     position: "relative",
     overflow: "hidden",
     alignItems: "center",
@@ -326,7 +349,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
-
   },
   distributionBox: {
     position: "absolute",

@@ -15,6 +15,7 @@ import AverageUsage from "@/components/AverageUsage";
 import RoomUsageItem from "@/components/RoomUsageItem";
 import RoomUsageSection from "@/components/RoomUsageSection";
 import PowerUsageChart from "@/components/PowerUsageChart";
+import TimePeriodSelector from "@/components/TimePeriodSelector";
 import { useReadings } from "@/context/ReadingsContext";
 
 // Tab options for time period selection
@@ -26,8 +27,6 @@ export default function InsightsScreen() {
     useState("Most consuming");
   const { readings } = useReadings();
 
-
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -35,46 +34,35 @@ export default function InsightsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Time period tabs */}
-        <View style={styles.tabContainer}>
-          {timeOptions.map((option) => (
-            <TouchableOpacity
-              key={option}
-              style={[
-                styles.tabButton,
-                selectedTimeOption === option && styles.selectedTabButton,
-              ]}
-              onPress={() => setSelectedTimeOption(option)}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  selectedTimeOption === option && styles.selectedTabText,
-                ]}
-              >
-                {option}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        <TimePeriodSelector
+          selectedTimeOption={selectedTimeOption}
+          setSelectedTimeOption={setSelectedTimeOption}
+          options={timeOptions}
+          containerStyle={{ marginBottom: 20 }}
+        />
 
         {/* Power Usage Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionLabel}>Power usage</Text>
           <View style={styles.powerUsageContainer}>
+            <Text style={styles.sectionLabel}>Power usage</Text>
             <View style={styles.powerUsageHeader}>
               <View>
-                <Text style={styles.powerUsageValue}>₦{readings?.bill || 0}</Text>
-                <Text style={styles.powerUsageUnit}>{readings?.total_energy.toFixed(2) || 0}kWh</Text>
+                <Text style={styles.powerUsageValue}>
+                  ₦{readings?.bill || 0}
+                  <Text style={styles.powerUsageUnit}>
+                    /{readings?.total_energy?.toFixed(2) || 0}Kw/H
+                  </Text>
+                </Text>
               </View>
             </View>
 
-            <Text style={styles.powerUsageIncrease}>
+            {/* <Text style={styles.powerUsageIncrease}>
               <Ionicons name="arrow-up" size={12} color="#FF3B30" /> Using up
               12% power more than last year
-            </Text>
+            </Text> */}
 
             {/* Power Usage Graph */}
-            <PowerUsageChart 
+            <PowerUsageChart
               readings={readings ? [readings] : []}
               dataType="energy"
               timePeriod={selectedTimeOption}
@@ -95,10 +83,10 @@ export default function InsightsScreen() {
         />
 
         {/* Average Usage */}
-        <AverageUsage />
+        {/* <AverageUsage /> */}
 
         {/* Rooms Usage Section */}
-        <RoomUsageSection />
+        {/* <RoomUsageSection /> */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -123,32 +111,34 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     marginBottom: 20,
     backgroundColor: "#FFFFFF",
-    borderRadius: 8,
-    padding: 4,
+    // borderRadius: 8,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 8,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: "#E0E0E0",
     alignItems: "center",
-    borderRadius: 6,
+    // borderRadius: 6,
   },
   selectedTabButton: {
-    backgroundColor: "#022322",
+    backgroundColor: "rgba(180, 180, 108, 0.1)",
+    borderRadius: 0,
   },
   tabText: {
     fontSize: 14,
-    fontFamily: "InterMedium",
-    color: "#022322",
+    fontFamily: "InterSemiBold",
+    color: "#666",
   },
   selectedTabText: {
-    color: "#FFFFFF",
+    color: "#022322",
   },
   sectionContainer: {
     marginBottom: 16,
   },
   sectionLabel: {
     fontSize: 16,
-    fontFamily: "InterMedium",
+    fontFamily: "InterRegular",
     color: "#696969",
     marginBottom: 8,
   },

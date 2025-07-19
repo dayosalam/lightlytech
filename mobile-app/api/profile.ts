@@ -10,12 +10,22 @@ export const saveCondoName = async (condo_name: string) => {
   }
 };
 
-export const updateUserDetails = async (userDetails: User) => {
+export const getUserDetails = async () => {
+  try {
+    const response = await newRequest.get("/user-profile");
 
+    return response.data.user;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const updateUserDetails = async (userDetails: User) => {
   console.log(userDetails);
   try {
-    const response = await newRequest.put("/user-details", {updateData: userDetails});
-
+    const response = await newRequest.put("/user-details", {
+      updateData: userDetails,
+    });
 
     return response.data;
   } catch (error) {

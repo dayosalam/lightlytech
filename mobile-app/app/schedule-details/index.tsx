@@ -134,44 +134,60 @@ export default function RoomDetailsScreen() {
                   </View>
                   <Text style={styles.roomHeaderText}>{room.name}</Text>
                 </View>
-                <Ionicons
-                  name={
-                    expandedRooms.includes(room.id)
-                      ? "chevron-up"
-                      : "chevron-down"
-                  }
-                  size={24}
-                  color="#8B9A99"
-                />
+                <View
+                  style={{
+                    backgroundColor: "#ffff",
+                    borderRadius: 20,
+                    padding: 3,
+                  }}
+                >
+                  <Ionicons
+                    name={
+                      expandedRooms.includes(room.id)
+                        ? "chevron-up"
+                        : "chevron-down"
+                    }
+                    size={18}
+                    color="#8B9A99"
+                  />
+                </View>
               </TouchableOpacity>
 
               {expandedRooms.includes(room.id) && (
-                <View style={styles.roomDetailsContainer}>
-                  <View style={styles.deviceRow}>
-                    <View style={styles.deviceInfo}>
-                      <Ionicons name="bulb-outline" size={22} color="#022322" />
-                      <Text style={styles.deviceText}>Lights</Text>
+                <View style={styles.expandedContent}>
+                  <View style={styles.roomDetailsContainer}>
+                    <View style={styles.deviceRow}>
+                      <View style={styles.deviceInfo}>
+                        <Ionicons
+                          name="bulb-outline"
+                          size={22}
+                          color="#022322"
+                        />
+                        <Text style={styles.deviceText}>Lights</Text>
+                      </View>
+                      <View style={styles.deviceStatus}>
+                        <Text style={styles.deviceStatusText}>
+                          Switch {room.lights.status} · {room.lights.time}
+                        </Text>
+                      </View>
                     </View>
-                    <View style={styles.deviceStatus}>
-                      <Text style={styles.deviceStatusText}>
-                        Switch {room.lights.status} · {room.lights.time}
-                      </Text>
-                    </View>
-                  </View>
 
-                  <View style={styles.deviceRow}>
-                    <View style={styles.deviceInfo}>
-                      <Ionicons
-                        name="flash-outline"
-                        size={22}
-                        color="#022322"
-                      />
-                      <Text style={styles.deviceText}>Sockets</Text>
-                    </View>
-                    <View style={styles.deviceStatus}>
-                      <Text style={styles.deviceStatusText}>
-                        Switch {room.sockets.status} · {room.sockets.time}
-                      </Text>
+                    <View style={styles.deviceSeparator} />
+
+                    <View style={styles.deviceRow}>
+                      <View style={styles.deviceInfo}>
+                        <Ionicons
+                          name="flash-outline"
+                          size={22}
+                          color="#022322"
+                        />
+                        <Text style={styles.deviceText}>Sockets</Text>
+                      </View>
+                      <View style={styles.deviceStatus}>
+                        <Text style={styles.deviceStatusText}>
+                          Switch {room.sockets.status} · {room.sockets.time}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
@@ -261,15 +277,23 @@ const styles = StyleSheet.create({
   roomDetailsContainer: {
     backgroundColor: "#FFFFFF",
     paddingHorizontal: 16,
-    paddingBottom: 16,
+    paddingVertical: 8,
     borderRadius: 12,
+  },
+  expandedContent: {
+    backgroundColor: "#FFFFFF",
   },
   deviceRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginVertical: 12,
-    paddingVertical: 12,
+    paddingVertical: 16,
+  },
+  deviceSeparator: {
+    height: 4,
+
+    backgroundColor: "#F0F0F0",
+    marginHorizontal: 0,
   },
   deviceInfo: {
     flexDirection: "row",
@@ -277,7 +301,7 @@ const styles = StyleSheet.create({
   },
   deviceText: {
     fontSize: 16,
-    fontFamily: "InterRegular",
+    fontFamily: "InterSemiBold",
     color: "#022322",
     marginLeft: 12,
   },
