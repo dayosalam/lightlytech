@@ -248,27 +248,77 @@ const storeSensorData = async (req, res) => {
 // get sensor data
 const getSensorData = async (req, res) => {
   const user_id = req.user.id;
+  const { period } = req.query; // e.g., "Today", "1 M", "1 Y", "All time"
 
-  if (!user_id) {
-    return res.status(400).json({ error: "User ID is required" });
+  console.log(period);
+
+  const decodedPeriod = decodeURIComponent(period);
+
+  console.log("decodedPeriod", decodedPeriod);
+
+  // Calculate date range based on period
+  let startDate;
+  const now = new Date();
+  switch (decodedPeriod) {
+    case "Today":
+      startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      break;
+    case "1 M":
+      startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+      break;
+    case "1 Y":
+      startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      break;
+    case "All time":
+    default:
+      startDate = null; // No filter
   }
 
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from("data_records")
-      .select(
-        "id, currents, power_watts, energy_kwh, bill, total_energy, created_at"
-      )
+      .select("id, currents, power_watts, energy_kwh, bill, total_energy, created_at")
       .eq("user_id", user_id)
       .order("created_at", { ascending: false });
 
+    if (startDate) {
+      query = query.gte("created_at", startDate.toISOString());
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
 
-    const sensor_readings = Array.isArray(data) ? data[0] : data;
+    // Calculate total_energy, bill, etc. for the period
+    const total_energy = data.reduce((sum, r) => sum + (r.total_energy || 0), 0);
+    const bill = data.reduce((sum, r) => sum + (r.bill || 0), 0);
+
+
+    console.log("Total energy")
+
+    // Calculate percent change vs last year if period is "1 Y"
+    let percentChange = null;
+    if (decodedPeriod === "1 Y") {
+      // Fetch last year's data for the same period
+      const lastYearStart = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      const lastYearEnd = new Date(now.getFullYear() - 1, now.getMonth() + 1, now.getDate());
+      const { data: lastYearData } = await supabase
+        .from("data_records")
+        .select("total_energy")
+        .eq("user_id", user_id)
+        .gte("created_at", lastYearStart.toISOString())
+        .lte("created_at", lastYearEnd.toISOString());
+      const lastYearTotal = (lastYearData || []).reduce((sum, r) => sum + (r.total_energy || 0), 0);
+      if (lastYearTotal > 0) {
+        percentChange = ((total_energy - lastYearTotal) / lastYearTotal) * 100;
+      }
+    }
 
     return res.status(200).json({
       user_id,
-      sensor_readings,
+      total_energy,
+      bill,
+      percentChange,
+      sensor_readings: data,
     });
   } catch (error) {
     console.error("Error retrieving sensor data:", error);

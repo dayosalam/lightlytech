@@ -6,6 +6,7 @@ const {
   changePassword,
   saveCondoName,
   updateUserDetails,
+  getUserDetails,
 } = require("../controllers/profileController");
 
 const {
@@ -17,6 +18,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
+router.get("/user-profile", authMiddleware, getUserDetails);
 router.get("/profile", authMiddleware, getUserProfile);
 router.put("/profile", authMiddleware, updateUserProfile);
 router.put("/notifications", authMiddleware, updateNotifications);

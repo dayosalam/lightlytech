@@ -16,11 +16,15 @@ exports.getUser = async (userId) => {
     return data;
 };
 
+if (!process.env.GROQ_API_KEY) {
+    throw new Error("GROQ_API_KEY is not defined");
+}
+
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY
+});
 // AI helper function
 exports.useAi = async (message) => {
-    const groq = new Groq({
-        apiKey: process.env.GROQ_API_KEY
-    });
  return await groq.chat.completions.create({
   "messages": [
     {
@@ -201,3 +205,8 @@ exports.generateUserAlerts = async (userId) =>{
         return fallbackAlerts;
     }
 }
+
+
+//get total energy usage for a period
+// exports.getTotalEnergyUsage = async (userId, startDate, endDate) => {
+    

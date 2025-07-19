@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const storage = multer.memoryStorage();
 const avatarUploadMiddleware = multer({ storage }).single("avatar");
-const {supabase} = require("../config/supabaseConfig");
+const { supabase } = require("../config/supabaseConfig");
 // configure multer storage (in memory)
 const upload = multer({ storage });
 
@@ -18,7 +18,9 @@ const getUserProfile = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("profiles")
-      .select("full_name, phone, notifications_enabled, avatar_url, band, created_at")
+      .select(
+        "full_name, phone, notifications_enabled, avatar_url, band, created_at"
+      )
       .eq("user_id", user_id)
       .maybeSingle();
 
@@ -45,27 +47,27 @@ const getUserProfile = async (req, res) => {
 
 // PUT /profile
 const updateUserProfile = async (req, res) => {
-    const user_id = req.user.id;
-    const { full_name, phone, band, avatar_url } = req.body;
-  
-    // ✅ Validate band input
-    if (band && !["A", "B", "C"].includes(band)) {
-      return res.status(400).json({ error: "Invalid band value" });
-    }
-  
-    try {
-      const { error } = await supabase
-        .from("profiles")
-        .upsert([{ user_id, full_name, phone, band, avatar_url }]);
-  
-      if (error) throw error;
-  
-      return res.status(200).json({ message: "Profile updated successfully" });
-    } catch (error) {
-      console.error("Error updating profile:", error.message);
-      return res.status(500).json({ error: "Failed to update profile" });
-    }
-  };
+  const user_id = req.user.id;
+  const { full_name, phone, band, avatar_url } = req.body;
+
+  // ✅ Validate band input
+  if (band && !["A", "B", "C"].includes(band)) {
+    return res.status(400).json({ error: "Invalid band value" });
+  }
+
+  try {
+    const { error } = await supabase
+      .from("profiles")
+      .upsert([{ user_id, full_name, phone, band, avatar_url }]);
+
+    if (error) throw error;
+
+    return res.status(200).json({ message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Error updating profile:", error.message);
+    return res.status(500).json({ error: "Failed to update profile" });
+  }
+};
 
 const updateNotifications = async (req, res) => {
   const user_id = req.user.id;
@@ -194,7 +196,6 @@ const changePassword = async (req, res) => {
   }
 };
 
-
 const updateUserBand = async (req, res) => {
   const { band } = req.body;
   const user_id = req.user.id;
@@ -215,7 +216,6 @@ const updateUserBand = async (req, res) => {
   return res.status(200).json({ message: `Band set to ${band}` });
 };
 
-
 const saveCondoName = async (req, res) => {
   const { condo_name } = req.body;
   const user_id = req.user.id;
@@ -224,35 +224,52 @@ const saveCondoName = async (req, res) => {
     .from("users")
     .update({ condo_name })
     .eq("id", user_id);
-  
+
   if (error) {
     return res.status(500).json({ error: "Failed to update condo name" });
   }
-  
+
   return res.status(200).json({ message: `Condo name set to ${condo_name}` });
-}
+};
 
 // update user details
 const updateUserDetails = async (req, res) => {
   const { updateData } = req.body;
   const user_id = req.user.id;
 
-  console.log(updateData)
+  console.log(updateData);
 
   const { error } = await supabase
     .from("users")
     .update(updateData)
     .eq("id", user_id);
 
-
-
   if (error) {
-    console.error(error)
+    console.error(error);
     return res.status(500).json({ error: "Failed to update user details" });
   }
 
   return res.status(200).json({ message: "User details updated successfully" });
-}
+};
+
+// get user details
+const getUserDetails = async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, email, name, condo_name")
+      .eq("id", req.user.id)
+      .single();
+    if (error) {
+      console.error("Error fetching user details:", error);
+      return res.status(500).json({ error: "Failed to fetch user details" });
+    }
+    return res.status(200).json({ user: data });
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    return res.status(500).json({ error: "Failed to fetch user details" });
+  }
+};
 
 module.exports = {
   getUserProfile,
@@ -263,5 +280,6 @@ module.exports = {
   updateUserBand,
   changePassword,
   saveCondoName,
+  getUserDetails,
   updateUserDetails,
 };
