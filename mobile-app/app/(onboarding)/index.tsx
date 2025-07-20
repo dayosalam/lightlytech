@@ -137,10 +137,7 @@ export default function OnboardingScreen() {
           <Animated.View style={contentStyle}>
             {onboardingSteps.map((step, index) => (
               <View key={index} style={styles.slide}>
-                <ExpoImage
-                  source={step.image}
-                  style={styles.illustration}
-                />
+                <ExpoImage source={step.image} style={styles.illustration} />
                 <View style={styles.textContainer}>
                   <Text style={styles.title}>{step.title}</Text>
                   <Text style={styles.subtitle}>{step.description}</Text>

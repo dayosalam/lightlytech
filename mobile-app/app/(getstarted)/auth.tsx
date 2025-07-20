@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   View,
@@ -18,9 +16,10 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Storage } from "@/utils/storage";
+import { SecureStorage } from "@/utils/storage";
 import { useAuth } from "@/context/AuthContext";
 import { navigateBasedOnSetup } from "@/utils/setupCheck";
+import { signUp } from "@/api/auth";
 
 export default function AuthScreen() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -40,7 +39,7 @@ export default function AuthScreen() {
     try {
       setError(null);
       setIsLoading(true);
-      
+
       if (isSignUp) {
         // Sign up validation
         if (!name) {
@@ -48,47 +47,59 @@ export default function AuthScreen() {
           setIsLoading(false);
           return;
         }
-        
+
         if (!email) {
           setError("Email is required");
           setIsLoading(false);
           return;
         }
-        
+
         if (!password) {
           setError("Password is required");
           setIsLoading(false);
           return;
         }
-        
+
         if (password !== confirmPassword) {
           setError("Passwords do not match");
           setIsLoading(false);
           return;
         }
-        
+
         if (password.length < 6) {
           setError("Password must be at least 6 characters");
           setIsLoading(false);
           return;
         }
-        
+
         console.log("Attempting to sign up with:", email);
-        
+
         // Call sign up API
         try {
-          // This is a placeholder for your actual signup API call
-          // Replace with your actual signup implementation
-          // For now, we'll just set as authenticated for demo purposes
-          await Storage.setIsAuthenticated(true);
-          await navigateBasedOnSetup();
+          const response = await signUp(email, password, name);
+
+          if (response && response.access_token) {
+            // Store tokens properly
+            // await SecureStorage.setTokens(
+            //   response.access_token,
+            //   response.refresh_token,
+            //   response.expires_in
+            // );
+            // await SecureStorage.setItem("user", JSON.stringify(response.user));
+            // await SecureStorage.setIsAuthenticated(true);
+
+            setIsSignUp(false);
+          } else {
+            throw new Error("Invalid response from server");
+          }
         } catch (signupError: any) {
           console.error("Error signing up:", signupError);
-          setError(signupError.message || "Failed to sign up. Please try again.");
+          setError(
+            signupError.message || "Failed to sign up. Please try again."
+          );
         }
       } else {
         // Sign in validation
-        console.log("Attempting to login with:", email);
 
         if (!email || !password) {
           setError("Email and password are required");
@@ -98,13 +109,19 @@ export default function AuthScreen() {
 
         // Authenticate the user
         await login({ email, password });
-        
-        // Use the setupCheck utility to navigate based on box connection status
+
         await navigateBasedOnSetup();
       }
     } catch (error: any) {
-      console.error(isSignUp ? "Error signing up:" : "Error logging in:", error.message || error);
-      setError(error.message || (isSignUp ? "Failed to sign up" : "Failed to login") + ". Please try again.");
+      console.error(
+        isSignUp ? "Error signing up:" : "Error logging in:",
+        error.message || error
+      );
+      setError(
+        error.message ||
+          (isSignUp ? "Failed to sign up" : "Failed to login") +
+            ". Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +133,7 @@ export default function AuthScreen() {
       console.log("Google Sign In");
 
       // For demo purposes, set as authenticated
-      await Storage.setIsAuthenticated(true);
+      await SecureStorage.setIsAuthenticated(true);
 
       // Use the setupCheck utility to navigate based on box connection status
       await navigateBasedOnSetup();
@@ -149,190 +166,220 @@ export default function AuthScreen() {
             showsVerticalScrollIndicator={false}
           >
             <View style={styles.innerContainer}>
-            {/* Header */}
-            <View style={styles.header}>
-              <Image
-                source={require("@/assets/images/logo.png")}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-              <View style={styles.headerRight}>
-                <TouchableOpacity onPress={handleNeedHelp}>
-                  <Text style={styles.helpText}>Need help</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleGetDevice}>
-                  <Text style={styles.deviceText}>Get device</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Main Content */}
-            <View style={styles.content}>
-              <Text style={styles.title}>{isSignUp ? "Create an account" : "Welcome back"}</Text>
-              <Text style={styles.subtitle}>
-                {isSignUp ? "Sign up to get started with your Lightly app." : "Sign in to continue with your Lightly app."}
-              </Text>
-              
-              {/* Toggle between Sign In and Sign Up */}
-              <View style={styles.toggleContainer}>
-                <TouchableOpacity
-                  style={[styles.toggleButton, !isSignUp && styles.activeToggle]}
-                  onPress={() => {
-                    setIsSignUp(false);
-                    setError(null);
-                  }}
-                >
-                  <Text style={[styles.toggleText, !isSignUp && styles.activeToggleText]}>Sign In</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.toggleButton, isSignUp && styles.activeToggle]}
-                  onPress={() => {
-                    setIsSignUp(true);
-                    setError(null);
-                  }}
-                >
-                  <Text style={[styles.toggleText, isSignUp && styles.activeToggleText]}>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Form */}
-              <View style={styles.form}>
-                {isSignUp && (
-                  <>
-                    <Text style={styles.label}>Full Name</Text>
-                    <TextInput
-                      style={[
-                        styles.input,
-                        isFocused === "name" && styles.onFocus,
-                        error && styles.inputError,
-                      ]}
-                      placeholder="e.g John Doe"
-                      placeholderTextColor="#878787"
-                      value={name}
-                      onChangeText={(text) => {
-                        setName(text);
-                        if (error) setError(null);
-                      }}
-                      autoCapitalize="words"
-                      onFocus={() => setIsFocused("name")}
-                      onBlur={() => setIsFocused(null)}
-                    />
-                  </>
-                )}
-
-                <Text style={styles.label}>Email</Text>
-                <TextInput
-                  style={[
-                    styles.input,
-                    isFocused === "email" && styles.onFocus,
-                    error && styles.inputError,
-                  ]}
-                  placeholder="e.g johndoe@gmail.com"
-                  placeholderTextColor="#878787"
-                  value={email}
-                  onChangeText={(text) => {
-                    setEmail(text);
-                    if (error) setError(null);
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  onFocus={() => setIsFocused("email")}
-                  onBlur={() => setIsFocused(null)}
+              {/* Header */}
+              <View style={styles.header}>
+                <Image
+                  source={require("@/assets/images/logo.png")}
+                  style={styles.logo}
+                  resizeMode="contain"
                 />
+                <View style={styles.headerRight}>
+                  <TouchableOpacity onPress={handleNeedHelp}>
+                    <Text style={styles.helpText}>Need help</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleGetDevice}>
+                    <Text style={styles.deviceText}>Get device</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
 
-                <Text style={styles.label}>Password</Text>
-                <View style={styles.passwordContainer}>
-                  <TextInput
-                    style={[
-                      styles.passwordInput,
-                      isFocused === "password" && styles.onFocus,
-                      error && styles.inputError,
-                    ]}
-                    placeholder="Enter password"
-                    placeholderTextColor="#878787"
-                    value={password}
-                    onChangeText={(text) => {
-                      setPassword(text);
-                      if (error) setError(null);
-                    }}
-                    secureTextEntry={!showPassword}
-                    autoCapitalize="none"
-                    onFocus={() => setIsFocused("password")}
-                    onBlur={() => setIsFocused(null)}
-                  />
+              {/* Main Content */}
+              <View style={styles.content}>
+                <Text style={styles.title}>
+                  {isSignUp ? "Create an account" : "Welcome back"}
+                </Text>
+                <Text style={styles.subtitle}>
+                  {isSignUp
+                    ? "Sign up to get started with your Lightly app."
+                    : "Sign in to continue with your Lightly app."}
+                </Text>
+
+                {/* Toggle between Sign In and Sign Up */}
+                <View style={styles.toggleContainer}>
                   <TouchableOpacity
-                    style={styles.eyeIcon}
-                    onPress={() => setShowPassword(!showPassword)}
+                    style={[
+                      styles.toggleButton,
+                      !isSignUp && styles.activeToggle,
+                    ]}
+                    onPress={() => {
+                      setIsSignUp(false);
+                      setError(null);
+                    }}
                   >
-                    <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"}
-                      size={24}
-                      color="#878787"
-                    />
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        !isSignUp && styles.activeToggleText,
+                      ]}
+                    >
+                      Sign In
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.toggleButton,
+                      isSignUp && styles.activeToggle,
+                    ]}
+                    onPress={() => {
+                      setIsSignUp(true);
+                      setError(null);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        isSignUp && styles.activeToggleText,
+                      ]}
+                    >
+                      Sign Up
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
-                {isSignUp && (
-                  <>
-                    <Text style={styles.label}>Confirm Password</Text>
-                    <View style={styles.passwordContainer}>
+                {/* Form */}
+                <View style={styles.form}>
+                  {isSignUp && (
+                    <>
+                      <Text style={styles.label}>Full Name</Text>
                       <TextInput
                         style={[
-                          styles.passwordInput,
-                          isFocused === "confirmPassword" && styles.onFocus,
+                          styles.input,
+                          isFocused === "name" && styles.onFocus,
                           error && styles.inputError,
                         ]}
-                        placeholder="Confirm your password"
+                        placeholder="e.g John Doe"
                         placeholderTextColor="#878787"
-                        value={confirmPassword}
+                        value={name}
                         onChangeText={(text) => {
-                          setConfirmPassword(text);
+                          setName(text);
                           if (error) setError(null);
                         }}
-                        secureTextEntry={!showConfirmPassword}
-                        autoCapitalize="none"
-                        onFocus={() => setIsFocused("confirmPassword")}
+                        autoCapitalize="words"
+                        onFocus={() => setIsFocused("name")}
                         onBlur={() => setIsFocused(null)}
                       />
-                      <TouchableOpacity
-                        style={styles.eyeIcon}
-                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                      >
-                        <Ionicons
-                          name={showConfirmPassword ? "eye-off-outline" : "eye-outline"}
-                          size={24}
-                          color="#878787"
+                    </>
+                  )}
+
+                  <Text style={styles.label}>Email</Text>
+                  <TextInput
+                    style={[
+                      styles.input,
+                      isFocused === "email" && styles.onFocus,
+                      error && styles.inputError,
+                    ]}
+                    placeholder="e.g johndoe@gmail.com"
+                    placeholderTextColor="#878787"
+                    value={email}
+                    onChangeText={(text) => {
+                      setEmail(text);
+                      if (error) setError(null);
+                    }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    onFocus={() => setIsFocused("email")}
+                    onBlur={() => setIsFocused(null)}
+                  />
+
+                  <Text style={styles.label}>Password</Text>
+                  <View style={styles.passwordContainer}>
+                    <TextInput
+                      style={[
+                        styles.passwordInput,
+                        isFocused === "password" && styles.onFocus,
+                        error && styles.inputError,
+                      ]}
+                      placeholder="Enter password"
+                      placeholderTextColor="#878787"
+                      value={password}
+                      onChangeText={(text) => {
+                        setPassword(text);
+                        if (error) setError(null);
+                      }}
+                      secureTextEntry={!showPassword}
+                      autoCapitalize="none"
+                      onFocus={() => setIsFocused("password")}
+                      onBlur={() => setIsFocused(null)}
+                    />
+                    <TouchableOpacity
+                      style={styles.eyeIcon}
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Ionicons
+                        name={showPassword ? "eye-off-outline" : "eye-outline"}
+                        size={24}
+                        color="#878787"
+                      />
+                    </TouchableOpacity>
+                  </View>
+
+                  {isSignUp && (
+                    <>
+                      <Text style={styles.label}>Confirm Password</Text>
+                      <View style={styles.passwordContainer}>
+                        <TextInput
+                          style={[
+                            styles.passwordInput,
+                            isFocused === "confirmPassword" && styles.onFocus,
+                            error && styles.inputError,
+                          ]}
+                          placeholder="Confirm your password"
+                          placeholderTextColor="#878787"
+                          value={confirmPassword}
+                          onChangeText={(text) => {
+                            setConfirmPassword(text);
+                            if (error) setError(null);
+                          }}
+                          secureTextEntry={!showConfirmPassword}
+                          autoCapitalize="none"
+                          onFocus={() => setIsFocused("confirmPassword")}
+                          onBlur={() => setIsFocused(null)}
                         />
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
+                        <TouchableOpacity
+                          style={styles.eyeIcon}
+                          onPress={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                        >
+                          <Ionicons
+                            name={
+                              showConfirmPassword
+                                ? "eye-off-outline"
+                                : "eye-outline"
+                            }
+                            size={24}
+                            color="#878787"
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  )}
 
-                {error && <Text style={styles.errorText}>{error}</Text>}
+                  {error && <Text style={styles.errorText}>{error}</Text>}
 
-                <TouchableOpacity
-                  style={[
-                    styles.continueButton,
-                    isLoading && styles.disabledButton,
-                  ]}
-                  onPress={handleContinue}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.continueText}>
-                    {isSignUp ? "Sign Up" : "Sign In"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
+                  <TouchableOpacity
+                    style={[
+                      styles.continueButton,
+                      isLoading && styles.disabledButton,
+                    ]}
+                    onPress={handleContinue}
+                    disabled={isLoading}
+                  >
+                    <Text style={styles.continueText}>
+                      {isSignUp ? "Sign Up" : "Sign In"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
-              {/* Divider */}
-              {/* <View style={styles.dividerContainer}>
+                {/* Divider */}
+                {/* <View style={styles.dividerContainer}>
                 <View style={styles.divider} />
                 <Text style={styles.dividerText}>Or get started with</Text>
                 <View style={styles.divider} />
               </View> */}
 
-              {/* Social Sign In */}
-              {/* <TouchableOpacity
+                {/* Social Sign In */}
+                {/* <TouchableOpacity
                 style={styles.googleButton}
                 onPress={handleGoogleSignIn}
               >
@@ -344,17 +391,19 @@ export default function AuthScreen() {
                 />
                 <Text style={styles.googleText}>Google</Text>
               </TouchableOpacity> */}
-            </View>
+              </View>
 
-            {/* Footer */}
-            <View style={styles.footer}>
-              <Text style={styles.termsText}>
-                By signing up, you agree to the{" "}
-                <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
-                <Text style={styles.termsLink}>Data Processing Agreement</Text>
-              </Text>
+              {/* Footer */}
+              <View style={styles.footer}>
+                <Text style={styles.termsText}>
+                  By signing up, you agree to the{" "}
+                  <Text style={styles.termsLink}>Terms of Service</Text> and{" "}
+                  <Text style={styles.termsLink}>
+                    Data Processing Agreement
+                  </Text>
+                </Text>
+              </View>
             </View>
-          </View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </SafeAreaView>

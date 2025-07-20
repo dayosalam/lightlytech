@@ -6,7 +6,10 @@ import React, {
   ReactNode,
 } from "react";
 import { SecureStorage } from "@/utils/storage";
-import { signIn, logOut } from "@/api";
+import { signIn, logOut, refreshToken } from "@/api";
+import { setAuthFailureCallback } from "@/api/newRequest";
+import { tokenManager } from "@/utils/tokenManager";
+import { useRouter } from "expo-router";
 import { User } from "@/interfaces";
 
 interface AuthContextType {
@@ -16,6 +19,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => Promise<void>;
   loading: boolean;
+  refreshAuthToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,22 +31,28 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     checkAuthStatus();
+
+    // Set up auth failure callback for automatic logout
+    setAuthFailureCallback(() => {
+      console.log("🔄 Auth failure callback triggered - forcing logout");
+      forceLogout();
+    });
   }, []);
 
   const checkAuthStatus = async () => {
     setLoading(true);
     try {
-      const token = await SecureStorage.getItem("userToken");
-      const isAuthenticatedFlag = await SecureStorage.getIsAuthenticated();
+      const hasValidAuth = await tokenManager.hasValidAuth();
 
-      if (token && isAuthenticatedFlag) {
+      if (hasValidAuth) {
         setIsAuthenticated(true);
-        
+
         const userData = await SecureStorage.getItem("user");
         if (userData) {
           setUser(JSON.parse(userData));
         }
       } else {
+        console.log("❌ No valid authentication found");
         setIsAuthenticated(false);
         setUser(null);
       }
@@ -55,6 +65,26 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshAuthToken = async (): Promise<boolean> => {
+    try {
+      return await tokenManager.refreshTokens();
+    } catch (error) {
+      console.error("❌ Error refreshing auth token:", error);
+      return false;
+    }
+  };
+
+  const forceLogout = async () => {
+    try {
+      await tokenManager.clearTokens();
+      setIsAuthenticated(false);
+      setUser(null);
+      console.log("🔄 Force logout completed");
+    } catch (error) {
+      console.error("Error during force logout:", error);
+    }
+  };
+
   const login = async (userData: User) => {
     const { email, password } = userData;
 
@@ -63,22 +93,31 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const { user, access_token } = await signIn(email, password);
+      const response = await signIn(email, password);
 
+      if (response && response.access_token) {
+        // Store tokens with proper expiry
+        await SecureStorage.setTokens(
+          response.access_token,
+          response.refresh_token,
+          response.expires_in
+        );
+        await SecureStorage.setItem("user", JSON.stringify(response.user));
+        await SecureStorage.setIsAuthenticated(true);
 
-      await SecureStorage.setItem("userToken", access_token);
-      await SecureStorage.setItem("user", JSON.stringify(user));
-      await SecureStorage.setIsAuthenticated(true);
-      setIsAuthenticated(true);
-      setUser({
-        email,
-        token: access_token,
-        id: user?.id,
-        name: user?.name,
-        condo_name: user?.condo_name,
-        emoji: user?.emoji,
-        mood: user?.mood,
-      });
+        setIsAuthenticated(true);
+        setUser({
+          email,
+          token: response.access_token,
+          id: response.user?.id,
+          name: response.user?.name,
+          condo_name: response.user?.condo_name,
+          emoji: response.user?.emoji,
+          mood: response.user?.mood,
+        });
+      } else {
+        throw new Error("Invalid response from server");
+      }
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -86,26 +125,53 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await SecureStorage.removeItem("userToken");
-    await SecureStorage.removeItem("user");
-    await SecureStorage.setIsAuthenticated(false);
-    await logOut();
-    setIsAuthenticated(false);
-    setUser(null);
+    try {
+      // Call backend logout if possible
+      try {
+        await logOut();
+      } catch (error) {
+        console.warn(
+          "Backend logout failed, continuing with local logout:",
+          error
+        );
+      }
+
+      // Clear all stored data using TokenManager
+      await tokenManager.clearTokens();
+      setIsAuthenticated(false);
+      setUser(null);
+
+      console.log("✅ Logout successful");
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Even if there's an error, clear local state
+      setIsAuthenticated(false);
+      setUser(null);
+    }
   };
 
   const updateUser = async (userData: Partial<User>) => {
     if (!user) return;
-    
+
     const updatedUser = { ...user, ...userData };
-    
+
     setUser(updatedUser);
-    
+
     await SecureStorage.setItem("user", JSON.stringify(updatedUser));
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, loading }}>
+    <AuthContext.Provider
+      value={{
+        isAuthenticated,
+        user,
+        login,
+        logout,
+        updateUser,
+        loading,
+        refreshAuthToken,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

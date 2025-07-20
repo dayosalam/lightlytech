@@ -1,5 +1,5 @@
-import { Storage } from './storage';
-import { router } from 'expo-router';
+import { Storage, SecureStorage } from "./storage";
+import { router } from "expo-router";
 
 /**
  * Utility to check if the user has connected their box
@@ -9,12 +9,12 @@ export const checkBoxSetup = async (): Promise<boolean> => {
   try {
     // Check if the user has connected their box
     const hasConnectedBox = await Storage.getHasConnectedBox();
-    console.log('Setup check - Has connected box:', hasConnectedBox);
-    
+    console.log("Setup check - Has connected box:", hasConnectedBox);
+
     // Return the connection status
     return hasConnectedBox;
   } catch (error) {
-    console.error('Error checking box setup:', error);
+    console.error("Error checking box setup:", error);
     return false;
   }
 };
@@ -26,18 +26,18 @@ export const checkBoxSetup = async (): Promise<boolean> => {
 export const navigateBasedOnSetup = async (): Promise<void> => {
   try {
     const hasConnectedBox = await checkBoxSetup();
-    
+
     if (hasConnectedBox) {
       // If box is already connected, navigate to home
-      router.replace('/setup');
+      router.replace("/setup");
       // router.replace('/(home)');
     } else {
       // If box is not connected, navigate to setup
-      router.replace('/(home)');
+      router.replace("/(home)");
     }
   } catch (error) {
-    console.error('Error navigating based on setup:', error);
+    console.error("Error navigating based on setup:", error);
     // Default to setup if there's an error
-    router.replace('/setup');
+    router.replace("/setup");
   }
 };

@@ -36,15 +36,32 @@ export default function PersonalizeHome() {
 
         // Only update state if component is still mounted
         if (isMounted) {
+          // Handle case where user might not have a condo_name yet (new users)
           setHomeName(userDetails.condo_name || "");
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching user details:", error);
 
         if (isMounted) {
-          setFetchError("Failed to load home details. Please try again.");
-          // Optionally set a default empty string if fetch fails
-          setHomeName("");
+          // For new users or users without profile data, don't show error
+          // Just start with empty string and let them enter their home name
+          if (
+            error.status === 404 ||
+            error.message?.includes("not found") ||
+            error.message?.includes("No user found")
+          ) {
+            console.log(
+              "User profile not found - likely a new user, starting fresh"
+            );
+            setHomeName("");
+            setFetchError(null);
+          } else {
+            // Only show error for actual failures (network issues, server errors, etc.)
+            setFetchError(
+              "Failed to load home details. You can still continue with setup."
+            );
+            setHomeName("");
+          }
         }
       } finally {
         if (isMounted) {
@@ -63,16 +80,30 @@ export default function PersonalizeHome() {
 
   const handleSaveSetup = async () => {
     if (homeName.trim()) {
-      // Handle save logic here
       try {
         setLoading(true);
+
+        // Save the condo name first
+        await saveCondoName(homeName.trim());
+
+        // Mark box as connected
         await Storage.setHasConnectedBox(true);
-        await saveCondoName(homeName);
+
+        // Navigate to success page
         router.push("/setup/success");
-        // navigation.navigate('NextScreen');
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error saving condo name:", error);
-        // You might want to show an error message to the user here
+
+        // Show user-friendly error message
+        if (error.status === 401) {
+          setFetchError("Session expired. Please log in again.");
+        } else if (error.isNetworkError) {
+          setFetchError(
+            "Network error. Please check your connection and try again."
+          );
+        } else {
+          setFetchError("Failed to save home name. Please try again.");
+        }
       } finally {
         setLoading(false);
       }
@@ -91,11 +122,26 @@ export default function PersonalizeHome() {
       if (isMounted) {
         setHomeName(userDetails.condo_name || "");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching user details:", error);
 
       if (isMounted) {
-        setFetchError("Failed to load home details. Please try again.");
+        // Same logic as initial fetch - don't show error for new users
+        if (
+          error.status === 404 ||
+          error.message?.includes("not found") ||
+          error.message?.includes("No user found")
+        ) {
+          console.log(
+            "User profile not found - likely a new user, starting fresh"
+          );
+          setHomeName("");
+          setFetchError(null);
+        } else {
+          setFetchError(
+            "Failed to load home details. You can still continue with setup."
+          );
+        }
       }
     } finally {
       if (isMounted) {

@@ -1,7 +1,7 @@
 import { Redirect } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, ActivityIndicator } from "react-native";
-import { Storage } from "@/utils/storage";
+import { Storage, SecureStorage } from "@/utils/storage";
 
 export default function Index() {
   const [loading, setLoading] = useState(true);
@@ -12,10 +12,12 @@ export default function Index() {
       try {
         // Check user state
         const hasSeenOnboarding = await Storage.getHasSeenOnboarding();
-        const isAuthenticated = await Storage.getIsAuthenticated();
+        const isAuthenticated = await SecureStorage.getIsAuthenticated();
+        const token = await SecureStorage.getAccessToken();
 
         console.log("Root index - Has seen onboarding:", hasSeenOnboarding);
         console.log("Root index - Is authenticated:", isAuthenticated);
+        console.log("Root index - Has token:", !!token);
 
         // Start with a default route that requires authentication
         let route = "/(getstarted)/auth";
@@ -24,12 +26,30 @@ export default function Index() {
         if (!hasSeenOnboarding) {
           route = "/(onboarding)";
         }
-        // Then check authentication status
-        else if (isAuthenticated) {
-          // User is authenticated, go directly to home
-          route = "/(home)";
+        // Then check authentication status and token validity
+        else if (isAuthenticated && token) {
+          // Check if token is expired
+          const isExpired = await SecureStorage.isTokenExpired();
+
+          if (isExpired) {
+            console.log("Root index - Token expired, checking refresh token");
+            const refreshToken = await SecureStorage.getRefreshToken();
+
+            if (!refreshToken) {
+              console.log("Root index - No refresh token, redirecting to auth");
+              // Clear invalid auth state
+              await SecureStorage.setIsAuthenticated(false);
+              route = "/(getstarted)/auth";
+            } else {
+              // Let AuthContext handle token refresh
+              route = "/(home)";
+            }
+          } else {
+            // Token is valid, go to home
+            route = "/(home)";
+          }
         }
-        // If not authenticated, default route is already set to auth
+        // If not authenticated or no token, default route is already set to auth
 
         console.log("Root index - Navigating to:", route);
         setInitialRoute(route);
@@ -53,5 +73,5 @@ export default function Index() {
     );
   }
 
-  return <Redirect href={initialRoute || "/(getstarted)/auth"} />;
+  return <Redirect href={(initialRoute as any) || "/(getstarted)/auth"} />;
 }
