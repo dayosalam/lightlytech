@@ -1,5 +1,5 @@
 const { supabase, supabaseServiceRole } = require("../config/supabaseConfig");
-const {getUser} = require("../utils/helpers");
+const { getUser } = require("../utils/helpers");
 
 exports.register = async (req, res) => {
   try {
@@ -67,10 +67,11 @@ exports.signIn = async (req, res) => {
       return res.status(400).json({ error: "Email and password are required" });
     }
 
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { data: signInData, error: signInError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     if (signInError) {
       console.error("❌ Supabase Auth Error:", signInError.message);
@@ -79,11 +80,11 @@ exports.signIn = async (req, res) => {
 
     const user = await getUser(signInData.user.id);
 
-
     return res.status(200).json({
       message: "User logged in successfully",
       access_token: signInData.session?.access_token,
       refresh_token: signInData.session?.refresh_token,
+      expires_in: signInData.session?.expires_in,
       user,
     });
   } catch (err) {
@@ -94,7 +95,6 @@ exports.signIn = async (req, res) => {
     });
   }
 };
-
 
 exports.logout = async (req, res) => {
   const { error } = await supabase.auth.signOut();
@@ -112,10 +112,12 @@ exports.changePassword = async (req, res) => {
   const { password } = req.body;
   const user_id = req.user.id;
 
-
-  const {error} = await supabaseServiceRole.auth.admin.updateUserById(user_id, {
-    password
-  })
+  const { error } = await supabaseServiceRole.auth.admin.updateUserById(
+    user_id,
+    {
+      password,
+    }
+  );
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -124,20 +126,43 @@ exports.changePassword = async (req, res) => {
   res.status(200).json({ message: "Password changed successfully" });
 };
 
-
 // Change email for authenticated user
 exports.changeEmail = async (req, res) => {
   const { email } = req.body;
   const user_id = req.user.id;
 
-
-  const {error} = await supabaseServiceRole.auth.admin.updateUserById(user_id, {
-    email
-  })
+  const { error } = await supabaseServiceRole.auth.admin.updateUserById(
+    user_id,
+    {
+      email,
+    }
+  );
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
   res.status(200).json({ message: "Email changed successfully" });
+};
+
+// refresh token
+exports.refreshToken = async (req, res) => {
+  const { refresh_token } = req.body;
+
+  if (!refresh_token) {
+    return res.status(400).json({ error: "Refresh token is required" });
+  }
+
+  const { data, error } = await supabase.auth.refreshSession(refresh_token);
+
+  if (error) {
+    console.error("❌ Error refreshing token:", error);
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({
+    message: "Token refreshed successfully",
+    access_token: data.session?.access_token,
+    refresh_token: data.session?.refresh_token,
+  });
 };
